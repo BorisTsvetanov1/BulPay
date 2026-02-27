@@ -21,18 +21,22 @@
 
   <style>
     *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    button, input, select, textarea { -webkit-tap-highlight-color: transparent; outline: none; }
+    button:focus-visible { outline: none; }
 
     body {
       margin: 0;
       min-height: 100vh;
       font-family: 'Roboto', sans-serif;
-      background: #94A3B8;
+      background: #EEF2F8;
     }
 
     /* Phone shell */
     .phone-shell {
       max-width: 390px;
+      width: 100%;
       height: 100vh;
+      height: 100dvh;
       position: relative;
       overflow: hidden;
       display: flex;
@@ -40,7 +44,7 @@
       background: #EEF2F8;
     }
     @media (min-width: 500px) {
-      body { display:flex; align-items:center; justify-content:center; padding:24px; }
+      body { display:flex; align-items:center; justify-content:center; padding:24px; background: #94A3B8; }
       .phone-shell {
         height: 844px;
         width: 390px;
@@ -136,9 +140,8 @@
     .pin-dot.err { border-color: #EF4444; background: #EF4444; }
 
     /* Recipient rows */
-    .recip-row { transition: background .12s; cursor: pointer; }
-    .recip-row:active { background: #EFF6FF !important; }
-    .recip-row.sel { border-left: 3px solid #2563EB; }
+    .recip-row { transition: background .12s, box-shadow .12s; cursor: pointer; border: none; }
+    .recip-row:active { background: #E8F0FE !important; }
 
     /* Suppress number input spinners */
     input[type=number]::-webkit-inner-spin-button,
@@ -222,7 +225,153 @@
     const fmtEur  = (n) => '€' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
     const fmtDate = (s) => s.slice(0,10);
     const genRef  = ()  => 'BUL-' + Math.random().toString(36).slice(2,8).toUpperCase();
-    const greet   = ()  => { const h=new Date().getHours(); return h<12?'Good morning':h<17?'Good afternoon':'Good evening'; };
+    const greet   = (t) => { const h=new Date().getHours(); return h<12?t('goodMorning'):h<17?t('goodAfternoon'):t('goodEvening'); };
+
+    /* ════════════════════════════════════════
+       TRANSLATIONS
+    ════════════════════════════════════════ */
+    const TRANSLATIONS = {
+      en: {
+        appName:'BulPay Wallet', help:'Help',
+        goodMorning:'Good morning', goodAfternoon:'Good afternoon', goodEvening:'Good evening',
+        digitalWallet:'Digital Wallet',
+        useBiometric:'Use face / fingerprint',
+        notAvailableProto:'Not available in this web prototype',
+        or:'OR',
+        continueWithPin:'Continue with PIN',
+        pinSecureWallet:'Your 4-digit PIN keeps your wallet secure',
+        enterYourPin:'Enter your PIN',
+        enter4DigitPin:'Enter your 4-digit PIN to continue',
+        incorrectPin:'Incorrect PIN. Please try again.',
+        demoPin:'Demo PIN:',
+        selectPayment:'Select payment method.',
+        addCard:'Add Card',
+        sendMoney:'Send Money',
+        cardFrozenSend:'❄ Card Frozen — Cannot Send',
+        pastTransactions:'Past Transactions',
+        noTransactions:'No transactions yet',
+        goBack:'Go Back',
+        freezeCard:'Freeze Card',
+        unfreezeCard:'Unfreeze Card',
+        cardFrozenLabel:'❄ Card Frozen',
+        txType:'Type', txCard:'Card', txFrom:'From', txTo:'To',
+        txAmount:'Amount', txFee:'Fee', txStatus:'Status', txDate:'Date',
+        txReference:'Reference',
+        moneyReceived:'Money received', moneySent:'Money sent',
+        close:'Close',
+        viewBalance:'View Balance',
+        sendingFrom:'Sending from',
+        chooseRecipient:'Choose Recipient',
+        searchNameOrNumber:'Search name or number\u2026',
+        amountToSend:'Amount to Send',
+        fee:'Fee', noFee:'\u20ac0.00 \u2014 No fee!',
+        estimatedDelivery:'Estimated delivery',
+        instant:'Instant \u26a1',
+        continueBtn:'Continue \u2192',
+        cancel:'Cancel',
+        paying:'Paying',
+        fromCard:'From card',
+        amount:'Amount',
+        total:'Total',
+        useBiometricConfirm:'Use face / fingerprint to confirm',
+        confirmWithPin:'Confirm with PIN',
+        confirmPaymentPin:'Confirm this payment with your PIN',
+        paymentSent:'Payment Sent!',
+        paymentSuccessful:'Your payment was successful',
+        receipt:'Receipt',
+        amountSent:'Amount sent',
+        reference:'Reference',
+        dateTime:'Date & Time',
+        done:'Done',
+        to:'To',
+        addCardVia:'Add Card Via',
+        photo:'Photo', nfcScan:'NFC Scan', appOnly:'App only', manual:'Manual',
+        cardDetails:'Card Details',
+        cardNumber:'Card Number',
+        cardholderName:'Cardholder Name',
+        fullNameOnCard:'Full name as on card',
+        expiry:'Expiry', cvv:'CVV',
+        invalidCardNum:'Enter a valid 16-digit number',
+        enterCardholderName:'Enter cardholder name',
+        enterExpiry:'Enter expiry MM/YY',
+        enterCvv:'Enter 3-digit CVV',
+        pleaseEnterValidAmount:'Please enter a valid amount.',
+        insufficientBalance:'Insufficient balance. Available: ',
+      },
+      bg: {
+        appName:'BulPay Wallet', help:'Помощ',
+        goodMorning:'Добро утро', goodAfternoon:'Добър ден', goodEvening:'Добър вечер',
+        digitalWallet:'Дигитален портфейл',
+        useBiometric:'Лице / пръстов отпечатък',
+        notAvailableProto:'Недостъпно в тази уеб версия',
+        or:'ИЛИ',
+        continueWithPin:'Продължи с PIN',
+        pinSecureWallet:'4-цифреният ви PIN пази портфейла ви',
+        enterYourPin:'Въведете вашия PIN',
+        enter4DigitPin:'Въведете 4-цифрения си PIN за да продължите',
+        incorrectPin:'Грешен PIN. Моля, опитайте отново.',
+        demoPin:'Демо PIN:',
+        selectPayment:'Изберете метод на плащане.',
+        addCard:'Добави карта',
+        sendMoney:'Изпрати пари',
+        cardFrozenSend:'❄ Замразена — Не може да изпращате',
+        pastTransactions:'Минали транзакции',
+        noTransactions:'Все още няма транзакции',
+        goBack:'Назад',
+        freezeCard:'Замрази картата',
+        unfreezeCard:'Размрази картата',
+        cardFrozenLabel:'❄ Картата е замразена',
+        txType:'Тип', txCard:'Карта', txFrom:'От', txTo:'До',
+        txAmount:'Сума', txFee:'Такса', txStatus:'Статус', txDate:'Дата',
+        txReference:'Референция',
+        moneyReceived:'Получени пари', moneySent:'Изпратени пари',
+        close:'Затвори',
+        viewBalance:'Виж баланс',
+        sendingFrom:'Изпращане от',
+        chooseRecipient:'Изберете получател',
+        searchNameOrNumber:'Търси по име или номер\u2026',
+        amountToSend:'Сума за изпращане',
+        fee:'Такса', noFee:'\u20ac0.00 \u2014 Без такса!',
+        estimatedDelivery:'Очаквано доставяне',
+        instant:'Моментално \u26a1',
+        continueBtn:'Продължи \u2192',
+        cancel:'Отказ',
+        paying:'Плащане към',
+        fromCard:'От карта',
+        amount:'Сума',
+        total:'Общо',
+        useBiometricConfirm:'Лице / пръстов отпечатък за потвърждение',
+        confirmWithPin:'Потвърди с PIN',
+        confirmPaymentPin:'Потвърдете плащането с вашия PIN',
+        paymentSent:'Плащането е изпратено!',
+        paymentSuccessful:'Вашето плащане беше успешно',
+        receipt:'Разписка',
+        amountSent:'Изпратена сума',
+        reference:'Референция',
+        dateTime:'Дата и час',
+        done:'Готово',
+        to:'До',
+        addCardVia:'Добави карта чрез',
+        photo:'Снимка', nfcScan:'NFC сканиране', appOnly:'Само в приложение', manual:'Ръчно',
+        cardDetails:'Данни на картата',
+        cardNumber:'Номер на картата',
+        cardholderName:'Титуляр на картата',
+        fullNameOnCard:'Пълно име като на картата',
+        expiry:'Валидност', cvv:'CVV',
+        invalidCardNum:'Въведете валиден 16-цифрен номер',
+        enterCardholderName:'Въведете името на титуляра',
+        enterExpiry:'Въведете валидност ММ/ГГ',
+        enterCvv:'Въведете 3-цифрен CVV',
+        pleaseEnterValidAmount:'Моля, въведете валидна сума.',
+        insufficientBalance:'Недостатъчен баланс. Налично: ',
+      },
+    };
+
+    const LangContext = React.createContext('en');
+    const useLang = () => {
+      const lang = React.useContext(LangContext);
+      return (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.en[key] || key;
+    };
 
     /* ════════════════════════════════════════
        SHARED COMPONENTS
@@ -230,29 +379,49 @@
 
     /* ── App Header ── */
     function AppHeader({ onBack }) {
+      const t = useLang();
       return (
-        <div style={{ background:C.headerBg, borderBottom:C.headerBdr, flexShrink:0, position:'relative' }}
-             className="flex items-center justify-between px-5 py-4">
+        <div style={{
+          background: C.headerBg, borderBottom: C.headerBdr, flexShrink: 0,
+          position: 'relative', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', padding: '0 8px',
+          height: 52,
+        }}>
           {onBack
-            ? <button onClick={onBack} className="flex items-center gap-1 text-sm font-medium"
-                      style={{color:C.txtSecond, position:'relative', zIndex:1}}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor" strokeWidth={2.5}>
+            ? <button onClick={onBack} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '12px', margin: 0, display: 'flex', alignItems: 'center',
+                color: C.txtSecond, position: 'relative', zIndex: 1,
+                minWidth: 44, minHeight: 44, justifyContent: 'center',
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:24,height:24}} fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
                 </svg>
               </button>
-            : <div className="w-6"/>}
+            : <div style={{width:44}}/>}
 
           <span style={{
-            color: C.txtPrimary, fontSize:17, fontWeight:700,
-            position:'absolute', left:'50%', transform:'translateX(-50%)',
-          }}>BulPay Wallet</span>
+            color: C.txtPrimary, fontSize: 17, fontWeight: 700,
+            position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+          }}>{t('appName')}</span>
 
-          <div className="flex items-center gap-3">
-            <button className="text-sm font-medium" style={{color:C.txtMuted}}>Help</button>
-            <button style={{color:C.txtMuted}}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor" strokeWidth={1.8}>
+          <div style={{display:'flex', alignItems:'center', gap:0}}>
+            <button style={{
+              background:'none', border:'none', cursor:'pointer',
+              padding:'12px 8px', color: C.txtMuted,
+              fontSize:14, fontWeight:500, fontFamily:'Roboto,sans-serif',
+              minHeight:44, display:'flex', alignItems:'center',
+            }}>{t('help')}</button>
+            <button style={{
+              background:'none', border:'none', cursor:'pointer',
+              padding:'10px 10px 10px 4px', color: C.txtMuted,
+              display:'flex', alignItems:'center', minHeight:44, minWidth:40,
+              justifyContent:'center',
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -271,6 +440,7 @@
     ];
 
     function CardVisual({ card, onCardClick, showBal, onToggleBal, isFrozen=false, style: extraStyle={} }) {
+      const t = useLang();
       const grad = GRAD[card.grad] || GRAD.g1;
       const stopProp = (e) => { e.stopPropagation(); onToggleBal && onToggleBal(); };
       const clickable = !!onCardClick;
@@ -355,7 +525,7 @@
                 backfaceVisibility:'hidden',
                 whiteSpace:'nowrap',
               }}>
-              View Balance
+              {t('viewBalance')}
             </button>
 
             {/* Balance amount — flips in, anchored to same centre */}
@@ -411,7 +581,7 @@
                 color:'#1e40af',
                 letterSpacing:'.03em',
               }}>
-                ❄ Card Frozen
+                {t('cardFrozenLabel')}
               </div>
             </div>
           )}
@@ -464,7 +634,8 @@
     }
 
     /* ── Disabled Biometric Button ── */
-    function BiometricBtn({ label='Use face / fingerprint' }) {
+    function BiometricBtn({ labelKey='useBiometric' }) {
+      const t = useLang();
       const [toast,setToast] = useState(false);
       const tap = () => { setToast(true); setTimeout(()=>setToast(false),2400); };
       return (
@@ -487,7 +658,7 @@
               <path d="M18 11 C20.2 9.7 22.5 9 25 9 C32.7 9 39 15.3 39 24"/>
               <path d="M11 11 C8 14 6 18.5 6 23"/>
             </svg>
-            <span style={{fontSize:14, fontWeight:500, color:'#6B7280'}}>{label}</span>
+            <span style={{fontSize:14, fontWeight:500, color:'#6B7280'}}>{t(labelKey)}</span>
           </button>
           {toast && (
             <div style={{
@@ -495,7 +666,7 @@
               background:'#111827', color:'#fff', fontSize:12, padding:'7px 14px',
               borderRadius:8, whiteSpace:'nowrap', zIndex:20, pointerEvents:'none',
             }}>
-              Not available in this web prototype
+              {t('notAvailableProto')}
             </div>
           )}
         </div>
@@ -563,9 +734,142 @@
     );
 
     /* ════════════════════════════════════════
+       SCREEN — LANGUAGE SELECTION
+    ════════════════════════════════════════ */
+    function LanguageScreen({ nav, onLangSelect }) {
+      const [selected, setSelected] = useState('en');
+      const [hoveredEn, setHoveredEn] = useState(false);
+      const [hoveredBg, setHoveredBg] = useState(false);
+
+      const confirm = () => {
+        onLangSelect(selected);
+        nav('login');
+      };
+
+      const optionStyle = (lang, hovered) => ({
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        padding: '16px 20px',
+        borderRadius: 16,
+        border: selected === lang ? '2px solid #2563EB' : '2px solid ' + C.border,
+        background: selected === lang
+          ? '#EFF6FF'
+          : hovered ? '#DCE4F7' : C.white,
+        cursor: 'pointer',
+        fontFamily: 'Roboto,sans-serif',
+        transition: 'background .15s, border-color .15s',
+        boxShadow: selected === lang
+          ? '0 2px 12px rgba(37,99,235,.13)'
+          : '0 1px 6px rgba(0,0,0,.06)',
+      });
+
+      const radioCircle = (lang) => ({
+        width: 24,
+        height: 24,
+        borderRadius: '50%',
+        border: selected === lang ? '2px solid #16A34A' : '2px solid #D1D5DB',
+        background: selected === lang ? '#16A34A' : 'transparent',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        transition: 'background .15s, border-color .15s',
+      });
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg}}>
+          <AppHeader/>
+          <div style={{flex:1, display:'flex', flexDirection:'column', padding:'32px 20px 32px'}}>
+
+            {/* Logo tile */}
+            <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginBottom:40}}>
+              <div style={{
+                width:76, height:76, borderRadius:20,
+                background: GRAD.g2,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                boxShadow:'0 8px 28px rgba(107,120,245,.42)',
+                marginBottom:14,
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:34,height:34}} fill="none"
+                     viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <path d="M2 10h20"/>
+                </svg>
+              </div>
+              <div style={{fontSize:24, fontWeight:700, color:C.txtPrimary}}>BulPay</div>
+              <div style={{fontSize:13, color:C.txtMuted, marginTop:4}}>Digital Wallet</div>
+            </div>
+
+            {/* Heading */}
+            <div style={{
+              fontSize:18, fontWeight:700, color:C.txtPrimary,
+              textAlign:'center', marginBottom:24,
+            }}>
+              Choose language&nbsp;/&nbsp;Избери език
+            </div>
+
+            {/* Language options */}
+            <div style={{display:'flex', flexDirection:'column', gap:14, marginBottom:'auto'}}>
+
+              {/* English */}
+              <button
+                onClick={() => setSelected('en')}
+                onMouseEnter={() => setHoveredEn(true)}
+                onMouseLeave={() => setHoveredEn(false)}
+                style={optionStyle('en', hoveredEn)}>
+                <div style={radioCircle('en')}>
+                  {selected === 'en' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:14,height:14}} fill="none"
+                         viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  )}
+                </div>
+                <div style={{display:'flex', alignItems:'center', gap:10}}>
+                  <span style={{fontSize:22}}>🇬🇧</span>
+                  <span style={{fontSize:16, fontWeight:600, color:C.txtPrimary}}>English</span>
+                </div>
+              </button>
+
+              {/* Bulgarian */}
+              <button
+                onClick={() => setSelected('bg')}
+                onMouseEnter={() => setHoveredBg(true)}
+                onMouseLeave={() => setHoveredBg(false)}
+                style={optionStyle('bg', hoveredBg)}>
+                <div style={radioCircle('bg')}>
+                  {selected === 'bg' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:14,height:14}} fill="none"
+                         viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  )}
+                </div>
+                <div style={{display:'flex', alignItems:'center', gap:10}}>
+                  <span style={{fontSize:22}}>🇧🇬</span>
+                  <span style={{fontSize:16, fontWeight:600, color:C.txtPrimary}}>Български</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Confirm button */}
+            <div style={{marginTop:32}}>
+              <PrimaryBtn onClick={confirm}>
+                {selected === 'bg' ? 'Потвърди' : 'Confirm'}
+              </PrimaryBtn>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
        SCREEN — LOGIN
     ════════════════════════════════════════ */
     function LoginScreen({ nav }) {
+      const t = useLang();
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg}}>
           <AppHeader/>
@@ -587,27 +891,27 @@
                 </svg>
               </div>
               <div style={{fontSize:24, fontWeight:700, color:C.txtPrimary}}>BulPay</div>
-              <div style={{fontSize:13, color:C.txtMuted, marginTop:4}}>Digital Wallet</div>
+              <div style={{fontSize:13, color:C.txtMuted, marginTop:4}}>{t('digitalWallet')}</div>
               <div style={{fontSize:16, fontWeight:500, color:'#374151', marginTop:14}}>
-                {greet()}, {USER.first}
+                {greet(t)}, {USER.first}
               </div>
             </div>
 
-            <BiometricBtn label="Use face / fingerprint"/>
+            <BiometricBtn labelKey="useBiometric"/>
             <div style={{textAlign:'center', fontSize:12, color:C.txtMuted, marginTop:8, marginBottom:24}}>
-              Not available in this web prototype
+              {t('notAvailableProto')}
             </div>
 
             {/* Divider */}
             <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:20}}>
               <div style={{flex:1, height:1, background:C.border}}/>
-              <span style={{fontSize:12, color:C.txtMuted, fontWeight:500}}>OR</span>
+              <span style={{fontSize:12, color:C.txtMuted, fontWeight:500}}>{t('or')}</span>
               <div style={{flex:1, height:1, background:C.border}}/>
             </div>
 
-            <PrimaryBtn onClick={()=>nav('pin')}>Continue with PIN</PrimaryBtn>
+            <PrimaryBtn onClick={()=>nav('pin')}>{t('continueWithPin')}</PrimaryBtn>
             <div style={{textAlign:'center', fontSize:12, color:C.txtMuted, marginTop:10}}>
-              Your 4-digit PIN keeps your wallet secure
+              {t('pinSecureWallet')}
             </div>
           </div>
         </div>
@@ -618,6 +922,7 @@
        SCREEN — PIN ENTRY
     ════════════════════════════════════════ */
     function PinScreen({ nav }) {
+      const t = useLang();
       const [digits,setDigits] = useState('');
       const [err,setErr]       = useState('');
       const [shake,setShake]   = useState(false);
@@ -631,7 +936,7 @@
             if (next === PIN) { nav('home'); }
             else {
               setShake(true);
-              setErr('Incorrect PIN. Please try again.');
+              setErr(t('incorrectPin'));
               setTimeout(()=>{ setDigits(''); setShake(false); }, 600);
             }
           }, 200);
@@ -645,8 +950,8 @@
           <AppHeader onBack={()=>nav('login')}/>
           <div style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', padding:'36px 24px 28px'}}>
 
-            <div style={{fontSize:20, fontWeight:700, color:C.txtPrimary, marginBottom:6}}>Enter your PIN</div>
-            <div style={{fontSize:14, color:C.txtSecond, marginBottom:32}}>Enter your 4-digit PIN to continue</div>
+            <div style={{fontSize:20, fontWeight:700, color:C.txtPrimary, marginBottom:6}}>{t('enterYourPin')}</div>
+            <div style={{fontSize:14, color:C.txtSecond, marginBottom:32}}>{t('enter4DigitPin')}</div>
 
             {/* Dots */}
             <div className={shake ? 'shake' : ''}
@@ -682,7 +987,7 @@
             </div>
 
             <div style={{marginTop:28, fontSize:12, color:C.txtMuted}}>
-              Demo PIN:&nbsp;
+              {t('demoPin')}&nbsp;
               <span style={{fontFamily:'monospace', background:'#F3F4F6', border:'1px solid #E5E7EB',
                             padding:'2px 8px', borderRadius:6, color:'#374151'}}>
                 1234
@@ -697,6 +1002,7 @@
        SCREEN — HOME
     ════════════════════════════════════════ */
     function HomeScreen({ nav }) {
+      const t = useLang();
       const [cards]  = useState(Store.cards());
       const [shown, setShown] = useState({});
       const toggle = (id) => setShown(s=>({...s,[id]:!s[id]}));
@@ -707,7 +1013,7 @@
           <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
 
             <div style={{fontSize:15, fontWeight:500, color:C.txtPrimary, marginBottom:16}}>
-              Select payment method.
+              {t('selectPayment')}
             </div>
 
             {/* Card list */}
@@ -742,7 +1048,7 @@
                      viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
-                Add Card
+                {t('addCard')}
               </button>
             </div>
           </div>
@@ -755,6 +1061,7 @@
     ════════════════════════════════════════ */
     /* ── Transaction Detail Bottom Sheet ── */
     function TxDetailSheet({ tx, card, onClose }) {
+      const t = useLang();
       const [visible, setVisible] = useState(false);
       useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
 
@@ -769,14 +1076,14 @@
       const ref  = tx.ref || ('BUL-' + tx.id.slice(-6).toUpperCase());
 
       const rows = [
-        { label: 'Type',       value: isIn ? 'Money received' : 'Money sent' },
-        { label: 'Card',       value: `${card.name} •••• ${card.last4}` },
-        { label: isIn ? 'From' : 'To', value: tx.who },
-        { label: 'Amount',     value: `€ ${isIn?'+':'-'}${Math.abs(tx.amt).toFixed(2)}`, colored: true, isIn },
-        { label: 'Fee',        value: '€0.00', green: true },
-        { label: 'Status',     value: tx.st || 'Completed', green: true },
-        { label: 'Date',       value: fmtDate(tx.date) },
-        { label: 'Reference',  value: ref, mono: true },
+        { label: t('txType'),                  value: isIn ? t('moneyReceived') : t('moneySent') },
+        { label: t('txCard'),                  value: `${card.name} •••• ${card.last4}` },
+        { label: isIn ? t('txFrom') : t('txTo'), value: tx.who },
+        { label: t('txAmount'),                value: `€ ${isIn?'+':'-'}${Math.abs(tx.amt).toFixed(2)}`, colored: true, isIn },
+        { label: t('txFee'),                   value: '€0.00', green: true },
+        { label: t('txStatus'),                value: tx.st || 'Completed', green: true },
+        { label: t('txDate'),                  value: fmtDate(tx.date) },
+        { label: t('txReference'),             value: ref, mono: true },
       ];
 
       return (
@@ -866,7 +1173,7 @@
                   fontFamily:'Roboto,sans-serif',
                   boxShadow: C.btnShadow,
                 }}>
-                  Close
+                  {t('close')}
                 </button>
               </div>
             </div>
@@ -876,9 +1183,10 @@
     }
 
     function CardScreen({ nav, cid }) {
+      const t = useLang();
       const cards  = Store.cards();
       const card   = cards.find(c=>c.id===cid) || cards[0];
-      const txs    = Store.tx().filter(t=>t.cid===card.id);
+      const txs    = Store.tx().filter(tx=>tx.cid===card.id);
       const [showBal,setShowBal]         = useState(false);
       const [isFrozen, setIsFrozen]      = useState(false);
       const [selectedTx, setSelectedTx]  = useState(null);
@@ -897,12 +1205,12 @@
                      viewBox="0 0 24 24" stroke={isFrozen ? '#9CA3AF' : 'white'} strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                 </svg>
-                {isFrozen ? '❄ Card Frozen — Cannot Send' : 'Send Money'}
+                {isFrozen ? t('cardFrozenSend') : t('sendMoney')}
               </PrimaryBtn>
             </div>
 
             <div style={{fontSize:17, fontWeight:700, color:C.txtPrimary, marginBottom:12}}>
-              Past Transactions
+              {t('pastTransactions')}
             </div>
           </div>
 
@@ -912,24 +1220,26 @@
           }}>
             <WhiteBox style={{marginBottom:8}}>
               {txs.length > 0
-                ? txs.map((t,i)=>(
-                    <div key={t.id} style={i===txs.length-1?{borderBottom:'none'}:{}}>
-                      <TxRow tx={t} onClick={()=>setSelectedTx(t)}/>
+                ? txs.map((tx,i)=>(
+                    <div key={tx.id} style={i===txs.length-1?{borderBottom:'none'}:{}}>
+                      <TxRow tx={tx} onClick={()=>setSelectedTx(tx)}/>
                     </div>
                   ))
                 : <div style={{padding:'40px 16px', textAlign:'center', fontSize:14, color:C.txtMuted}}>
-                    No transactions yet
+                    {t('noTransactions')}
                   </div>}
             </WhiteBox>
           </div>
 
           {/* ── Bottom buttons ── */}
           <div style={{
-            padding:'12px 16px 20px',
+            padding:'12px 16px',
+            paddingBottom:'max(20px, env(safe-area-inset-bottom, 20px))',
             display:'flex', gap:12,
             flexShrink:0,
             background:C.pageBg,
             position:'relative',
+            borderTop:'1px solid '+C.border,
           }}>
             <OutlineBtn onClick={()=>nav('home')}
               icon={
@@ -938,7 +1248,7 @@
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
                 </svg>
               }>
-              Go Back
+              {t('goBack')}
             </OutlineBtn>
             <button
               onClick={()=>setIsFrozen(f=>!f)}
@@ -962,7 +1272,7 @@
                       <path strokeLinecap="round" strokeLinejoin="round"
                         d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
                     </svg>
-                    Unfreeze Card
+                    {t('unfreezeCard')}
                   </>
                 : <>
                     <svg xmlns="http://www.w3.org/2000/svg" style={{width:15,height:15}} fill="none"
@@ -970,7 +1280,7 @@
                       <rect x="5" y="11" width="14" height="10" rx="2"/>
                       <path strokeLinecap="round" d="M8 11V7a4 4 0 018 0v4"/>
                     </svg>
-                    Freeze Card
+                    {t('freezeCard')}
                   </>}
             </button>
           </div>
@@ -991,6 +1301,7 @@
        SCREEN — SEND MONEY
     ════════════════════════════════════════ */
     function SendScreen({ nav, cid }) {
+      const t = useLang();
       const cards  = Store.cards();
       const card   = cards.find(c=>c.id===cid) || cards[0];
       const [recip,  setRecip]  = useState(null);
@@ -1005,8 +1316,8 @@
       const go = () => {
         if (!recip) return;
         const n = parseFloat(amt);
-        if (!n || n<=0)    { setAmtErr('Please enter a valid amount.'); return; }
-        if (n>card.bal)    { setAmtErr('Insufficient balance. Available: '+fmtEur(card.bal)); return; }
+        if (!n || n<=0)    { setAmtErr(t('pleaseEnterValidAmount')); return; }
+        if (n>card.bal)    { setAmtErr(t('insufficientBalance')+fmtEur(card.bal)); return; }
         Store.setDraft({ card, recip, amt:n, fee:0, ref:genRef(), ts:new Date().toISOString() });
         nav('confirm');
       };
@@ -1014,16 +1325,16 @@
       const canGo = recip && amt && parseFloat(amt) > 0;
 
       return (
-        <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg}}>
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg}}>
           <AppHeader onBack={()=>nav('card',{cid:card.id})}/>
 
-          <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
+          <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
 
             {/* From card */}
             <div style={{
               background: GRAD[card.grad], borderRadius:14,
-              padding:'14px 16px', marginBottom:20,
-              display:'flex', alignItems:'center', gap:12,
+              padding:'14px 18px', marginBottom:20,
+              display:'flex', alignItems:'center', gap:16,
               boxShadow: C.cardShadow, position:'relative', overflow:'hidden',
             }}>
               <div style={{position:'absolute',width:80,height:80,borderRadius:'50%',
@@ -1033,13 +1344,13 @@
                 <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
               </svg>
               <div>
-                <div style={{fontSize:11, color:'rgba(255,255,255,.65)', fontWeight:500}}>Sending from</div>
+                <div style={{fontSize:11, color:'rgba(255,255,255,.65)', fontWeight:500}}>{t('sendingFrom')}</div>
                 <div style={{fontSize:14, fontWeight:600, color:'#fff'}}>{card.name} •••• {card.last4}</div>
               </div>
             </div>
 
             {/* Recipients */}
-            <SectionLabel>Choose Recipient</SectionLabel>
+            <SectionLabel>{t('chooseRecipient')}</SectionLabel>
             {/* Search */}
             <div style={{position:'relative', marginBottom:10}}>
               <svg xmlns="http://www.w3.org/2000/svg"
@@ -1048,7 +1359,7 @@
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
               <input value={search} onChange={e=>setSearch(e.target.value)}
-                     placeholder="Search name or number…"
+                     placeholder={t('searchNameOrNumber')}
                      style={{
                        width:'100%', paddingLeft:36, paddingRight:14, paddingTop:11, paddingBottom:11,
                        background:C.white, border:'1px solid '+C.border, borderRadius:12,
@@ -1062,25 +1373,27 @@
                 <button key={r.id} onClick={()=>setRecip(r)}
                         className="recip-row"
                         style={{
-                          width:'100%', display:'flex', alignItems:'center', gap:12,
-                          padding:'12px 16px', textAlign:'left',
+                          width:'100%', display:'flex', alignItems:'center', gap:14,
+                          padding:'14px 16px', textAlign:'left',
+                          border:'none',
                           borderBottom: i<filtered.length-1 ? '1px solid '+C.rowBorder : 'none',
                           background: recip?.id===r.id ? '#EFF6FF' : C.white,
-                          borderLeft: recip?.id===r.id ? '3px solid #2563EB' : '3px solid transparent',
+                          boxShadow: recip?.id===r.id ? 'inset 3px 0 0 #2563EB' : 'none',
                           cursor:'pointer', fontFamily:'Roboto,sans-serif',
+                          outline:'none',
                         }}>
                   <div style={{
-                    width:40,height:40,borderRadius:'50%',flexShrink:0,
+                    width:42,height:42,borderRadius:'50%',flexShrink:0,
                     background:C.avatarBg, color:C.avatarTxt,
                     display:'flex',alignItems:'center',justifyContent:'center',
                     fontSize:13, fontWeight:600,
                   }}>{r.ini}</div>
                   <div style={{flex:1, minWidth:0}}>
                     <div style={{fontSize:14,fontWeight:600,color:C.txtPrimary}}>{r.name}</div>
-                    <div style={{fontSize:12,color:C.txtMuted,marginTop:2}}>{r.phone}</div>
+                    <div style={{fontSize:12,color:C.txtMuted,marginTop:3}}>{r.phone}</div>
                   </div>
                   {recip?.id===r.id && (
-                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18,flexShrink:0}} fill="none"
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:20,height:20,flexShrink:0}} fill="none"
                          viewBox="0 0 24 24" stroke="#2563EB" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -1090,7 +1403,7 @@
             </WhiteBox>
 
             {/* Amount */}
-            <SectionLabel>Amount to Send</SectionLabel>
+            <SectionLabel>{t('amountToSend')}</SectionLabel>
             <WhiteBox style={{marginBottom:8}}>
               <div style={{padding:'14px 16px', display:'flex', alignItems:'center', gap:8}}>
                 <span style={{fontSize:24, fontWeight:300, color:'#D1D5DB'}}>€</span>
@@ -1109,24 +1422,34 @@
             <WhiteBox style={{marginBottom:24}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
                            padding:'12px 16px', borderBottom:'1px solid '+C.rowBorder}}>
-                <span style={{fontSize:14,color:C.txtSecond}}>Fee</span>
-                <span style={{fontSize:14,fontWeight:600,color:'#16A34A'}}>€0.00 — No fee!</span>
+                <span style={{fontSize:14,color:C.txtSecond}}>{t('fee')}</span>
+                <span style={{fontSize:14,fontWeight:600,color:'#16A34A'}}>{t('noFee')}</span>
               </div>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px'}}>
-                <span style={{fontSize:14,color:C.txtSecond}}>Estimated delivery</span>
-                <span style={{fontSize:14,fontWeight:600,color:C.txtPrimary}}>Instant ⚡</span>
+                <span style={{fontSize:14,color:C.txtSecond}}>{t('estimatedDelivery')}</span>
+                <span style={{fontSize:14,fontWeight:600,color:C.txtPrimary}}>{t('instant')}</span>
               </div>
             </WhiteBox>
 
-            <PrimaryBtn onClick={go} disabled={!canGo}>Continue →</PrimaryBtn>
+          </div>
+
+          {/* Sticky bottom action bar */}
+          <div style={{
+            padding:'12px 16px',
+            paddingBottom:'max(20px, env(safe-area-inset-bottom, 20px))',
+            background:C.pageBg,
+            flexShrink:0,
+            borderTop:'1px solid '+C.border,
+          }}>
+            <PrimaryBtn onClick={go} disabled={!canGo}>{t('continueBtn')}</PrimaryBtn>
             <button onClick={()=>nav('card',{cid:card.id})}
                     style={{
-                      width:'100%', marginTop:12, padding:'12px',
+                      width:'100%', marginTop:10, padding:'12px',
                       background:'transparent', border:'none',
                       fontSize:14, fontWeight:500, color:C.txtMuted,
                       cursor:'pointer', fontFamily:'Roboto,sans-serif',
                     }}>
-              Cancel
+              {t('cancel')}
             </button>
           </div>
         </div>
@@ -1137,6 +1460,7 @@
        SCREEN — CONFIRM
     ════════════════════════════════════════ */
     function ConfirmScreen({ nav }) {
+      const t = useLang();
       const draft = Store.draft();
       const [showPin,  setShowPin]  = useState(false);
       const [pinVisible, setPinVisible] = useState(false);
@@ -1170,17 +1494,17 @@
       };
 
       const rows = [
-        { label:'From card',  value:`${draft.card.name} •••• ${draft.card.last4}` },
-        { label:'Amount',     value:fmtEur(draft.amt) },
-        { label:'Fee',        value:'€0.00', green:true },
-        { label:'Total',      value:fmtEur(draft.amt), bold:true },
+        { label:t('fromCard'), value:`${draft.card.name} •••• ${draft.card.last4}` },
+        { label:t('amount'),   value:fmtEur(draft.amt) },
+        { label:t('txFee'),    value:'€0.00', green:true },
+        { label:t('total'),    value:fmtEur(draft.amt), bold:true },
       ];
 
       return (
-        <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg,position:'relative'}}>
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
           <AppHeader onBack={()=>nav('send',{cid:draft.card.id})}/>
 
-          <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
+          <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
 
             {/* Recipient tile */}
             <WhiteBox style={{marginBottom:16, padding:'16px'}}>
@@ -1194,12 +1518,12 @@
                   {draft.recip.ini}
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:12,color:C.txtMuted}}>Paying</div>
+                  <div style={{fontSize:12,color:C.txtMuted}}>{t('paying')}</div>
                   <div style={{fontSize:16,fontWeight:700,color:C.txtPrimary}}>{draft.recip.name}</div>
                   <div style={{fontSize:12,color:C.txtMuted,marginTop:2}}>{draft.recip.phone}</div>
                 </div>
-                <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:11,color:C.txtMuted}}>Amount</div>
+                  <div style={{textAlign:'right'}}>
+                  <div style={{fontSize:11,color:C.txtMuted}}>{t('amount')}</div>
                   <div style={{fontSize:20,fontWeight:700,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
                 </div>
               </div>
@@ -1227,22 +1551,31 @@
             </WhiteBox>
 
             {/* Biometric */}
-            <BiometricBtn label="Use face / fingerprint to confirm"/>
-            <div style={{textAlign:'center',fontSize:12,color:C.txtMuted,marginTop:8,marginBottom:20}}>
-              Not available in this web prototype
+            <BiometricBtn labelKey="useBiometricConfirm"/>
+            <div style={{textAlign:'center',fontSize:12,color:C.txtMuted,marginTop:8}}>
+              {t('notAvailableProto')}
             </div>
+          </div>
 
+          {/* Sticky bottom action bar */}
+          <div style={{
+            padding:'12px 16px',
+            paddingBottom:'max(20px, env(safe-area-inset-bottom, 20px))',
+            background:C.pageBg,
+            flexShrink:0,
+            borderTop:'1px solid '+C.border,
+          }}>
             <PrimaryBtn onClick={openPin} loading={busy}>
-              {!busy && 'Confirm with PIN'}
+              {!busy && t('confirmWithPin')}
             </PrimaryBtn>
             <button onClick={()=>nav('send',{cid:draft.card.id})}
                     style={{
-                      width:'100%', marginTop:12, padding:'12px',
+                      width:'100%', marginTop:10, padding:'12px',
                       background:'transparent', border:'none',
                       fontSize:14, fontWeight:500, color:C.txtMuted,
                       cursor:'pointer', fontFamily:'Roboto,sans-serif',
                     }}>
-              Cancel
+              {t('cancel')}
             </button>
           </div>
 
@@ -1259,6 +1592,7 @@
 
     /* ── Confirm PIN bottom sheet ── */
     function ConfirmPinSheet({ visible, onSuccess, onClose, draft }) {
+      const t = useLang();
       const [digits, setDigits] = useState('');
       const [err,    setErr]    = useState('');
       const [shake,  setShake]  = useState(false);
@@ -1274,7 +1608,7 @@
               onSuccess();
             } else {
               setShake(true);
-              setErr('Incorrect PIN. Please try again.');
+              setErr(t('incorrectPin'));
               setTimeout(() => { setDigits(''); setShake(false); }, 600);
             }
           }, 200);
@@ -1323,7 +1657,7 @@
                   {draft.recip.ini}
                 </div>
                 <div>
-                  <div style={{fontSize:11,color:C.txtMuted}}>Paying</div>
+                  <div style={{fontSize:11,color:C.txtMuted}}>{t('paying')}</div>
                   <div style={{fontSize:13,fontWeight:600,color:C.txtPrimary}}>{draft.recip.name}</div>
                 </div>
               </div>
@@ -1332,10 +1666,10 @@
 
             {/* Title */}
             <div style={{textAlign:'center',fontSize:16,fontWeight:700,color:C.txtPrimary,marginBottom:4}}>
-              Enter your PIN
+              {t('enterYourPin')}
             </div>
             <div style={{textAlign:'center',fontSize:13,color:C.txtMuted,marginBottom:20}}>
-              Confirm this payment with your PIN
+              {t('confirmPaymentPin')}
             </div>
 
             {/* Dots */}
@@ -1380,27 +1714,28 @@
        SCREEN — SUCCESS
     ════════════════════════════════════════ */
     function SuccessScreen({ nav }) {
+      const t = useLang();
       const draft = Store.draft();
       useEffect(()=>()=>Store.delDraft(),[]);
       if (!draft) { nav('home'); return null; }
 
       const dateStr = new Date().toLocaleString('en-GB',{
-        day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'
+        day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'
       });
 
       const rows = [
-        { label:'Amount sent', value:fmtEur(draft.amt), green:true, bold:true },
-        { label:'To',          value:draft.recip.name },
-        { label:'From card',   value:'•••• '+draft.card.last4 },
-        { label:'Fee',         value:'€0.00', green:true },
-        { label:'Reference',   value:draft.ref, mono:true },
-        { label:'Date & Time', value:dateStr },
+        { label:t('amountSent'),  value:fmtEur(draft.amt), green:true, bold:true },
+        { label:t('to'),          value:draft.recip.name },
+        { label:t('fromCard'),    value:'•••• '+draft.card.last4 },
+        { label:t('txFee'),       value:'€0.00', green:true },
+        { label:t('reference'),   value:draft.ref, mono:true },
+        { label:t('dateTime'),    value:dateStr },
       ];
 
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg}}>
           <AppHeader/>
-          <div className="scroll-body" style={{padding:'32px 20px 32px', display:'flex', flexDirection:'column', alignItems:'center'}}>
+          <div className="scroll-body" style={{padding:'32px 20px', paddingBottom:'max(32px, env(safe-area-inset-bottom, 32px))', display:'flex', flexDirection:'column', alignItems:'center'}}>
 
             {/* Checkmark */}
             <div style={{
@@ -1418,8 +1753,8 @@
                 </svg>
               </div>
             </div>
-            <div style={{fontSize:20,fontWeight:700,color:C.txtPrimary,marginBottom:4}}>Payment Sent!</div>
-            <div style={{fontSize:14,color:C.txtMuted,marginBottom:24}}>Your payment was successful</div>
+            <div style={{fontSize:20,fontWeight:700,color:C.txtPrimary,marginBottom:4}}>{t('paymentSent')}</div>
+            <div style={{fontSize:14,color:C.txtMuted,marginBottom:24}}>{t('paymentSuccessful')}</div>
 
             {/* Receipt */}
             <WhiteBox style={{width:'100%',marginBottom:20}}>
@@ -1429,7 +1764,7 @@
               }}>
                 <div style={{fontSize:11,fontWeight:600,color:C.txtMuted,
                              textAlign:'center',textTransform:'uppercase',letterSpacing:'.07em'}}>
-                  Receipt
+                  {t('receipt')}
                 </div>
               </div>
               {rows.map(({label,value,green,bold,mono},i)=>(
@@ -1451,7 +1786,7 @@
               ))}
             </WhiteBox>
 
-            <PrimaryBtn onClick={()=>nav('home')}>Done</PrimaryBtn>
+            <PrimaryBtn onClick={()=>nav('home')}>{t('done')}</PrimaryBtn>
           </div>
         </div>
       );
@@ -1461,6 +1796,7 @@
        SCREEN — ADD CARD
     ════════════════════════════════════════ */
     function AddCardScreen({ nav }) {
+      const t = useLang();
       const [f,setF]      = useState({num:'',name:'',exp:'',cvv:''});
       const [errs,setErrs]= useState({});
       const [busy,setBusy]= useState(false);
@@ -1476,10 +1812,10 @@
 
       const validate = () => {
         const e={};
-        if (f.num.replace(/\s/g,'').length<16) e.num='Enter a valid 16-digit number';
-        if (!f.name.trim())                    e.name='Enter cardholder name';
-        if (f.exp.length<5)                    e.exp='Enter expiry MM/YY';
-        if (f.cvv.length<3)                    e.cvv='Enter 3-digit CVV';
+        if (f.num.replace(/\s/g,'').length<16) e.num=t('invalidCardNum');
+        if (!f.name.trim())                    e.name=t('enterCardholderName');
+        if (f.exp.length<5)                    e.exp=t('enterExpiry');
+        if (f.cvv.length<3)                    e.cvv=t('enterCvv');
         setErrs(e); return Object.keys(e).length===0;
       };
 
@@ -1516,21 +1852,21 @@
           <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
 
             {/* Add methods */}
-            <SectionLabel>Add Card Via</SectionLabel>
+            <SectionLabel>{t('addCardVia')}</SectionLabel>
             <div style={{display:'flex', gap:12, marginBottom:24}}>
-              {[{icon:'📷',label:'Photo'},{icon:'📡',label:'NFC Scan'}].map(m=>(
-                <div key={m.label} style={{
+              {[{icon:'📷',labelKey:'photo'},{icon:'📡',labelKey:'nfcScan'}].map(m=>(
+                <div key={m.labelKey} style={{
                   flex:1, background:C.white, borderRadius:12, padding:'12px 8px',
                   display:'flex', flexDirection:'column', alignItems:'center', gap:4,
                   opacity:.38, border:'1px solid '+C.border, position:'relative',
                 }}>
                   <span style={{fontSize:22}}>{m.icon}</span>
-                  <span style={{fontSize:12,color:C.txtMuted}}>{m.label}</span>
+                  <span style={{fontSize:12,color:C.txtMuted}}>{t(m.labelKey)}</span>
                   <span style={{
                     position:'absolute', top:-8, right:-8,
                     background:C.btnPrimary, color:'#fff', fontSize:9,
                     padding:'2px 6px', borderRadius:10, fontWeight:600,
-                  }}>App only</span>
+                  }}>{t('appOnly')}</span>
                 </div>
               ))}
               <div style={{
@@ -1539,35 +1875,35 @@
                 border:'2px solid '+C.btnPrimary,
               }}>
                 <span style={{fontSize:22}}>⌨️</span>
-                <span style={{fontSize:12, fontWeight:600, color:C.btnPrimary}}>Manual</span>
+                <span style={{fontSize:12, fontWeight:600, color:C.btnPrimary}}>{t('manual')}</span>
               </div>
             </div>
 
-            <SectionLabel>Card Details</SectionLabel>
+            <SectionLabel>{t('cardDetails')}</SectionLabel>
 
             <div style={{marginBottom:16}}>
-              <label style={labelStyle}>Card Number</label>
+              <label style={labelStyle}>{t('cardNumber')}</label>
               <input value={f.num} onChange={upd('num')} placeholder="0000 0000 0000 0000"
                      style={fieldStyle('num')}/>
               {errs.num && <div style={{fontSize:12,color:'#EF4444',marginTop:4}}>{errs.num}</div>}
             </div>
 
             <div style={{marginBottom:16}}>
-              <label style={labelStyle}>Cardholder Name</label>
-              <input value={f.name} onChange={upd('name')} placeholder="Full name as on card"
+              <label style={labelStyle}>{t('cardholderName')}</label>
+              <input value={f.name} onChange={upd('name')} placeholder={t('fullNameOnCard')}
                      style={fieldStyle('name')}/>
               {errs.name && <div style={{fontSize:12,color:'#EF4444',marginTop:4}}>{errs.name}</div>}
             </div>
 
             <div style={{display:'flex', gap:12, marginBottom:24}}>
               <div style={{flex:1}}>
-                <label style={labelStyle}>Expiry</label>
+                <label style={labelStyle}>{t('expiry')}</label>
                 <input value={f.exp} onChange={upd('exp')} placeholder="MM/YY" inputMode="numeric"
                        style={fieldStyle('exp')}/>
                 {errs.exp && <div style={{fontSize:12,color:'#EF4444',marginTop:4}}>{errs.exp}</div>}
               </div>
               <div style={{flex:1}}>
-                <label style={labelStyle}>CVV</label>
+                <label style={labelStyle}>{t('cvv')}</label>
                 <input value={f.cvv} onChange={upd('cvv')} placeholder="•••"
                        inputMode="numeric" type="password"
                        style={fieldStyle('cvv')}/>
@@ -1576,7 +1912,7 @@
             </div>
 
             <PrimaryBtn onClick={add} loading={busy}>
-              {!busy && 'Add Card'}
+              {!busy && t('addCard')}
             </PrimaryBtn>
             <button onClick={()=>nav('home')}
                     style={{
@@ -1585,7 +1921,7 @@
                       fontSize:14, color:C.txtMuted, cursor:'pointer',
                       fontFamily:'Roboto,sans-serif',
                     }}>
-              Cancel
+              {t('cancel')}
             </button>
           </div>
         </div>
@@ -1596,7 +1932,9 @@
        APP — ROUTER
     ════════════════════════════════════════ */
     function App() {
-      const [route, setRoute] = useState({ page:'login', p:{} });
+      const [route, setRoute] = useState({ page:'lang', p:{} });
+      const [lang,  setLang]  = useState('en');
+
       const nav = useCallback((page,p={})=>{
         setRoute({page,p});
         document.querySelector('.scroll-body')?.scrollTo(0,0);
@@ -1604,6 +1942,7 @@
 
       const screen = (()=>{
         switch(route.page){
+          case 'lang':     return <LanguageScreen nav={nav} onLangSelect={setLang}/>;
           case 'login':    return <LoginScreen    nav={nav}/>;
           case 'pin':      return <PinScreen      nav={nav}/>;
           case 'home':     return <HomeScreen     nav={nav}/>;
@@ -1616,7 +1955,11 @@
         }
       })();
 
-      return <div className="phone-shell">{screen}</div>;
+      return (
+        <LangContext.Provider value={lang}>
+          <div className="phone-shell">{screen}</div>
+        </LangContext.Provider>
+      );
     }
 
     ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
