@@ -203,7 +203,7 @@
     const SEED_TX = [
       { id:'t1', cid:'c2', who:'Петър Георгиев',     ini:'ПГ', amt:10.00,   dir:'out', date:'2026-01-14', st:'Completed' },
       { id:'t2', cid:'c2', who:'Андреа Цветанова', ini:'АЦ', amt:24.50,   dir:'out', date:'2026-01-03', st:'Completed' },
-      { id:'t3', cid:'c2', who:'Иван Петров',         ini:'ИП', amt:82.75,   dir:'out', date:'2025-12-22', st:'Completed' },
+      { id:'t3', cid:'c2', who:'Борис Цветанов',         ini:'БЦ', amt:100,   dir:'in', date:'2025-12-22', st:'Completed' },
       { id:'t4', cid:'c1', who:'Борис Цветанов',    ini:'БЦ', amt:200.00, dir:'in',  date:'2026-01-15', st:'Completed' },
       { id:'t5', cid:'c1', who:'Елена Шукерска',       ini:'ЕШ', amt:120.00,  dir:'out', date:'2026-01-10', st:'Completed' },
       { id:'t6', cid:'c1', who:'Иван Иванов',       ini:'ИИ', amt:50.00,   dir:'in', date:'2025-12-30', st:'Completed' },
@@ -812,13 +812,7 @@
               <div style={{fontSize:13, color:C.txtMuted, marginTop:4}}>Digital Wallet</div>
             </div>
 
-            {/* Heading */}
-            <div style={{
-              fontSize:18, fontWeight:700, color:C.txtPrimary,
-              textAlign:'center', marginBottom:24,
-            }}>
-              Choose language&nbsp;/&nbsp;Избери език
-            </div>
+            
 
             {/* Language options */}
             <div style={{display:'flex', flexDirection:'column', gap:14, marginBottom:'auto'}}>
