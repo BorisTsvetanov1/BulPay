@@ -1335,6 +1335,12 @@
 
       const canGo = recip && amt && parseFloat(amt) > 0;
 
+      useEffect(() => {
+        if (recip && amountSectionRef.current) {
+          amountSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, [recip]);
+
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
           <AppHeader onBack={()=>nav('card',{cid:card.id})}/>
