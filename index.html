@@ -33,6 +33,7 @@
       min-height: 0;
       font-family: 'Roboto', sans-serif;
       background: #EEF2F8;
+      font-size: 18.4px; /* base +15% for mobile readability */
     }
     #root {
       height: 100%;
@@ -66,10 +67,11 @@
       }
     }
 
-    /* Scroll area */
+    /* Scroll area - prevent content from breaking out */
     .scroll-body {
       flex: 1;
       min-height: 0;
+      min-width: 0;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -125,7 +127,7 @@
     }
     .freeze-pulse { animation: icePulse 2s ease-in-out infinite; }
 
-    /* PIN keys */
+    /* PIN keys - font +15% */
     .pin-key {
       width: 74px; height: 74px;
       border-radius: 50%;
@@ -135,7 +137,7 @@
       cursor: pointer;
       user-select: none;
       transition: transform .12s, background .1s;
-      font-size: 22px; font-weight: 400; color: #111827;
+      font-size: 25px; font-weight: 400; color: #111827;
       border: none; outline: none;
     }
     .pin-key:active { transform: scale(.87); background: #EFF6FF; }
@@ -323,12 +325,12 @@
         selectPayment:'Изберете метод на плащане.',
         addCard:'Добави карта',
         sendMoney:'Изпрати пари',
-        cardFrozenSend:'❄ Замразена — Не може да изпращате',
+        cardFrozenSend:'Замразена - Не може да изпращате',
         pastTransactions:'Минали транзакции',
         noTransactions:'Все още няма транзакции',
         goBack:'Назад',
-        freezeCard:'Замрази картата',
-        unfreezeCard:'Размрази картата',
+        freezeCard:'Замрази карта',
+        unfreezeCard:'Размрази карта',
         cardFrozenLabel:'❄ Картата е замразена',
         txType:'Тип', txCard:'Карта', txFrom:'От', txTo:'До',
         txAmount:'Сума', txFee:'Такса', txStatus:'Статус', txDate:'Дата',
@@ -411,7 +413,7 @@
             : <div style={{width:44}}/>}
 
           <span style={{
-            color: C.txtPrimary, fontSize: 17, fontWeight: 700,
+            color: C.txtPrimary, fontSize: 20, fontWeight: 700,
             position: 'absolute', left: '50%', transform: 'translateX(-50%)',
             pointerEvents: 'none',
           }}>{t('appName')}</span>
@@ -420,7 +422,7 @@
             <button style={{
               background:'none', border:'none', cursor:'pointer',
               padding:'12px 8px', color: C.txtMuted,
-              fontSize:14, fontWeight:500, fontFamily:'Roboto,sans-serif',
+              fontSize:15, fontWeight:500, fontFamily:'Roboto,sans-serif',
               minHeight:44, display:'flex', alignItems:'center',
             }}>{t('help')}</button>
             <button style={{
@@ -493,12 +495,12 @@
               <rect x="2" y="5" width="20" height="14" rx="2"/>
               <path d="M2 10h20"/>
             </svg>
-            <span style={{fontWeight:600, fontSize:15, letterSpacing:'.02em'}}>{card.name}</span>
+            <span style={{fontWeight:600, fontSize:17, letterSpacing:'.02em'}}>{card.name}</span>
           </div>
 
           {/* Masked number */}
           <div style={{
-            fontFamily:'monospace', fontSize:15, letterSpacing:'.15em',
+            fontFamily:'monospace', fontSize:17, letterSpacing:'.15em',
             opacity:.88, marginBottom:18, position:'relative', zIndex:1,
           }}>
             {'•••• •••• •••• ' + card.last4}
@@ -522,7 +524,7 @@
                 color:'#fff',
                 borderRadius:20,
                 padding:'5px 16px',
-                fontSize:13,
+                fontSize:15,
                 fontWeight:500,
                 cursor:'pointer',
                 backdropFilter:'blur(4px)',
@@ -553,7 +555,7 @@
                 backfaceVisibility:'hidden',
                 whiteSpace:'nowrap',
               }}>
-              <div style={{fontWeight:700, fontSize:13, color:'#fff', letterSpacing:'.01em'}}>
+              <div style={{fontWeight:700, fontSize:15, color:'#fff', letterSpacing:'.01em'}}>
                 {fmtEur(card.bal)}
               </div>
             </div>
@@ -586,7 +588,7 @@
                 border:'1px solid rgba(147,197,253,.7)',
                 borderRadius:20,
                 padding:'5px 16px',
-                fontSize:13, fontWeight:600,
+                fontSize:15, fontWeight:600,
                 color:'#1e40af',
                 letterSpacing:'.03em',
               }}>
@@ -609,7 +611,7 @@
                   borderRadius: 16,
                   padding: '15px 20px',
                   fontWeight: 600,
-                  fontSize: 15,
+                  fontSize: 17,
                   width: '100%',
                   border: 'none',
                   cursor: disabled ? 'not-allowed' : 'pointer',
@@ -631,7 +633,7 @@
                 style={{
                   flex:1, background:C.white, border:'1px solid '+C.border,
                   borderRadius:14, padding:'13px 10px',
-                  fontSize:14, fontWeight:500, color:'#374151',
+                  fontSize:16, fontWeight:500, color:'#374151',
                   cursor:'pointer', display:'flex', alignItems:'center',
                   justifyContent:'center', gap:6, fontFamily:'Roboto,sans-serif',
                   transition:'background .12s',
@@ -667,12 +669,12 @@
               <path d="M18 11 C20.2 9.7 22.5 9 25 9 C32.7 9 39 15.3 39 24"/>
               <path d="M11 11 C8 14 6 18.5 6 23"/>
             </svg>
-            <span style={{fontSize:14, fontWeight:500, color:'#6B7280'}}>{t(labelKey)}</span>
+            <span style={{fontSize:16, fontWeight:500, color:'#6B7280'}}>{t(labelKey)}</span>
           </button>
           {toast && (
             <div style={{
               position:'absolute', bottom:-36, left:'50%', transform:'translateX(-50%)',
-              background:'#111827', color:'#fff', fontSize:12, padding:'7px 14px',
+              background:'#111827', color:'#fff', fontSize:14, padding:'7px 14px',
               borderRadius:8, whiteSpace:'nowrap', zIndex:20, pointerEvents:'none',
             }}>
               {t('notAvailableProto')}
@@ -699,21 +701,21 @@
             width:40, height:40, borderRadius:'50%', flexShrink:0,
             background:C.avatarBg, color:C.avatarTxt,
             display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:13, fontWeight:600, marginRight:12,
+            fontSize:15, fontWeight:600, marginRight:12,
           }}>
             {ini}
           </div>
           {/* Name + date */}
           <div style={{flex:1, minWidth:0}}>
-            <div style={{fontSize:14, fontWeight:600, color:C.txtPrimary,
+            <div style={{fontSize:16, fontWeight:600, color:C.txtPrimary,
                          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
               {tx.who}
             </div>
-            <div style={{fontSize:12, color:C.txtMuted, marginTop:2}}>{fmtDate(tx.date)}</div>
+            <div style={{fontSize:16, color:C.txtMuted, marginTop:2}}>{fmtDate(tx.date)}</div>
           </div>
           {/* Amount + chevron */}
           <div style={{display:'flex', alignItems:'center', gap:4, marginLeft:8, flexShrink:0}}>
-            <span style={{fontSize:14, fontWeight:700,
+            <span style={{fontSize:16, fontWeight:700,
                           color: isIn ? '#16A34A' : C.txtPrimary}}>
               € {isIn ? '+' : '-'}{Math.abs(tx.amt).toFixed(2)}
             </span>
@@ -728,7 +730,7 @@
 
     /* ── Section Label ── */
     const SectionLabel = ({children}) => (
-      <div style={{fontSize:11, fontWeight:600, color:C.txtMuted,
+      <div style={{fontSize:13, fontWeight:600, color:C.txtMuted,
                    textTransform:'uppercase', letterSpacing:'.07em', marginBottom:10}}>
         {children}
       </div>
@@ -807,8 +809,8 @@
                   <path d="M2 10h20"/>
                 </svg>
               </div>
-              <div style={{fontSize:24, fontWeight:700, color:C.txtPrimary}}>BulPay</div>
-              <div style={{fontSize:13, color:C.txtMuted, marginTop:4}}>Digital Wallet</div>
+              <div style={{fontSize:28, fontWeight:700, color:C.txtPrimary}}>BulPay</div>
+              <div style={{fontSize:15, color:C.txtMuted, marginTop:4}}>Digital Wallet</div>
             </div>
 
             
@@ -831,8 +833,8 @@
                   )}
                 </div>
                 <div style={{display:'flex', alignItems:'center', gap:10}}>
-                  <span style={{fontSize:22}}>🇬🇧</span>
-                  <span style={{fontSize:16, fontWeight:600, color:C.txtPrimary}}>English</span>
+                  <span style={{fontSize:25}}>🇬🇧</span>
+                  <span style={{fontSize:18, fontWeight:600, color:C.txtPrimary}}>English</span>
                 </div>
               </button>
 
@@ -851,8 +853,8 @@
                   )}
                 </div>
                 <div style={{display:'flex', alignItems:'center', gap:10}}>
-                  <span style={{fontSize:22}}>🇧🇬</span>
-                  <span style={{fontSize:16, fontWeight:600, color:C.txtPrimary}}>Български</span>
+                  <span style={{fontSize:25}}>🇧🇬</span>
+                  <span style={{fontSize:18, fontWeight:600, color:C.txtPrimary}}>Български</span>
                 </div>
               </button>
             </div>
@@ -893,27 +895,27 @@
                   <path d="M2 10h20"/>
                 </svg>
               </div>
-              <div style={{fontSize:24, fontWeight:700, color:C.txtPrimary}}>BulPay</div>
-              <div style={{fontSize:13, color:C.txtMuted, marginTop:4}}>{t('digitalWallet')}</div>
-              <div style={{fontSize:16, fontWeight:500, color:'#374151', marginTop:14}}>
+              <div style={{fontSize:28, fontWeight:700, color:C.txtPrimary}}>BulPay</div>
+              <div style={{fontSize:15, color:C.txtMuted, marginTop:4}}>{t('digitalWallet')}</div>
+              <div style={{fontSize:18, fontWeight:500, color:'#374151', marginTop:14}}>
                 {greet(t)}
               </div>
             </div>
 
             <BiometricBtn labelKey="useBiometric"/>
-            <div style={{textAlign:'center', fontSize:12, color:C.txtMuted, marginTop:8, marginBottom:24}}>
+            <div style={{textAlign:'center', fontSize:14, color:C.txtMuted, marginTop:8, marginBottom:24}}>
               {t('notAvailableProto')}
             </div>
 
             {/* Divider */}
             <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:20}}>
               <div style={{flex:1, height:1, background:C.border}}/>
-              <span style={{fontSize:12, color:C.txtMuted, fontWeight:500}}>{t('or')}</span>
+              <span style={{fontSize:16, color:C.txtMuted, fontWeight:500}}>{t('or')}</span>
               <div style={{flex:1, height:1, background:C.border}}/>
             </div>
 
             <PrimaryBtn onClick={()=>nav('pin')}>{t('continueWithPin')}</PrimaryBtn>
-            <div style={{textAlign:'center', fontSize:12, color:C.txtMuted, marginTop:10}}>
+            <div style={{textAlign:'center', fontSize:14, color:C.txtMuted, marginTop:10}}>
               {t('pinSecureWallet')}
             </div>
           </div>
@@ -953,7 +955,7 @@
           <AppHeader onBack={()=>nav('login')}/>
           <div style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', padding:'36px 24px 28px'}}>
 
-            <div style={{fontSize:20, fontWeight:700, color:C.txtPrimary, marginBottom:6}}>{t('enterYourPin')}</div>
+            <div style={{fontSize:22, fontWeight:700, color:C.txtPrimary, marginBottom:6}}>{t('enterYourPin')}</div>
             <div style={{fontSize:14, color:C.txtSecond, marginBottom:32}}>{t('enter4DigitPin')}</div>
 
             {/* Dots */}
@@ -964,7 +966,7 @@
               ))}
             </div>
             <div style={{
-              height:20, fontSize:13, color:'#EF4444', marginBottom:28, textAlign:'center',
+              height:20, fontSize:15, color:'#EF4444', marginBottom:28, textAlign:'center',
               opacity: err ? 1 : 0,
             }}>
               {err||'·'}
@@ -974,8 +976,8 @@
             <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16}}>
               {['1','2','3','4','5','6','7','8','9'].map(k=>(
                 <button key={k} className="pin-key" onClick={()=>push(k)}>
-                  <div style={{fontSize:22}}>{k}</div>
-                  <div style={{fontSize:8, color:C.txtMuted}}>{letters[k]||''}</div>
+                  <div style={{fontSize:25}}>{k}</div>
+                  <div style={{fontSize:9, color:C.txtMuted}}>{letters[k]||''}</div>
                 </button>
               ))}
               <div/>
@@ -989,7 +991,7 @@
               </button>
             </div>
 
-            <div style={{marginTop:28, fontSize:12, color:C.txtMuted}}>
+            <div style={{marginTop:28, fontSize:16, color:C.txtMuted}}>
               {t('demoPin')}&nbsp;
               <span style={{fontFamily:'monospace', background:'#F3F4F6', border:'1px solid #E5E7EB',
                             padding:'2px 8px', borderRadius:6, color:'#374151'}}>
@@ -1015,7 +1017,7 @@
           <AppHeader/>
           <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
 
-            <div style={{fontSize:15, fontWeight:500, color:C.txtPrimary, marginBottom:16}}>
+            <div style={{fontSize:17, fontWeight:500, color:C.txtPrimary, marginBottom:16}}>
               {t('selectPayment')}
             </div>
 
@@ -1041,7 +1043,7 @@
                         border:'none',
                         borderRadius:20,
                         padding:'12px 22px',
-                        fontWeight:600, fontSize:14,
+                        fontWeight:600, fontSize:16,
                         display:'flex', alignItems:'center', gap:8,
                         cursor:'pointer',
                         boxShadow: C.btnShadow,
@@ -1125,13 +1127,13 @@
                   width:44, height:44, borderRadius:'50%',
                   background: C.avatarBg, color: C.avatarTxt,
                   display:'flex', alignItems:'center', justifyContent:'center',
-                  fontSize:14, fontWeight:700, flexShrink:0,
+                  fontSize:16, fontWeight:700, flexShrink:0,
                 }}>
                   {ini}
                 </div>
                 <div>
-                  <div style={{fontSize:15, fontWeight:700, color:C.txtPrimary}}>{tx.who}</div>
-                  <div style={{fontSize:12, color:C.txtMuted, marginTop:2}}>{fmtDate(tx.date)}</div>
+                  <div style={{fontSize:17, fontWeight:700, color:C.txtPrimary}}>{tx.who}</div>
+                  <div style={{fontSize:16, color:C.txtMuted, marginTop:2}}>{fmtDate(tx.date)}</div>
                 </div>
               </div>
               <button onClick={close} style={{
@@ -1154,9 +1156,9 @@
                   padding:'13px 20px',
                   borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
                 }}>
-                  <span style={{fontSize:13, color:C.txtMuted}}>{label}</span>
+                  <span style={{fontSize:15, color:C.txtMuted}}>{label}</span>
                   <span style={{
-                    fontSize:13,
+                    fontSize:15,
                     fontWeight: colored ? 700 : 500,
                     color: colored ? (isIn ? '#16A34A' : C.txtPrimary) : green ? '#16A34A' : '#374151',
                     fontFamily: mono ? 'monospace' : 'Roboto,sans-serif',
@@ -1172,7 +1174,7 @@
                   width:'100%', padding:'13px',
                   background:C.btnPrimary, color:'#fff',
                   border:'none', borderRadius:14,
-                  fontSize:14, fontWeight:600, cursor:'pointer',
+                  fontSize:16, fontWeight:600, cursor:'pointer',
                   fontFamily:'Roboto,sans-serif',
                   boxShadow: C.btnShadow,
                 }}>
@@ -1228,7 +1230,7 @@
                       <TxRow tx={tx} onClick={()=>setSelectedTx(tx)}/>
                     </div>
                   ))
-                : <div style={{padding:'40px 16px', textAlign:'center', fontSize:14, color:C.txtMuted}}>
+                : <div style={{padding:'40px 16px', textAlign:'center', fontSize:16, color:C.txtMuted}}>
                     {t('noTransactions')}
                   </div>}
             </WhiteBox>
@@ -1261,7 +1263,7 @@
                 background: isFrozen ? '#EFF6FF' : C.white,
                 border: '1px solid ' + (isFrozen ? '#93C5FD' : C.border),
                 borderRadius:14, padding:'13px 10px',
-                fontSize:14, fontWeight:500,
+                fontSize:16, fontWeight:500,
                 color: isFrozen ? '#1D4ED8' : '#374151',
                 cursor:'pointer', display:'flex', alignItems:'center',
                 justifyContent:'center', gap:6,
@@ -1353,8 +1355,8 @@
                 <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
               </svg>
               <div>
-                <div style={{fontSize:11, color:'rgba(255,255,255,.65)', fontWeight:500}}>{t('sendingFrom')}</div>
-                <div style={{fontSize:14, fontWeight:600, color:'#fff'}}>{card.name} •••• {card.last4}</div>
+                <div style={{fontSize:13, color:'rgba(255,255,255,.65)', fontWeight:500}}>{t('sendingFrom')}</div>
+                <div style={{fontSize:16, fontWeight:600, color:'#fff'}}>{card.name} •••• {card.last4}</div>
               </div>
             </div>
 
@@ -1372,7 +1374,7 @@
                      style={{
                        width:'100%', paddingLeft:36, paddingRight:14, paddingTop:11, paddingBottom:11,
                        background:C.white, border:'1px solid '+C.border, borderRadius:12,
-                       fontSize:14, color:C.txtPrimary, outline:'none', fontFamily:'Roboto,sans-serif',
+                       fontSize:16, color:C.txtPrimary, outline:'none', fontFamily:'Roboto,sans-serif',
                        boxSizing:'border-box',
                      }}/>
             </div>
@@ -1395,11 +1397,11 @@
                     width:42,height:42,borderRadius:'50%',flexShrink:0,
                     background:C.avatarBg, color:C.avatarTxt,
                     display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:13, fontWeight:600,
+                    fontSize:15, fontWeight:600,
                   }}>{r.ini}</div>
                   <div style={{flex:1, minWidth:0}}>
-                    <div style={{fontSize:14,fontWeight:600,color:C.txtPrimary}}>{r.name}</div>
-                    <div style={{fontSize:12,color:C.txtMuted,marginTop:3}}>{r.phone}</div>
+                    <div style={{fontSize:16,fontWeight:600,color:C.txtPrimary}}>{r.name}</div>
+                    <div style={{fontSize:16,color:C.txtMuted,marginTop:3}}>{r.phone}</div>
                   </div>
                   {recip?.id===r.id && (
                     <svg xmlns="http://www.w3.org/2000/svg" style={{width:20,height:20,flexShrink:0}} fill="none"
@@ -1416,29 +1418,29 @@
               <SectionLabel>{t('amountToSend')}</SectionLabel>
               <WhiteBox style={{marginBottom:8}}>
                 <div style={{padding:'14px 16px', display:'flex', alignItems:'center', gap:8}}>
-                  <span style={{fontSize:24, fontWeight:300, color:'#D1D5DB'}}>€</span>
+                  <span style={{fontSize:28, fontWeight:300, color:'#D1D5DB'}}>€</span>
                   <input type="number" min="0" step="0.01"
                          value={amt} onChange={e=>{setAmt(e.target.value);setAmtErr('');}}
                          placeholder="0.00"
                          style={{
-                           flex:1, fontSize:24, fontWeight:600, color:C.txtPrimary,
+                           flex:1, fontSize:28, fontWeight:600, color:C.txtPrimary,
                            border:'none', outline:'none', background:'transparent',
                            fontFamily:'Roboto,sans-serif',
                          }}/>
                 </div>
-                {amtErr && <div style={{padding:'0 16px 12px',fontSize:12,color:'#EF4444'}}>{amtErr}</div>}
+                {amtErr && <div style={{padding:'0 16px 12px',fontSize:16,color:'#EF4444'}}>{amtErr}</div>}
               </WhiteBox>
             </div>
 
             <WhiteBox style={{marginBottom:24}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
                            padding:'12px 16px', borderBottom:'1px solid '+C.rowBorder}}>
-                <span style={{fontSize:14,color:C.txtSecond}}>{t('fee')}</span>
-                <span style={{fontSize:14,fontWeight:600,color:'#16A34A'}}>{t('noFee')}</span>
+                <span style={{fontSize:16,color:C.txtSecond}}>{t('fee')}</span>
+                <span style={{fontSize:16,fontWeight:600,color:'#16A34A'}}>{t('noFee')}</span>
               </div>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px'}}>
-                <span style={{fontSize:14,color:C.txtSecond}}>{t('estimatedDelivery')}</span>
-                <span style={{fontSize:14,fontWeight:600,color:C.txtPrimary}}>{t('instant')}</span>
+                <span style={{fontSize:16,color:C.txtSecond}}>{t('estimatedDelivery')}</span>
+                <span style={{fontSize:16,fontWeight:600,color:C.txtPrimary}}>{t('instant')}</span>
               </div>
             </WhiteBox>
 
@@ -1458,7 +1460,7 @@
                     style={{
                       width:'100%', marginTop:10, padding:'12px',
                       background:'transparent', border:'none',
-                      fontSize:14, fontWeight:500, color:C.txtMuted,
+                      fontSize:16, fontWeight:500, color:C.txtMuted,
                       cursor:'pointer', fontFamily:'Roboto,sans-serif',
                     }}>
               {t('cancel')}
@@ -1525,18 +1527,18 @@
                   width:54,height:54,borderRadius:'50%',flexShrink:0,
                   background:C.avatarBg, color:C.avatarTxt,
                   display:'flex',alignItems:'center',justifyContent:'center',
-                  fontSize:16, fontWeight:700,
+                  fontSize:18, fontWeight:700,
                 }}>
                   {draft.recip.ini}
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:12,color:C.txtMuted}}>{t('paying')}</div>
-                  <div style={{fontSize:16,fontWeight:700,color:C.txtPrimary}}>{draft.recip.name}</div>
-                  <div style={{fontSize:12,color:C.txtMuted,marginTop:2}}>{draft.recip.phone}</div>
+                  <div style={{fontSize:16,color:C.txtMuted}}>{t('paying')}</div>
+                  <div style={{fontSize:18,fontWeight:700,color:C.txtPrimary}}>{draft.recip.name}</div>
+                  <div style={{fontSize:16,color:C.txtMuted,marginTop:2}}>{draft.recip.phone}</div>
                 </div>
                   <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:11,color:C.txtMuted}}>{t('amount')}</div>
-                  <div style={{fontSize:20,fontWeight:700,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
+                  <div style={{fontSize:13,color:C.txtMuted}}>{t('amount')}</div>
+                  <div style={{fontSize:23,fontWeight:700,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
                 </div>
               </div>
             </WhiteBox>
@@ -1549,9 +1551,9 @@
                   padding:'12px 16px',
                   borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
                 }}>
-                  <span style={{fontSize:13,color:C.txtMuted}}>{label}</span>
+                  <span style={{fontSize:15,color:C.txtMuted}}>{label}</span>
                   <span style={{
-                    fontSize: bold?14:13,
+                    fontSize: bold?16:15,
                     fontWeight: bold?700:500,
                     color: green?'#16A34A': bold?C.txtPrimary:'#374151',
                     fontFamily: mono?'monospace':'Roboto,sans-serif',
@@ -1564,7 +1566,7 @@
 
             {/* Biometric */}
             <BiometricBtn labelKey="useBiometricConfirm"/>
-            <div style={{textAlign:'center',fontSize:12,color:C.txtMuted,marginTop:8}}>
+            <div style={{textAlign:'center',fontSize:14,color:C.txtMuted,marginTop:8}}>
               {t('notAvailableProto')}
             </div>
           </div>
@@ -1584,7 +1586,7 @@
                     style={{
                       width:'100%', marginTop:10, padding:'12px',
                       background:'transparent', border:'none',
-                      fontSize:14, fontWeight:500, color:C.txtMuted,
+                      fontSize:16, fontWeight:500, color:C.txtMuted,
                       cursor:'pointer', fontFamily:'Roboto,sans-serif',
                     }}>
               {t('cancel')}
@@ -1664,23 +1666,23 @@
                   width:36,height:36,borderRadius:'50%',flexShrink:0,
                   background:C.avatarBg, color:C.avatarTxt,
                   display:'flex',alignItems:'center',justifyContent:'center',
-                  fontSize:12, fontWeight:700,
+                  fontSize:16, fontWeight:700,
                 }}>
                   {draft.recip.ini}
                 </div>
                 <div>
-                  <div style={{fontSize:11,color:C.txtMuted}}>{t('paying')}</div>
-                  <div style={{fontSize:13,fontWeight:600,color:C.txtPrimary}}>{draft.recip.name}</div>
+                  <div style={{fontSize:13,color:C.txtMuted}}>{t('paying')}</div>
+                  <div style={{fontSize:15,fontWeight:600,color:C.txtPrimary}}>{draft.recip.name}</div>
                 </div>
               </div>
-              <div style={{fontSize:18,fontWeight:700,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
+              <div style={{fontSize:21,fontWeight:700,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
             </div>
 
             {/* Title */}
-            <div style={{textAlign:'center',fontSize:16,fontWeight:700,color:C.txtPrimary,marginBottom:4}}>
+            <div style={{textAlign:'center',fontSize:18,fontWeight:700,color:C.txtPrimary,marginBottom:4}}>
               {t('enterYourPin')}
             </div>
-            <div style={{textAlign:'center',fontSize:13,color:C.txtMuted,marginBottom:20}}>
+            <div style={{textAlign:'center',fontSize:15,color:C.txtMuted,marginBottom:20}}>
               {t('confirmPaymentPin')}
             </div>
 
@@ -1691,7 +1693,7 @@
               ))}
             </div>
             <div style={{
-              height:20,fontSize:12,color:'#EF4444',
+              height:20,fontSize:16,color:'#EF4444',
               textAlign:'center',marginBottom:16,
               opacity: err ? 1 : 0,
             }}>
@@ -1703,8 +1705,8 @@
               {['1','2','3','4','5','6','7','8','9'].map(k=>(
                 <button key={k} className="pin-key" onClick={()=>push(k)}
                         style={{margin:'0 auto'}}>
-                  <div style={{fontSize:22}}>{k}</div>
-                  <div style={{fontSize:8,color:C.txtMuted}}>{letters[k]||''}</div>
+                  <div style={{fontSize:25}}>{k}</div>
+                  <div style={{fontSize:9,color:C.txtMuted}}>{letters[k]||''}</div>
                 </button>
               ))}
               <div/>
@@ -1765,8 +1767,8 @@
                 </svg>
               </div>
             </div>
-            <div style={{fontSize:20,fontWeight:700,color:C.txtPrimary,marginBottom:4}}>{t('paymentSent')}</div>
-            <div style={{fontSize:14,color:C.txtMuted,marginBottom:24}}>{t('paymentSuccessful')}</div>
+            <div style={{fontSize:23,fontWeight:700,color:C.txtPrimary,marginBottom:4}}>{t('paymentSent')}</div>
+            <div style={{fontSize:16,color:C.txtMuted,marginBottom:24}}>{t('paymentSuccessful')}</div>
 
             {/* Receipt */}
             <WhiteBox style={{width:'100%',marginBottom:20}}>
@@ -1774,7 +1776,7 @@
                 padding:'12px 16px',borderBottom:'1px dashed #E5E7EB',
                 background:'#F9FAFB',
               }}>
-                <div style={{fontSize:11,fontWeight:600,color:C.txtMuted,
+                <div style={{fontSize:13,fontWeight:600,color:C.txtMuted,
                              textAlign:'center',textTransform:'uppercase',letterSpacing:'.07em'}}>
                   {t('receipt')}
                 </div>
@@ -1785,9 +1787,9 @@
                   padding:'12px 16px',
                   borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
                 }}>
-                  <span style={{fontSize:13,color:C.txtMuted}}>{label}</span>
+                  <span style={{fontSize:15,color:C.txtMuted}}>{label}</span>
                   <span style={{
-                    fontSize: bold?16:13,
+                    fontSize: bold?16:15,
                     fontWeight: bold?700:500,
                     color: green?'#16A34A': C.txtPrimary,
                     fontFamily: mono?'monospace':'Roboto,sans-serif',
@@ -1847,12 +1849,12 @@
       const fieldStyle = (key) => ({
         width:'100%', padding:'12px 14px',
         background:C.white, border:'1px solid '+(errs[key]?'#EF4444':C.border),
-        borderRadius:12, fontSize:14, color:C.txtPrimary,
+        borderRadius:12, fontSize:16, color:C.txtPrimary,
         outline:'none', fontFamily:'Roboto,sans-serif',
         boxSizing:'border-box',
       });
       const labelStyle = {
-        fontSize:11, fontWeight:600, color:C.txtMuted,
+        fontSize:13, fontWeight:600, color:C.txtMuted,
         textTransform:'uppercase', letterSpacing:'.06em',
         display:'block', marginBottom:6,
       };
@@ -1872,11 +1874,11 @@
                   display:'flex', flexDirection:'column', alignItems:'center', gap:4,
                   opacity:.38, border:'1px solid '+C.border, position:'relative',
                 }}>
-                  <span style={{fontSize:22}}>{m.icon}</span>
-                  <span style={{fontSize:12,color:C.txtMuted}}>{t(m.labelKey)}</span>
+                  <span style={{fontSize:25}}>{m.icon}</span>
+                  <span style={{fontSize:16,color:C.txtMuted}}>{t(m.labelKey)}</span>
                   <span style={{
                     position:'absolute', top:-8, right:-8,
-                    background:C.btnPrimary, color:'#fff', fontSize:9,
+                    background:C.btnPrimary, color:'#fff', fontSize:10,
                     padding:'2px 6px', borderRadius:10, fontWeight:600,
                   }}>{t('appOnly')}</span>
                 </div>
@@ -1886,8 +1888,8 @@
                 display:'flex', flexDirection:'column', alignItems:'center', gap:4,
                 border:'2px solid '+C.btnPrimary,
               }}>
-                <span style={{fontSize:22}}>⌨️</span>
-                <span style={{fontSize:12, fontWeight:600, color:C.btnPrimary}}>{t('manual')}</span>
+                <span style={{fontSize:25}}>⌨️</span>
+                <span style={{fontSize:16, fontWeight:600, color:C.btnPrimary}}>{t('manual')}</span>
               </div>
             </div>
 
@@ -1897,14 +1899,14 @@
               <label style={labelStyle}>{t('cardNumber')}</label>
               <input value={f.num} onChange={upd('num')} placeholder="0000 0000 0000 0000"
                      style={fieldStyle('num')}/>
-              {errs.num && <div style={{fontSize:12,color:'#EF4444',marginTop:4}}>{errs.num}</div>}
+              {errs.num && <div style={{fontSize:16,color:'#EF4444',marginTop:4}}>{errs.num}</div>}
             </div>
 
             <div style={{marginBottom:16}}>
               <label style={labelStyle}>{t('cardholderName')}</label>
               <input value={f.name} onChange={upd('name')} placeholder={t('fullNameOnCard')}
                      style={fieldStyle('name')}/>
-              {errs.name && <div style={{fontSize:12,color:'#EF4444',marginTop:4}}>{errs.name}</div>}
+              {errs.name && <div style={{fontSize:16,color:'#EF4444',marginTop:4}}>{errs.name}</div>}
             </div>
 
             <div style={{display:'flex', gap:12, marginBottom:24}}>
@@ -1912,14 +1914,14 @@
                 <label style={labelStyle}>{t('expiry')}</label>
                 <input value={f.exp} onChange={upd('exp')} placeholder="MM/YY" inputMode="numeric"
                        style={fieldStyle('exp')}/>
-                {errs.exp && <div style={{fontSize:12,color:'#EF4444',marginTop:4}}>{errs.exp}</div>}
+                {errs.exp && <div style={{fontSize:16,color:'#EF4444',marginTop:4}}>{errs.exp}</div>}
               </div>
               <div style={{flex:1}}>
                 <label style={labelStyle}>{t('cvv')}</label>
                 <input value={f.cvv} onChange={upd('cvv')} placeholder="•••"
                        inputMode="numeric" type="password"
                        style={fieldStyle('cvv')}/>
-                {errs.cvv && <div style={{fontSize:12,color:'#EF4444',marginTop:4}}>{errs.cvv}</div>}
+                {errs.cvv && <div style={{fontSize:16,color:'#EF4444',marginTop:4}}>{errs.cvv}</div>}
               </div>
             </div>
 
@@ -1930,7 +1932,7 @@
                     style={{
                       width:'100%', marginTop:12, padding:'12px',
                       background:'transparent', border:'none',
-                      fontSize:14, color:C.txtMuted, cursor:'pointer',
+                      fontSize:16, color:C.txtMuted, cursor:'pointer',
                       fontFamily:'Roboto,sans-serif',
                     }}>
               {t('cancel')}
