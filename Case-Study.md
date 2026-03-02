@@ -41,7 +41,7 @@ Experiment Canvas by Bram Kanstein** to sharpen my customer segment,
 value proposition, and riskiest assumption. I went through several 
 feedback iterations with my mentor before I had answers I could defend.
 
-📄 *See:* `01_Experimentation/MVP-Experiment-Canvas.xlsx`
+📄 *See:* [01_Experimentation/MVP_Experiment_Canvas](01_Experimentation)
 
 ---
 
