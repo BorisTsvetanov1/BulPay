@@ -1,9 +1,123 @@
 <!DOCTYPE html>
-<html>
-<head><title>BulPay Prototype</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BulPay — Prototype Versions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(160deg, #EEF2F8 0%, #E2E8F0 100%);
+      color: #1E293B;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+    .container {
+      max-width: 420px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem 0;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 0.9375rem;
+      color: #64748B;
+      margin: 0 0 2rem 0;
+      line-height: 1.45;
+    }
+    .versions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .version-card {
+      display: block;
+      padding: 1rem 1.25rem;
+      background: #fff;
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .version-card:hover {
+      border-color: #94A3B8;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .version-card.disabled {
+      opacity: 0.75;
+      pointer-events: none;
+      cursor: default;
+    }
+    .version-card .label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748B;
+      margin-bottom: 0.25rem;
+    }
+    .version-card .title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.125rem 0;
+    }
+    .version-card .desc {
+      font-size: 0.8125rem;
+      color: #64748B;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .version-card .badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #94A3B8;
+      background: #F1F5F9;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
 <body>
-  <h1>BulPay Prototype Versions</h1>
-  <a href="03_Prototype/v1/">View V1 Prototype</a>
-  <a href="03_prototype/v2/">View V2 - Currently under development</a>
+  <div class="container">
+    <h1>BulPay Prototype</h1>
+    <p class="subtitle">Clickable prototypes showing iteration from user testing and feedback.</p>
+
+    <nav class="versions" aria-label="Prototype versions">
+      <a href="03_Prototype/v1/" class="version-card">
+        <span class="label">Version 1</span>
+        <p class="title">Initial prototype</p>
+        <p class="desc">Core flow — money transfer. Tested in first round of usability testing.</p>
+      </a>
+      <a href="03_Prototype/v2/" class="version-card disabled">
+        <span class="label">Version 2</span>
+        <p class="title">Improved prototype</p>
+        <p class="desc">Rebuilt with insights from V1 testing.</p>
+        <span class="badge">In development</span>
+      </a>
+      <span class="version-card disabled">
+        <span class="label">Version 3</span>
+        <p class="title">Next iteration</p>
+        <p class="desc">Planned after V2 user testing.</p>
+        <span class="badge">Coming later</span>
+      </span>
+    </nav>
+  </div>
 </body>
 </html>
