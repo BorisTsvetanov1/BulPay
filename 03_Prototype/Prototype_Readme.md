@@ -18,5 +18,5 @@ Rebuilt based on usability testing insights from V1. Key issues addressed:
 
 ## What Changed Between Versions
 
-See [04_Usability_Research](../04_Usability_Research/Usability_Research.md)
+See [04_Usability_Research](https://github.com/BorisTsvetanov1/BulPay/tree/main/04_Usability_Research)
 for the full testing insights that drove the V1 → V2 improvements.
