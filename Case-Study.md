@@ -48,7 +48,7 @@ feedback iterations with my mentor before I had answers I could defend.
 ## Talking to Users Before Building
 
 I interviewed **5 people** matching my target profile using the 
-**Mom Test** framework - focusing on real behaviours and pain point, not 
+**Mom Test** framework - focusing on real behaviours and pain points, not 
 opinions about my idea.
 
 **What I assumed going in:** this segment would prioritize simple UI, 
