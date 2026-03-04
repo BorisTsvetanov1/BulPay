@@ -5,7 +5,7 @@
 | Field        | Details          |
 |--------------|------------------|
 | **Name**     | George           |
-| **Age**      | 53 years old     |
+| **Age**      | 53               |
 | **Occupation** | Cashier        |
 | **Nationality** | Bulgarian     |
 | **Location** | Sofia, Bulgaria  |
