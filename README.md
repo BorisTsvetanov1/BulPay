@@ -22,4 +22,4 @@ Link to my clickable prototype: https://boristsvetanov1.github.io/BulPay/
 ## Key outcomes (in progress)
 
 ## About me
-Boris Tsvetanov | Product Manager candidate | https://www.linkedin.com/in/boris-tsvetanov/ | boris.tsvetanov98@gmail.com
+Boris Tsvetanov | Product Management | https://www.linkedin.com/in/boris-tsvetanov/ | boris.tsvetanov98@gmail.com
