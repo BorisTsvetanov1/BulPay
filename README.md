@@ -1,4 +1,25 @@
-# BulPay
-BulPay MVP
-Hello and welcome to my Product Portfolio!
+# BulPay - Digital Wallet MVP
+
+Hello and welcome to my Product Portfolio! My name is Boris Tsvetanov.
+
+The product I am creating is called "BulPay" - a digital wallet app aiming to fill up the generational market gap in Bulgaria when it comes to digital payments. Older Bulgarians are underserved by their current market. On one hand they have confusing, slow and often prone to breakage payment apps designed by traditional local banks, on the other hand they have the modern neobanks such as Revolut that are complex to understand, offer no real local support and bulgarians are often skeptical and untrustworthy when it comes to foreign entities taking care of their money. BulPay is the solution to their problem.
+
+To understand the complete picture of the problem and how I've used my Product Management skills to solve it please check the Case-Study.md for the complete story. Advisable to review the artifacts in the following order:
+
+## Artifacts
+0. Case-Study.md
+1. MVP experiment canvas
+2. user interviews
+3. user persona
+4. lo-fi wireframes
+5. hi-fi wireframes
+6. prototype
+7. usability research - hypotheses and user testing
+8. iteration log / feedback log
+
 Link to my clickable prototype: https://boristsvetanov1.github.io/BulPay/
+
+## Key outcomes (in progress)
+
+## About me
+Boris Tsvetanov | Product Manager candidate | https://www.linkedin.com/in/boris-tsvetanov/ | boris.tsvetanov98@gmail.com
