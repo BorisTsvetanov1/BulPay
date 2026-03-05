@@ -166,6 +166,15 @@
     /* Suppress number input spinners */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+
+    /* Bank card: dark gradient + hexagonal wireframe pattern */
+    .card-bg-dark {
+      background: linear-gradient(135deg, #1e2a47 0%, #2d1f4e 50%, #1a2744 100%);
+    }
+    .card-hex-pattern {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='24' viewBox='0 0 28 24'%3E%3Cpath fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='0.4' d='M14 0l7 4v8l-7 4-7-4V4L14 0zm-10 6v8l7 4 7-4V6l-7-4-7 4z'/%3E%3C/svg%3E");
+      background-size: 28px 24px;
+    }
   </style>
 </head>
 <body>
@@ -198,6 +207,8 @@
     };
 
     const GRAD = { g1: C.card1, g2: C.card2, g3: C.card3 };
+    /* DSK-style dark gradient for bank card look */
+    const CARD_BG_DARK = 'linear-gradient(135deg, #1e2a47 0%, #2d1f4e 50%, #1a2744 100%)';
 
     /* ════════════════════════════════════════
        MOCK DATA
@@ -206,7 +217,7 @@
     const USER = { first:'Петя', last:'Шукерска' };
 
     const SEED_CARDS = [
-     /* { id:'c1', name:'Revolut VISA', last4:'1234', holder:'George Petrov', bal:2450.00, grad:'g1' }, */
+      { id:'c1', name:'Revolut VISA', last4:'1234', holder:'George Petrov', bal:2450.00, grad:'g1' },
       { id:'c2', name:'DSK VISA',     last4:'5678', holder:'Petya Shukerska', bal:5200.00, grad:'g2' },
     ];
 
@@ -263,7 +274,7 @@
         enter4DigitPin:'Enter your 4-digit PIN to continue',
         incorrectPin:'Incorrect PIN. Please try again.',
         demoPin:'Demo PIN:',
-        selectPayment:'Select payment method.',
+        selectPayment:'Select a card to pay.',
         addCard:'Add Card',
         sendMoney:'Send Money',
         cardFrozenSend:'❄ Card Frozen — Cannot Send',
@@ -330,7 +341,7 @@
         enter4DigitPin:'Въведете 4-цифрения си PIN за да продължите',
         incorrectPin:'Грешен PIN. Моля, опитайте отново.',
         demoPin:'Демо PIN:',
-        selectPayment:'Изберете метод на плащане.',
+        selectPayment:'Изберете карта за плащане.',
         addCard:'Добави карта',
         sendMoney:'Изпрати пари',
         cardFrozenSend:'Замразена - Не може да изпращате',
@@ -451,7 +462,12 @@
       );
     }
 
-    /* ── Card Visual ── */
+    /* Card Visual (realistic bank card) - ISO/IEC 7810 ID-1 aspect 86:54, DSK-style layout */
+    const isVisa = (name) => /visa/i.test(name || '');
+    const bankDisplayName = (name) => {
+      const n = (name || '').replace(/\s*(VISA|Mastercard|MC)\s*/gi, '').trim();
+      return n === 'DSK' ? 'DSK Bank' : (n || 'Bank');
+    };
     /* Snowflake positions (% from left, % from top) */
     const FLAKES = [
       {l:'12%',t:'18%'}, {l:'55%',t:'10%'}, {l:'82%',t:'30%'},
@@ -460,19 +476,24 @@
 
     function CardVisual({ card, onCardClick, showBal, onToggleBal, isFrozen=false, style: extraStyle={} }) {
       const t = useLang();
-      const grad = GRAD[card.grad] || GRAD.g1;
-      const stopProp = (e) => { e.stopPropagation(); onToggleBal && onToggleBal(); };
+      /* View Balance toggle (kept for possible reuse):
+      const stopProp = (e) => { e.stopPropagation(); onToggleBal && onToggleBal(); }; */
       const clickable = !!onCardClick;
       const [hovered, setHovered] = useState(false);
+      const visa = isVisa(card.name);
+      const holderName = (card.holder || 'CARDHOLDER NAME').toUpperCase();
+      const expiry = card.exp || '12/28';
 
       return (
         <div onClick={onCardClick}
              onMouseEnter={() => clickable && setHovered(true)}
              onMouseLeave={() => setHovered(false)}
+             className="card-hex-pattern"
              style={{
-               background: grad,
-               borderRadius: 18,
-               padding: '24px 18px 24px',
+               background: CARD_BG_DARK,
+               border: '1px solid rgba(255,255,255,.2)',
+               borderRadius: 14,
+               padding: '20px 22px',
                color: '#fff',
                position: 'relative',
                overflow: 'hidden',
@@ -484,103 +505,115 @@
                transform: hovered ? 'translateY(-4px) scale(1.012)' : 'translateY(0) scale(1)',
                transition: 'transform .22s cubic-bezier(.34,1.2,.64,1), box-shadow .22s ease',
                filter: hovered ? 'brightness(1.07)' : 'brightness(1)',
+               width: '100%',
+               maxWidth: 340,
+               aspectRatio: '86/54',
+               display: 'flex',
+               flexDirection: 'column',
+               justifyContent: 'space-between',
                ...extraStyle,
              }}>
-          {/* decorative blobs */}
-          <div style={{
-            position:'absolute', width:140, height:140, borderRadius:'50%',
-            background:'rgba(255,255,255,.15)', top:-30, right:-30, pointerEvents:'none',
-          }}/>
-          <div style={{
-            position:'absolute', width:100, height:100, borderRadius:'50%',
-            background:'rgba(255,255,255,.10)', bottom:-28, left:-14, pointerEvents:'none',
-          }}/>
+          {/* Row 1: Bank name (top left), VISA / network (top right) */}
+          <div style={{ position:'relative', zIndex:1, display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+            <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '.02em', color: '#fff' }}>
+              {bankDisplayName(card.name)}
+            </div>
+            {visa ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="130" height="52" viewBox="0 0 24 24" style={{ flexShrink:0, transform: 'translateY(-14px)', marginRight: -10 }}>
+                <path fill="#fff" d="M22.222 15.768l-.225-1.125h-2.514l-.4 1.117-2.015.004a4199.19 4199.19 0 0 1 2.884-6.918c.164-.391.455-.59.884-.588.328.003.863.003 1.606.001L24 15.765l-1.778.003zm-2.173-2.666h1.62l-.605-2.82-1.015 2.82zM7.06 8.257l2.026.002-3.132 7.51-2.051-.002a950.849 950.849 0 0 1-1.528-5.956c-.1-.396-.298-.673-.679-.804C1.357 8.89.792 8.71 0 8.465V8.26h3.237c.56 0 .887.271.992.827.106.557.372 1.975.8 4.254L7.06 8.257zm4.81.002l-1.602 7.508-1.928-.002L9.94 8.257l1.93.002zm3.91-.139c.577 0 1.304.18 1.722.345l-.338 1.557c-.378-.152-1-.357-1.523-.35-.76.013-1.23.332-1.23.638 0 .498.816.749 1.656 1.293.959.62 1.085 1.177 1.073 1.782-.013 1.256-1.073 2.495-3.309 2.495-1.02-.015-1.388-.101-2.22-.396l.352-1.625c.847.355 1.206.468 1.93.468.663 0 1.232-.268 1.237-.735.004-.332-.2-.497-.944-.907-.744-.411-1.788-.98-1.774-2.122.017-1.462 1.402-2.443 3.369-2.443z"/>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="24" viewBox="0 0 32 24" style={{ flexShrink:0 }}>
+                <circle cx="14" cy="12" r="10" fill="#EB001B"/>
+                <circle cx="18" cy="12" r="10" fill="#F79E1B"/>
+                <path fill="#FF5F00" d="M16 6.2a9.5 9.5 0 014 10 9.5 9.5 0 01-8 0 9.5 9.5 0 014-10z"/>
+              </svg>
+            )}
+          </div>
 
-          {/* Card icon + name */}
-          <div className="flex items-center gap-2 mb-3" style={{position:'relative', zIndex:1}}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24"
-                 stroke="white" strokeWidth={1.8} style={{opacity:.9}}>
-              <rect x="2" y="5" width="20" height="14" rx="2"/>
-              <path d="M2 10h20"/>
+          {/* Row 2: EMV chip + NFC (left) */}
+          <div style={{ position:'relative', zIndex:1, display:'flex', alignItems:'center', gap:10, marginTop: -6 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="31" height="29" viewBox="0 0 122.879 116.012" style={{ flexShrink:0, filter:'drop-shadow(0 1px 2px rgba(0,0,0,.25))' }}>
+              <path fill="#C0B8A8" d="M102.911,0H19.968c-5.481,0-10.484,2.252-14.1,5.868C2.251,9.484,0,14.464,0,19.968v76.075c0,5.48,2.251,10.484,5.868,14.1 c3.616,3.617,8.597,5.869,14.1,5.869h82.943c5.48,0,10.484-2.252,14.1-5.869c3.616-3.615,5.868-8.596,5.868-14.1V19.946 c0-5.504-2.252-10.485-5.868-14.101C113.396,2.252,108.392,0,102.911,0L102.911,0L102.911,0z M38.89,10.03v0.022v27.519H10.052 V19.946c0-2.729,1.115-5.208,2.912-7.005c1.796-1.797,4.275-2.911,7.004-2.911H38.89L38.89,10.03L38.89,10.03z M10.029,48.01H38.89 v18.808H10.052V48.01H10.029L10.029,48.01z M10.029,77.234H38.89v28.725H19.968c-2.729,0-5.208-1.115-7.004-2.912 c-1.797-1.797-2.912-4.275-2.912-7.004V77.234H10.029L10.029,77.234z M48.919,105.959V73.504c0.136-0.477,0.205-0.955,0.205-1.477 c0-0.523-0.068-1.002-0.205-1.479V44.28c0.136-0.478,0.205-0.955,0.205-1.478s-0.068-1-0.205-1.479V10.075v-0.023h53.992 c2.729,0,5.208,1.115,7.004,2.911c1.797,1.797,2.911,4.276,2.911,7.005V37.64H80.1c-2.774,0-5.026,2.251-5.026,5.026v27.452 c-0.091,0.387-0.159,0.818-0.159,1.25s0.046,0.842,0.159,1.25v33.365l-26.154-0.002V105.959L48.919,105.959z M112.826,47.646v18.49 h-27.7v-18.49H112.826L112.826,47.646L112.826,47.646z M112.826,76.574v19.469c0,2.729-1.114,5.207-2.911,7.004 c-1.796,1.797-4.275,2.912-7.004,2.912H85.126V76.574H112.826L112.826,76.574L112.826,76.574z"/>
             </svg>
-            <span style={{fontWeight:600, fontSize:17, letterSpacing:'.02em'}}>{card.name}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.95)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity:.9 }}>
+              <path d="M6 8.32a7.43 7.43 0 0 1 0 7.36"/>
+              <path d="M9.46 6.21a11.76 11.76 0 0 1 0 11.58"/>
+              <path d="M12.91 4.1a15.91 15.91 0 0 1 .01 15.8"/>
+              <path d="M16.37 2a20.16 20.16 0 0 1 0 20"/>
+            </svg>
           </div>
 
-          {/* Masked number */}
+          {/* Card number (IBAN style) — centered */}
           <div style={{
-            fontFamily:'monospace', fontSize:17, letterSpacing:'.15em',
-            opacity:.88, marginBottom:18, position:'relative', zIndex:1,
+            fontFamily: '"OCR A Std", "Courier New", monospace',
+            fontSize: 17,
+            letterSpacing: '.22em',
+            color: '#fff',
+            position: 'relative',
+            zIndex: 1,
+            textAlign: 'center',
+            fontWeight: 700,
+            textShadow: '0 1px 0 rgba(0,0,0,.2)',
           }}>
-            {'•••• •••• •••• ' + card.last4}
+            {'••••  ••••  ••••  ' + card.last4}
           </div>
 
-          {/* Balance / View Balance — horizontal flip transition */}
+          {/* Bottom row: CARD HOLDER (left), EXPIRES (right) */}
           <div style={{
-            position:'relative', zIndex:1,
-            display:'flex', width:'100%', justifyContent:'flex-end', alignItems:'center',
-            height:30, perspective:400,
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px 12px',
           }}>
-
-            {/* "View Balance" button — flips away */}
-            <button onClick={stopProp} style={{
+            <div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,.7)', letterSpacing: '.18em', marginBottom: 2 }}>CARD HOLDER</div>
+              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', color: '#fff' }}>{holderName}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,.7)', letterSpacing: '.12em', marginBottom: 2 }}>EXPIRES</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 700, color: '#fff' }}>{expiry}</div>
+            </div>
+            {/* Balance / View Balance - was shown on card; kept for possible reuse elsewhere:
+            <div style={{ flexBasis: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: 32, perspective: 400 }}>
+              <button onClick={stopProp} style={{
                 position:'absolute', right:0,
-                top:'50%', transform: showBal
-                  ? 'translateY(-50%) rotateX(90deg)'
-                  : 'translateY(-50%) rotateX(0deg)',
-                background:'rgba(255,255,255,.22)',
-                border:'1px solid rgba(255,255,255,.42)',
-                color:'#fff',
-                borderRadius:20,
-                padding:'5px 16px',
-                fontSize:15,
-                fontWeight:500,
-                cursor:'pointer',
-                backdropFilter:'blur(4px)',
-                fontFamily:'Roboto,sans-serif',
-                transformOrigin:'center center',
-                opacity: showBal ? 0 : 1,
-                transition: 'transform .22s ease-in, opacity .15s ease-in',
-                pointerEvents: showBal ? 'none' : 'auto',
-                backfaceVisibility:'hidden',
-                whiteSpace:'nowrap',
+                top:'50%', transform: showBal ? 'translateY(-50%) rotateX(90deg)' : 'translateY(-50%) rotateX(0deg)',
+                background:'rgba(255,255,255,.22)', border:'1px solid rgba(255,255,255,.42)',
+                color:'#fff', borderRadius:20, padding:'5px 14px', fontSize:14, fontWeight:500, cursor:'pointer',
+                backdropFilter:'blur(4px)', fontFamily:'Roboto,sans-serif', transformOrigin:'center center',
+                opacity: showBal ? 0 : 1, transition: 'transform .22s ease-in, opacity .15s ease-in',
+                pointerEvents: showBal ? 'none' : 'auto', backfaceVisibility:'hidden', whiteSpace:'nowrap',
               }}>
-              {t('viewBalance')}
-            </button>
-
-            {/* Balance amount — flips in, anchored to same centre */}
-            <div onClick={stopProp} style={{
-                position:'absolute', right:0,
-                top:'50%', transform: showBal
-                  ? 'translateY(-50%) rotateX(0deg)'
-                  : 'translateY(-50%) rotateX(-90deg)',
-                textAlign:'right', cursor:'pointer',
-                transformOrigin:'center center',
+                {t('viewBalance')}
+              </button>
+              <div onClick={stopProp} style={{
+                position:'absolute', right:0, top:'50%',
+                transform: showBal ? 'translateY(-50%) rotateX(0deg)' : 'translateY(-50%) rotateX(-90deg)',
+                textAlign:'right', cursor:'pointer', transformOrigin:'center center',
                 opacity: showBal ? 1 : 0,
-                transition: showBal
-                  ? 'transform .22s ease-out .18s, opacity .15s ease-out .18s'
-                  : 'transform .22s ease-in, opacity .15s ease-in',
-                pointerEvents: showBal ? 'auto' : 'none',
-                backfaceVisibility:'hidden',
-                whiteSpace:'nowrap',
+                transition: showBal ? 'transform .22s ease-out .18s, opacity .15s ease-out .18s' : 'transform .22s ease-in, opacity .15s ease-in',
+                pointerEvents: showBal ? 'auto' : 'none', backfaceVisibility:'hidden', whiteSpace:'nowrap',
               }}>
-              <div style={{fontWeight:700, fontSize:15, color:'#fff', letterSpacing:'.01em'}}>
-                {fmtEur(card.bal)}
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', letterSpacing: '.02em' }}>{fmtEur(card.bal)}</div>
               </div>
             </div>
-
+            */}
           </div>
 
-          {/* ── Frozen overlay ── */}
+          {/* Frozen overlay */}
           {isFrozen && (
             <div className="frost-overlay" style={{
-              position:'absolute', inset:0, borderRadius:18,
+              position:'absolute', top:0, right:0, bottom:0, left:0, borderRadius:14,
               background:'linear-gradient(135deg,rgba(186,230,253,.55) 0%,rgba(224,242,254,.45) 50%,rgba(186,230,253,.60) 100%)',
               backdropFilter:'blur(2px)',
               zIndex:10,
               display:'flex', alignItems:'center', justifyContent:'center',
               pointerEvents:'none',
             }}>
-              {/* Snowflakes */}
               {FLAKES.map((f,i)=>(
                 <span key={i} className={`sf${i}`} style={{
                   position:'absolute', left:f.l, top:f.t,
@@ -589,7 +622,6 @@
                   userSelect:'none',
                 }}>❄</span>
               ))}
-              {/* Frozen label */}
               <div style={{
                 background:'rgba(255,255,255,.55)',
                 backdropFilter:'blur(6px)',
