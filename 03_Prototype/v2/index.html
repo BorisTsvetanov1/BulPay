@@ -217,17 +217,14 @@
     const USER = { first:'Петя', last:'Шукерска' };
 
     const SEED_CARDS = [
-      { id:'c1', name:'Revolut VISA', last4:'1234', holder:'George Petrov', bal:2450.00, grad:'g1' },
-      { id:'c2', name:'DSK VISA',     last4:'5678', holder:'Petya Shukerska', bal:5200.00, grad:'g2' },
+      { id:'c1', name:'DSK VISA',     last4:'5678', holder:'Petya Shukerska', bal:5200.00, grad:'g2' },
     ];
 
     const SEED_TX = [
-      { id:'t1', cid:'c2', who:'Петър Георгиев',     ini:'ПГ', amt:10.00,   dir:'out', date:'2026-01-14', st:'Completed' },
-      { id:'t2', cid:'c2', who:'Андреа Цветанова', ini:'АЦ', amt:24.50,   dir:'out', date:'2026-01-03', st:'Completed' },
-      { id:'t3', cid:'c2', who:'Борис Цветанов',         ini:'БЦ', amt:100,   dir:'in', date:'2025-12-22', st:'Completed' },
-      { id:'t4', cid:'c1', who:'Борис Цветанов',    ini:'БЦ', amt:200.00, dir:'in',  date:'2026-01-15', st:'Completed' },
-      { id:'t5', cid:'c1', who:'Елена Шукерска',       ini:'ЕШ', amt:120.00,  dir:'out', date:'2026-01-10', st:'Completed' },
-      { id:'t6', cid:'c1', who:'Иван Иванов',       ini:'ИИ', amt:50.00,   dir:'in', date:'2025-12-30', st:'Completed' },
+      { id:'t1', cid:'c1', who:'Петър Георгиев',     ini:'ПГ', amt:10,   dir:'out', date:'2026-01-14', st:'Completed' },
+      { id:'t2', cid:'c1', who:'Борис Цветанов',     ini:'БЦ', amt:100,   dir:'in', date:'2025-12-22', st:'Completed' },
+      { id:'t3', cid:'c1', who:'Иван Иванов', ini:'ИИ', amt:24.50,   dir:'out', date:'2026-01-03', st:'Completed' },
+
     ];
 
     const RECIPIENTS = [
@@ -252,7 +249,8 @@
     /* ════════════════════════════════════════
        UTILS
     ════════════════════════════════════════ */
-    const fmtEur  = (n) => '€' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+    const fmtAmountNum = (n) => (n % 1 === 0 ? String(Math.round(Math.abs(n))) : Math.abs(n).toFixed(2));
+    const fmtEur  = (n) => '€' + fmtAmountNum(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
     const fmtDate = (s) => s.slice(0,10);
     const genRef  = ()  => 'BUL-' + Math.random().toString(36).slice(2,8).toUpperCase();
     const greet   = (t) => { const h=new Date().getHours(); return h<12?t('goodMorning'):h<17?t('goodAfternoon'):t('goodEvening'); };
@@ -262,7 +260,7 @@
     ════════════════════════════════════════ */
     const TRANSLATIONS = {
       en: {
-        appName:'BulPay Wallet', help:'Help',
+        appName:'BulPay', help:'Help',
         goodMorning:'Good morning', goodAfternoon:'Good afternoon', goodEvening:'Good evening',
         digitalWallet:'Digital Wallet',
         useBiometric:'Use face / fingerprint',
@@ -280,9 +278,12 @@
         cardFrozenSend:'❄ Card Frozen — Cannot Send',
         pastTransactions:'Past Transactions',
         noTransactions:'No transactions yet',
+        seeAll:'See all',
+        allTransactions:'All transactions',
         goBack:'Go Back',
         freezeCard:'Freeze Card',
         unfreezeCard:'Unfreeze Card',
+        topUp:'Top Up',
         cardFrozenLabel:'❄ Card Frozen',
         txType:'Type', txCard:'Card', txFrom:'From', txTo:'To',
         txAmount:'Amount', txFee:'Fee', txStatus:'Status', txDate:'Date',
@@ -290,11 +291,12 @@
         moneyReceived:'Money received', moneySent:'Money sent',
         close:'Close',
         viewBalance:'View Balance',
+        availableBalance:'Available balance',
         sendingFrom:'Sending from',
         chooseRecipient:'Choose Recipient',
         searchNameOrNumber:'Search name or number\u2026',
         amountToSend:'Amount to Send',
-        fee:'Fee', noFee:'\u20ac0.00 \u2014 No fee!',
+        fee:'Fee', noFee:'\u20ac0 \u2014 No fee!',
         estimatedDelivery:'Estimated delivery',
         instant:'Instant \u26a1',
         continueBtn:'Continue \u2192',
@@ -327,9 +329,10 @@
         enterCvv:'Enter 3-digit CVV',
         pleaseEnterValidAmount:'Please enter a valid amount.',
         insufficientBalance:'Insufficient balance. Available: ',
+        navHome:'Home', navCards:'Cards', navProfile:'Profile', navHelp:'Help',
       },
       bg: {
-        appName:'BulPay Wallet', help:'Помощ',
+        appName:'BulPay', help:'Помощ',
         goodMorning:'Добро утро', goodAfternoon:'Добър ден', goodEvening:'Добър вечер',
         digitalWallet:'Дигитален портфейл',
         useBiometric:'Лице / пръстов отпечатък',
@@ -347,9 +350,12 @@
         cardFrozenSend:'Замразена - Не може да изпращате',
         pastTransactions:'Минали транзакции',
         noTransactions:'Все още няма транзакции',
+        seeAll:'Виж всички',
+        allTransactions:'Всички транзакции',
         goBack:'Назад',
         freezeCard:'Замрази карта',
         unfreezeCard:'Размрази карта',
+        topUp:'Зареди',
         cardFrozenLabel:'❄ Картата е замразена',
         txType:'Тип', txCard:'Карта', txFrom:'От', txTo:'До',
         txAmount:'Сума', txFee:'Такса', txStatus:'Статус', txDate:'Дата',
@@ -357,11 +363,12 @@
         moneyReceived:'Получени пари', moneySent:'Изпратени пари',
         close:'Затвори',
         viewBalance:'Виж баланс',
+        availableBalance:'Наличен баланс',
         sendingFrom:'Изпращане от',
         chooseRecipient:'Изберете получател',
         searchNameOrNumber:'Търси по име или номер\u2026',
         amountToSend:'Сума за изпращане',
-        fee:'Такса', noFee:'\u20ac0.00 \u2014 Без такса!',
+        fee:'Такса', noFee:'\u20ac0 \u2014 Без такса!',
         estimatedDelivery:'Очаквано доставяне',
         instant:'Моментално \u26a1',
         continueBtn:'Продължи \u2192',
@@ -394,6 +401,7 @@
         enterCvv:'Въведете 3-цифрен CVV',
         pleaseEnterValidAmount:'Моля, въведете валидна сума.',
         insufficientBalance:'Недостатъчен баланс. Налично: ',
+        navHome:'Начало', navCards:'Карти', navProfile:'Профил', navHelp:'Помощ',
       },
     };
 
@@ -408,7 +416,7 @@
     ════════════════════════════════════════ */
 
     /* ── App Header ── */
-    function AppHeader({ onBack }) {
+    function AppHeader({ onBack, title }) {
       const t = useLang();
       return (
         <div style={{
@@ -435,15 +443,9 @@
             color: C.txtPrimary, fontSize: 20, fontWeight: 700,
             position: 'absolute', left: '50%', transform: 'translateX(-50%)',
             pointerEvents: 'none',
-          }}>{t('appName')}</span>
+          }}>{title != null ? title : t('appName')}</span>
 
           <div style={{display:'flex', alignItems:'center', gap:0}}>
-            <button style={{
-              background:'none', border:'none', cursor:'pointer',
-              padding:'12px 8px', color: C.txtMuted,
-              fontSize:15, fontWeight:500, fontFamily:'Roboto,sans-serif',
-              minHeight:44, display:'flex', alignItems:'center',
-            }}>{t('help')}</button>
             <button style={{
               background:'none', border:'none', cursor:'pointer',
               padding:'10px 10px 10px 4px', color: C.txtMuted,
@@ -479,15 +481,12 @@
       /* View Balance toggle (kept for possible reuse):
       const stopProp = (e) => { e.stopPropagation(); onToggleBal && onToggleBal(); }; */
       const clickable = !!onCardClick;
-      const [hovered, setHovered] = useState(false);
       const visa = isVisa(card.name);
       const holderName = (card.holder || 'CARDHOLDER NAME').toUpperCase();
       const expiry = card.exp || '12/28';
 
       return (
         <div onClick={onCardClick}
-             onMouseEnter={() => clickable && setHovered(true)}
-             onMouseLeave={() => setHovered(false)}
              className="card-hex-pattern"
              style={{
                background: CARD_BG_DARK,
@@ -498,15 +497,10 @@
                position: 'relative',
                overflow: 'hidden',
                cursor: clickable ? 'pointer' : 'default',
-               boxShadow: hovered
-                 ? '0 12px 36px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.12)'
-                 : C.cardShadow,
+               boxShadow: C.cardShadow,
                userSelect: 'none',
-               transform: hovered ? 'translateY(-4px) scale(1.012)' : 'translateY(0) scale(1)',
-               transition: 'transform .22s cubic-bezier(.34,1.2,.64,1), box-shadow .22s ease',
-               filter: hovered ? 'brightness(1.07)' : 'brightness(1)',
                width: '100%',
-               maxWidth: 340,
+               maxWidth: 400,
                aspectRatio: '86/54',
                display: 'flex',
                flexDirection: 'column',
@@ -757,7 +751,7 @@
           <div style={{display:'flex', alignItems:'center', gap:4, marginLeft:8, flexShrink:0}}>
             <span style={{fontSize:16, fontWeight:700,
                           color: isIn ? '#16A34A' : C.txtPrimary}}>
-              € {isIn ? '+' : '-'}{Math.abs(tx.amt).toFixed(2)}
+              € {isIn ? '+' : '-'}{fmtAmountNum(tx.amt)}
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" style={{width:16,height:16,color:'#D1D5DB'}}
                  fill="none" viewBox="0 0 24 24" stroke="#D1D5DB" strokeWidth={2.5}>
@@ -783,6 +777,111 @@
         {children}
       </div>
     );
+
+    /* ── Bottom Navigation Bar ── */
+    function BottomNav({ nav, active }) {
+      const t = useLang();
+      const items = [
+        {
+          id: 'home',
+          labelKey: 'navHome',
+          onClick: () => nav('home'),
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M3 9.75L12 3l9 6.75V21a1 1 0 01-1 1H15v-5h-6v5H4a1 1 0 01-1-1V9.75z"/>
+            </svg>
+          ),
+        },
+        {
+          id: 'cards',
+          labelKey: 'navCards',
+          onClick: () => nav('cards'),
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <path strokeLinecap="round" d="M2 10h20"/>
+            </svg>
+          ),
+        },
+        {
+          id: 'profile',
+          labelKey: 'navProfile',
+          onClick: () => {},
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          ),
+        },
+        {
+          id: 'help',
+          labelKey: 'navHelp',
+          onClick: () => {},
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
+              <circle cx="12" cy="12" r="9"/>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+              <circle cx="12" cy="17" r=".5" fill={isActive ? '#2563EB' : '#9CA3AF'}/>
+            </svg>
+          ),
+        },
+      ];
+
+      return (
+        <div style={{
+          display: 'flex',
+          background: '#FFFFFF',
+          borderTop: '1px solid ' + C.border,
+          paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))',
+          flexShrink: 0,
+        }}>
+          {items.map(item => {
+            const isActive = active === item.id;
+            const isClickable = item.id === 'home' || item.id === 'cards';
+            return (
+              <button
+                key={item.id}
+                onClick={item.onClick}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 3,
+                  padding: '10px 6px 6px',
+                  background: isActive ? '#EFF6FF' : 'none',
+                  border: 'none',
+                  cursor: isClickable ? 'pointer' : 'default',
+                  color: isActive ? '#2563EB' : '#9CA3AF',
+                  fontFamily: 'Roboto, sans-serif',
+                  transition: 'background .15s',
+                  borderTop: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {item.icon(isActive)}
+                <span style={{
+                  fontSize: 11,
+                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? '#2563EB' : '#9CA3AF',
+                  lineHeight: 1,
+                }}>
+                  {t(item.labelKey)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
 
     /* ════════════════════════════════════════
        SCREEN — LANGUAGE SELECTION
@@ -1102,6 +1201,61 @@
     }
 
     /* ════════════════════════════════════════
+       SCREEN — MY CARDS (Cards tab)
+    ════════════════════════════════════════ */
+    function MyCardsScreen({ nav }) {
+      const t = useLang();
+      const [cards, setCards] = useState(Store.cards());
+
+      useEffect(() => {
+        setCards(Store.cards());
+      }, []);
+
+      return (
+        <div className="fade-in" style={{display:'flex', flexDirection:'column', flex:1, overflow:'hidden', background:C.pageBg}}>
+          <AppHeader onBack={()=>nav('home')} title={t('navCards')}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
+            <div style={{display:'flex', flexDirection:'column', gap:14}}>
+              {cards.map(c => (
+                <CardVisual
+                  key={c.id}
+                  card={c}
+                  onCardClick={() => nav('card', {cid: c.id})}
+                />
+              ))}
+            </div>
+
+            {/* Add Card */}
+            <div style={{display:'flex', justifyContent:'flex-end', marginTop:20}}>
+              <button onClick={() => nav('add-card')}
+                      style={{
+                        background: C.btnPrimary,
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 20,
+                        padding: '12px 22px',
+                        fontWeight: 600, fontSize: 16,
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        cursor: 'pointer',
+                        boxShadow: C.btnShadow,
+                        fontFamily: 'Roboto,sans-serif',
+                      }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:16,height:16}} fill="none"
+                     viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                {t('addCard')}
+              </button>
+            </div>
+          </div>
+
+          <BottomNav nav={nav} active="cards"/>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
        SCREEN — CARD DETAIL
     ════════════════════════════════════════ */
     /* ── Transaction Detail Bottom Sheet ── */
@@ -1124,8 +1278,8 @@
         { label: t('txType'),                  value: isIn ? t('moneyReceived') : t('moneySent') },
         { label: t('txCard'),                  value: `${card.name} •••• ${card.last4}` },
         { label: isIn ? t('txFrom') : t('txTo'), value: tx.who },
-        { label: t('txAmount'),                value: `€ ${isIn?'+':'-'}${Math.abs(tx.amt).toFixed(2)}`, colored: true, isIn },
-        { label: t('txFee'),                   value: '€0.00', green: true },
+        { label: t('txAmount'),                value: `€ ${isIn?'+':'-'}${fmtAmountNum(tx.amt)}`, colored: true, isIn },
+        { label: t('txFee'),                   value: '€0', green: true },
         { label: t('txStatus'),                value: tx.st || 'Completed', green: true },
         { label: t('txDate'),                  value: fmtDate(tx.date) },
         { label: t('txReference'),             value: ref, mono: true },
@@ -1227,7 +1381,7 @@
       );
     }
 
-    function CardScreen({ nav, cid }) {
+    function CardScreen({ nav, cid, activeNav = 'home' }) {
       const t = useLang();
       const cards  = Store.cards();
       const card   = cards.find(c=>c.id===cid) || cards[0];
@@ -1238,13 +1392,33 @@
 
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
-          <AppHeader onBack={()=>nav('home')}/>
+          <AppHeader onBack={activeNav === 'cards' ? () => nav('cards') : undefined}/>
 
           {/* ── Fixed top: card + send button + section title ── */}
           <div style={{flexShrink:0, padding:'20px 16px 0'}}>
             <CardVisual card={card} showBal={showBal} onToggleBal={()=>setShowBal(s=>!s)} onCardClick={()=>{}} isFrozen={isFrozen}/>
 
-            <div style={{marginTop:16, marginBottom:20}}>
+            {/* ── Available balance ── */}
+            <div style={{
+              marginTop:14,
+              padding:'14px 18px',
+              background:C.white,
+              borderRadius:12,
+              boxShadow:'0 2px 8px rgba(0,0,0,0.06)',
+              border:'1px solid '+C.border,
+              display:'flex', alignItems:'center', justifyContent:'space-between',
+              opacity: isFrozen ? 0.85 : 1,
+            }}>
+              <span style={{ fontSize:16, color:C.txtMuted, fontWeight:500, fontFamily:'Roboto,sans-serif' }}>
+                {t('availableBalance')}
+              </span>
+              <span style={{ fontSize:22, fontWeight:700, color:C.txtPrimary, fontFamily:'Roboto,sans-serif', letterSpacing:'-.02em' }}>
+                {fmtEur(card.bal ?? 0)}
+              </span>
+            </div>
+
+            {/* ── Primary Send Money Button ── */}
+            <div style={{marginTop:16}}>
               <PrimaryBtn onClick={()=>!isFrozen && nav('send',{cid:card.id})} disabled={isFrozen}>
                 <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} fill="none"
                      viewBox="0 0 24 24" stroke={isFrozen ? '#9CA3AF' : 'white'} strokeWidth={2}>
@@ -1254,16 +1428,160 @@
               </PrimaryBtn>
             </div>
 
-            <div style={{fontSize:17, fontWeight:700, color:C.txtPrimary, marginBottom:12}}>
+            {/* ── Secondary Circular Actions ── */}
+            <div style={{
+              display:'flex', justifyContent:'center', gap:40,
+              alignItems:'flex-start',
+              marginTop:18, marginBottom:20,
+            }}>
+
+              {/* Freeze */}
+              <button
+                onClick={()=>setIsFrozen(f=>!f)}
+                className={isFrozen ? 'freeze-pulse' : ''}
+                style={{
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:7,
+                  background:'none', border:'none', cursor:'pointer',
+                  padding:'4px 10px',
+                  WebkitTapHighlightColor:'transparent',
+                }}
+              >
+                <div style={{
+                  width:44, height:44, borderRadius:'50%',
+                  background: isFrozen ? '#DBEAFE' : '#F3F4F6',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  boxShadow: isFrozen
+                    ? '0 3px 10px rgba(29,78,216,0.22)'
+                    : '0 3px 10px rgba(0,0,0,0.08)',
+                  transition:'background .25s, box-shadow .25s',
+                }}>
+                  {isFrozen
+                    ? <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} fill="none"
+                           viewBox="0 0 24 24" stroke="#1D4ED8" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+                      </svg>
+                    : <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} fill="none"
+                           viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={1.8}>
+                        <rect x="5" y="11" width="14" height="10" rx="2"/>
+                        <path strokeLinecap="round" d="M8 11V7a4 4 0 018 0v4"/>
+                      </svg>}
+                </div>
+                <span style={{
+                  fontSize:15, fontWeight:500,
+                  color: isFrozen ? '#1D4ED8' : '#6B7280',
+                  fontFamily:'Roboto,sans-serif', textAlign:'center',
+                  lineHeight:'1.3', whiteSpace:'nowrap',
+                  transition:'color .25s',
+                }}>
+                  {isFrozen ? t('unfreezeCard') : t('freezeCard')}
+                </span>
+              </button>
+
+              {/* Top Up — visual only */}
+              <button
+                style={{
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:7,
+                  background:'none', border:'none', cursor:'pointer',
+                  padding:'4px 10px',
+                  WebkitTapHighlightColor:'transparent',
+                }}
+              >
+                <div style={{
+                  width:44, height:44, borderRadius:'50%',
+                  background:'#F0FDF4',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  boxShadow:'0 3px 10px rgba(22,163,74,0.13)',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} fill="none"
+                       viewBox="0 0 24 24" stroke="#16A34A" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14"/>
+                  </svg>
+                </div>
+                <span style={{
+                  fontSize:15, fontWeight:500, color:'#6B7280',
+                  fontFamily:'Roboto,sans-serif', textAlign:'center',
+                  lineHeight:'1.3', whiteSpace:'nowrap',
+                }}>
+                  {t('topUp')}
+                </span>
+              </button>
+
+            </div>
+
+            <div style={{fontSize:17, fontWeight:500, color:C.txtPrimary, marginBottom:12}}>
               {t('pastTransactions')}
             </div>
           </div>
 
-          {/* ── Independently scrollable transaction list ── */}
+          {/* ── Independently scrollable transaction list (max 3) ── */}
           <div className="scroll-body" style={{
             flex:1, padding:'0 16px 8px',
           }}>
             <WhiteBox style={{marginBottom:8}}>
+              {txs.length > 0
+                ? (()=>{
+                    const showTxs = txs.slice(0, 3);
+                    return (
+                      <>
+                        {showTxs.map((tx,i)=>(
+                          <div key={tx.id} style={i===showTxs.length-1 && txs.length <= 3 ?{borderBottom:'none'}:{}}>
+                            <TxRow tx={tx} onClick={()=>setSelectedTx(tx)}/>
+                          </div>
+                        ))}
+                        {txs.length > 3 && (
+                          <div style={{borderTop:'1px solid '+C.rowBorder}}>
+                            <button
+                              onClick={()=>nav('all-transactions',{cid:card.id})}
+                              style={{
+                                width:'100%', padding:'14px 16px', border:'none', background:C.white,
+                                fontSize:16, fontWeight:600, color:C.txtPrimary, cursor:'pointer',
+                                fontFamily:'Roboto,sans-serif', textAlign:'center',
+                                transition:'background .15s',
+                              }}
+                              onMouseEnter={e=>{ e.currentTarget.style.background='#EFF6FF'; }}
+                              onMouseLeave={e=>{ e.currentTarget.style.background=C.white; }}
+                            >
+                              {t('seeAll')}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
+                : <div style={{padding:'40px 16px', textAlign:'center', fontSize:16, color:C.txtMuted}}>
+                    {t('noTransactions')}
+                  </div>}
+            </WhiteBox>
+          </div>
+
+          <BottomNav nav={nav} active={activeNav}/>
+
+          {/* Transaction detail bottom sheet */}
+          {selectedTx && (
+            <TxDetailSheet
+              tx={selectedTx}
+              card={card}
+              onClose={()=>setSelectedTx(null)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    function AllTransactionsScreen({ nav, cid }) {
+      const t = useLang();
+      const cards = Store.cards();
+      const card = cards.find(c=>c.id===cid) || cards[0];
+      const txs = Store.tx().filter(tx=>tx.cid===card.id);
+      const [selectedTx, setSelectedTx] = useState(null);
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
+          <AppHeader onBack={()=>nav('card',{cid:card.id})} title={t('allTransactions')}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'16px 16px 8px'}}>
+            <WhiteBox>
               {txs.length > 0
                 ? txs.map((tx,i)=>(
                     <div key={tx.id} style={i===txs.length-1?{borderBottom:'none'}:{}}>
@@ -1276,61 +1594,6 @@
             </WhiteBox>
           </div>
 
-          {/* ── Bottom buttons ── */}
-          <div style={{
-            padding:'12px 16px',
-            paddingBottom:'max(20px, env(safe-area-inset-bottom, 20px))',
-            display:'flex', gap:12,
-            flexShrink:0,
-            background:C.pageBg,
-            position:'relative',
-            borderTop:'1px solid '+C.border,
-          }}>
-            <OutlineBtn onClick={()=>nav('home')}
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" style={{width:15,height:15}} fill="none"
-                     viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
-                </svg>
-              }>
-              {t('goBack')}
-            </OutlineBtn>
-            <button
-              onClick={()=>setIsFrozen(f=>!f)}
-              className={isFrozen ? 'freeze-pulse' : ''}
-              style={{
-                flex:1,
-                background: isFrozen ? '#EFF6FF' : C.white,
-                border: '1px solid ' + (isFrozen ? '#93C5FD' : C.border),
-                borderRadius:14, padding:'13px 10px',
-                fontSize:16, fontWeight:500,
-                color: isFrozen ? '#1D4ED8' : '#374151',
-                cursor:'pointer', display:'flex', alignItems:'center',
-                justifyContent:'center', gap:6,
-                fontFamily:'Roboto,sans-serif',
-                transition:'background .25s, border-color .25s, color .25s',
-              }}>
-              {isFrozen
-                ? <>
-                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:15,height:15}} fill="none"
-                         viewBox="0 0 24 24" stroke="#1D4ED8" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round"
-                        d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
-                    </svg>
-                    {t('unfreezeCard')}
-                  </>
-                : <>
-                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:15,height:15}} fill="none"
-                         viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={1.8}>
-                      <rect x="5" y="11" width="14" height="10" rx="2"/>
-                      <path strokeLinecap="round" d="M8 11V7a4 4 0 018 0v4"/>
-                    </svg>
-                    {t('freezeCard')}
-                  </>}
-            </button>
-          </div>
-
-          {/* Transaction detail bottom sheet */}
           {selectedTx && (
             <TxDetailSheet
               tx={selectedTx}
@@ -1338,6 +1601,8 @@
               onClose={()=>setSelectedTx(null)}
             />
           )}
+
+          <BottomNav nav={nav} active="home"/>
         </div>
       );
     }
@@ -1550,7 +1815,7 @@
       const rows = [
         { label:t('fromCard'), value:`${draft.card.name} •••• ${draft.card.last4}` },
         { label:t('amount'),   value:fmtEur(draft.amt) },
-        { label:t('txFee'),    value:'€0.00', green:true },
+        { label:t('txFee'),    value:'€0', green:true },
         { label:t('total'),    value:fmtEur(draft.amt), bold:true },
       ];
 
@@ -1781,7 +2046,7 @@
         { label:t('amountSent'),  value:fmtEur(draft.amt), green:true, bold:true },
         { label:t('to'),          value:draft.recip.name },
         { label:t('fromCard'),    value:'•••• '+draft.card.last4 },
-        { label:t('txFee'),       value:'€0.00', green:true },
+        { label:t('txFee'),       value:'€0', green:true },
         { label:t('reference'),   value:draft.ref, mono:true },
         { label:t('dateTime'),    value:dateStr },
       ];
@@ -1882,7 +2147,7 @@
             last4:f.num.replace(/\s/g,'').slice(-4),
             holder:f.name, bal:0, grad:'g3'
           }]);
-          nav('home');
+          nav('cards');
         },1000);
       };
 
@@ -1901,7 +2166,7 @@
 
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg}}>
-          <AppHeader onBack={()=>nav('home')}/>
+          <AppHeader onBack={()=>nav('cards')}/>
 
           <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
 
@@ -1968,7 +2233,7 @@
             <PrimaryBtn onClick={add} loading={busy}>
               {!busy && t('addCard')}
             </PrimaryBtn>
-            <button onClick={()=>nav('home')}
+            <button onClick={()=>nav('cards')}
                     style={{
                       width:'100%', marginTop:12, padding:'12px',
                       background:'transparent', border:'none',
@@ -1999,8 +2264,10 @@
           case 'lang':     return <LanguageScreen nav={nav} onLangSelect={setLang}/>;
           case 'login':    return <LoginScreen    nav={nav}/>;
           case 'pin':      return <PinScreen      nav={nav}/>;
-          case 'home':     return <HomeScreen     nav={nav}/>;
-          case 'card':     return <CardScreen     nav={nav} cid={route.p.cid}/>;
+          case 'home':     return <CardScreen     nav={nav} cid={Store.cards()[0]?.id} activeNav="home"/>;
+          case 'cards':    return <MyCardsScreen  nav={nav}/>;
+          case 'card':     return <CardScreen     nav={nav} cid={route.p.cid} activeNav="cards"/>;
+          case 'all-transactions': return <AllTransactionsScreen nav={nav} cid={route.p.cid}/>;
           case 'send':     return <SendScreen     nav={nav} cid={route.p.cid}/>;
           case 'confirm':  return <ConfirmScreen  nav={nav}/>;
           case 'success':  return <SuccessScreen  nav={nav}/>;
