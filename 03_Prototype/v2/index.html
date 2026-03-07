@@ -57,8 +57,9 @@
       background: #EEF2F8;
     }
     @media (min-width: 500px) {
-      body { display:flex; align-items:center; justify-content:center; padding:24px; background: #94A3B8; }
-      #root { overflow: visible; display: block; }
+      html { overflow-y: auto; }
+      body { display:flex; align-items:flex-start; justify-content:center; padding:24px; background: #94A3B8; overflow-y: auto; min-height: 100%; }
+      #root { overflow: visible; display: block; width: auto; }
       .phone-shell {
         position: relative;
         height: 844px;
