@@ -1447,23 +1447,22 @@
             {/* ── Available balance ── */}
             <div style={{
               marginTop:14,
-              padding:'16px 18px',
+              padding:'20px 18px 18px',
               background:C.white,
               borderRadius:12,
               boxShadow:'0 2px 8px rgba(0,0,0,0.06)',
               border:'1px solid '+C.border,
-              display:'flex', flexDirection:'column', alignItems:'stretch', gap:8,
+              display:'flex', flexDirection:'column', alignItems:'center', gap:4,
               opacity: isFrozen ? 0.85 : 1,
             }}>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <span style={{ fontSize:T.h2, color:C.txtPrimary, fontWeight:W.medium, fontFamily:'Roboto,sans-serif' }}>
-                  {t('availableBalance')}
-                </span>
-                <span style={{ fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary, fontFamily:'Roboto,sans-serif', letterSpacing:'-.02em' }}>
-                  {fmtEur(card.bal ?? 0)}
-                </span>
-              </div>
-              <span style={{ fontSize:T.bodySmall, color:C.txtSecond, fontWeight:W.regular, lineHeight:1.5 }}>
+              <span style={{ fontSize:T.caption, color:C.txtMuted, fontWeight:W.medium, fontFamily:'Roboto,sans-serif', letterSpacing:'.06em', textTransform:'uppercase' }}>
+                {t('availableBalance')}
+              </span>
+              <span style={{ fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary, fontFamily:'Roboto,sans-serif', letterSpacing:'-.02em', lineHeight:1.15, marginTop:2 }}>
+                {fmtEur(card.bal ?? 0)}
+              </span>
+              <div style={{ width:32, height:2, borderRadius:2, background:C.border, margin:'6px 0 4px' }} />
+              <span style={{ fontSize:T.caption, color:C.txtMuted, fontWeight:W.regular, lineHeight:1.5, textAlign:'center' }}>
                 {t('cardSecuredByBulPay')}
               </span>
             </div>
@@ -1499,7 +1498,7 @@
                 }}
               >
                 <div style={{
-                  width:48, height:48, borderRadius:'50%',
+                  width:48, height:48, borderRadius:16,
                   background: isFrozen ? '#DBEAFE' : '#DDE6F5',
                   display:'flex', alignItems:'center', justifyContent:'center',
                   border: '2px solid ' + (isFrozen ? '#1D4ED8' : '#3B5FC0'),
@@ -1541,7 +1540,7 @@
                 }}
               >
                 <div style={{
-                  width:48, height:48, borderRadius:'50%',
+                  width:48, height:48, borderRadius:16,
                   background:'#DDE6F5',
                   display:'flex', alignItems:'center', justifyContent:'center',
                   border: '2px solid #3B5FC0',
@@ -1571,7 +1570,7 @@
                 }}
               >
                 <div style={{
-                  width:48, height:48, borderRadius:'50%',
+                  width:48, height:48, borderRadius:16,
                   background:'#DDE6F5',
                   display:'flex', alignItems:'center', justifyContent:'center',
                   border: '2px solid #3B5FC0',
