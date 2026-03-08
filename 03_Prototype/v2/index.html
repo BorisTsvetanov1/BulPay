@@ -1714,7 +1714,8 @@
         nav('confirm');
       };
 
-      const canGo = recip && amt && parseFloat(amt) > 0;
+      const parsedAmt = parseFloat(amt);
+      const canGo = recip && amt && parsedAmt > 0 && parsedAmt <= card.bal;
 
       useEffect(() => {
         if (recip && amountSectionRef.current) {
