@@ -1170,7 +1170,7 @@
       const greetingKey = hour < 12 ? 'goodMorning' : hour < 17 ? 'goodAfternoon' : 'goodEvening';
 
       return (
-        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
           <AppHeader onBack={()=>nav('lang')}/>
           <div style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', padding:'36px 24px 28px'}}>
 
@@ -1232,7 +1232,7 @@
       const toggle = (id) => setShown(s=>({...s,[id]:!s[id]}));
 
       return (
-        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
           <AppHeader/>
           <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
 
@@ -2370,62 +2370,73 @@
       ];
 
       return (
-        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
           <AppHeader/>
-          <div className="scroll-body" style={{padding:'32px 20px', paddingBottom:'calc(env(safe-area-inset-bottom, 0px) + 72px)', display:'flex', flexDirection:'column', alignItems:'center'}}>
-
-            {/* Checkmark */}
+          {/* scroll-body is a plain scroll container — no flex on it, avoiding the
+              iOS Safari bug where overflow-y:auto + display:flex on the same element
+              inside an overflow:hidden parent causes incorrect height calculation */}
+          <div className="scroll-body">
             <div style={{
-              width:88,height:88,borderRadius:'50%',background:'#DCFCE7',
-              display:'flex',alignItems:'center',justifyContent:'center',
-              boxShadow:'0 8px 28px rgba(22,163,74,.2)', marginBottom:14,
+              padding:'28px 20px',
+              paddingBottom:'calc(env(safe-area-inset-bottom, 0px) + 80px)',
+              display:'flex', flexDirection:'column', alignItems:'center',
             }}>
+
+              {/* Checkmark */}
               <div style={{
-                width:60,height:60,borderRadius:'50%',background:'#16A34A',
+                width:88,height:88,borderRadius:'50%',background:'#DCFCE7',
                 display:'flex',alignItems:'center',justifyContent:'center',
+                flexShrink:0,
+                boxShadow:'0 8px 28px rgba(22,163,74,.2)', marginBottom:14,
               }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{width:32,height:32}} fill="none"
-                     viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
+                <div style={{
+                  width:60,height:60,borderRadius:'50%',background:'#16A34A',
+                  flexShrink:0,
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{width:32,height:32}} fill="none"
+                       viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </div>
+              <div style={{fontSize:T.h1,fontWeight:W.bold,color:C.txtPrimary,marginBottom:4,textAlign:'center'}}>{t('paymentSent')}</div>
+              <div style={{fontSize:T.body,color:C.txtMuted,marginBottom:24,textAlign:'center'}}>{t('paymentSuccessful')}</div>
+
+              {/* Receipt */}
+              <WhiteBox style={{width:'100%',marginBottom:20}}>
+                <div style={{
+                  padding:'12px 16px',borderBottom:'1px dashed #E5E7EB',
+                  background:'#F9FAFB',
+                }}>
+                  <div style={{fontSize:T.caption,fontWeight:W.semibold,color:C.txtMuted,
+                               textAlign:'center',textTransform:'uppercase',letterSpacing:'.07em'}}>
+                    {t('receipt')}
+                  </div>
+                </div>
+                {rows.map(({label,value,green,bold,mono},i)=>(
+                  <div key={label} style={{
+                    display:'flex',justifyContent:'space-between',alignItems:'center',
+                    padding:'13px 16px',
+                    borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
+                  }}>
+                    <span style={{fontSize:T.bodySmall,color:C.txtMuted}}>{label}</span>
+                    <span style={{
+                      fontSize: bold?T.h3:T.bodySmall,
+                      fontWeight: bold?W.bold:W.medium,
+                      color: green?'#16A34A': C.txtPrimary,
+                      fontFamily: mono?'monospace':'Roboto,sans-serif',
+                    }}>
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </WhiteBox>
+
+              <div style={{width:'100%'}}>
+                <PrimaryBtn onClick={()=>nav('home')}>{t('done')}</PrimaryBtn>
               </div>
             </div>
-            <div style={{fontSize:T.h1,fontWeight:W.bold,color:C.txtPrimary,marginBottom:4}}>{t('paymentSent')}</div>
-            <div style={{fontSize:T.body,color:C.txtMuted,marginBottom:24}}>{t('paymentSuccessful')}</div>
-
-            {/* Receipt */}
-            <WhiteBox style={{width:'100%',marginBottom:20}}>
-              <div style={{
-                padding:'12px 16px',borderBottom:'1px dashed #E5E7EB',
-                background:'#F9FAFB',
-              }}>
-                <div style={{fontSize:T.caption,fontWeight:W.semibold,color:C.txtMuted,
-                             textAlign:'center',textTransform:'uppercase',letterSpacing:'.07em'}}>
-                  {t('receipt')}
-                </div>
-              </div>
-              {rows.map(({label,value,green,bold,mono},i)=>(
-                <div key={label} style={{
-                  display:'flex',justifyContent:'space-between',alignItems:'center',
-                  padding:'13px 16px',
-                  borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
-                }}>
-                  <span style={{fontSize:T.bodySmall,color:C.txtMuted}}>{label}</span>
-                  <span style={{
-                    fontSize: bold?T.h3:T.bodySmall,
-                    fontWeight: bold?W.bold:W.medium,
-                    color: green?'#16A34A': C.txtPrimary,
-                    fontFamily: mono?'monospace':'Roboto,sans-serif',
-                  }}>
-                    {value}
-                  </span>
-                </div>
-              ))}
-              {/* Bottom guard: prevents the last row being clipped by border-radius + overflow:hidden */}
-              <div style={{height:4}} />
-            </WhiteBox>
-
-            <PrimaryBtn onClick={()=>nav('home')}>{t('done')}</PrimaryBtn>
           </div>
         </div>
       );
@@ -2485,7 +2496,7 @@
       };
 
       return (
-        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
           <AppHeader onBack={()=>nav('cards')}/>
 
           <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
