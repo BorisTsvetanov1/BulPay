@@ -290,7 +290,11 @@
     const fmtAmountNum = (n) => (n % 1 === 0 ? String(Math.round(Math.abs(n))) : Math.abs(n).toFixed(2));
     const fmtAmountWithCommas = (n) => fmtAmountNum(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     const fmtEur  = (n) => '€' + fmtAmountWithCommas(n);
-    const fmtDate = (s) => s.slice(0,10);
+    const fmtDate = (s) => {
+      const part = (s || '').slice(0, 10);
+      const [y, m, d] = part.split('-');
+      return d && m && y ? `${d}.${m}.${y}` : part;
+    };
     const genRef  = ()  => 'BUL-' + Math.random().toString(36).slice(2,8).toUpperCase();
     const greet   = (t) => { const h=new Date().getHours(); return h<12?t('goodMorning'):h<17?t('goodAfternoon'):t('goodEvening'); };
 
@@ -315,7 +319,7 @@
         addCard:'Add Card',
         sendMoney:'Send Money',
         cardFrozenSend:'❄ Card Frozen — Cannot Send',
-        pastTransactions:'Past Transactions',
+        pastTransactions:'Recent Transactions',
         noTransactions:'No transactions yet',
         seeAll:'See all',
         allTransactions:'All transactions',
@@ -389,7 +393,7 @@
         addCard:'Добави карта',
         sendMoney:'Изпрати пари',
         cardFrozenSend:'Замразена карта',
-        pastTransactions:'Минали транзакции',
+        pastTransactions:'Скорошни транзакции',
         noTransactions:'Все още няма транзакции',
         seeAll:'Виж всички',
         allTransactions:'Всички транзакции',
@@ -809,7 +813,7 @@
 
     /* ── Section Label ── */
     const SectionLabel = ({children}) => (
-      <div style={{fontSize:T.caption, fontWeight:W.semibold, color:C.txtMuted,
+      <div style={{fontSize:16, fontWeight:W.semibold, color:C.txtMuted,
                    textTransform:'uppercase', letterSpacing:'.07em', marginBottom:10}}>
         {children}
       </div>
@@ -1455,14 +1459,14 @@
               display:'flex', flexDirection:'column', alignItems:'center', gap:4,
               opacity: isFrozen ? 0.85 : 1,
             }}>
-              <span style={{ fontSize:T.caption, color:C.txtMuted, fontWeight:W.medium, fontFamily:'Roboto,sans-serif', letterSpacing:'.06em', textTransform:'uppercase' }}>
+              <span style={{ fontSize:16, color:C.txtMuted, fontWeight:W.medium, fontFamily:'Roboto,sans-serif', letterSpacing:'.06em', textTransform:'uppercase' }}>
                 {t('availableBalance')}
               </span>
               <span style={{ fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary, fontFamily:'Roboto,sans-serif', letterSpacing:'-.02em', lineHeight:1.15, marginTop:2 }}>
                 {fmtEur(card.bal ?? 0)}
               </span>
               <div style={{ width:32, height:2, borderRadius:2, background:C.border, margin:'6px 0 4px' }} />
-              <span style={{ fontSize:T.caption, color:C.txtMuted, fontWeight:W.regular, lineHeight:1.5, textAlign:'center' }}>
+              <span style={{ fontSize:16, color:C.txtMuted, fontWeight:W.regular, lineHeight:1.5, textAlign:'center' }}>
                 {t('cardSecuredByBulPay')}
               </span>
             </div>
