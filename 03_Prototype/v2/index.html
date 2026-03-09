@@ -396,6 +396,7 @@
         insufficientBalance:'Insufficient balance. Available: ',
         navHome:'Home', navCards:'Cards', navProfile:'Profile', navHelp:'Help',
         tapToManage:'Tap to manage',
+        cardManageBtn:'Manage',
         addNewCard:'Add New Card',
         showCardDetails:'See Details',
         cardFrozenBanner:'Transactions are paused.',
@@ -475,6 +476,7 @@
         insufficientBalance:'Недостатъчен баланс. Налично: ',
         navHome:'Начало', navCards:'Карти', navProfile:'Профил', navHelp:'Помощ',
         tapToManage:'Натиснете за управление',
+        cardManageBtn:'Действия',
         addNewCard:'Добави нова карта',
         showCardDetails:'Виж детайли на картата',
         cardFrozenBanner:'Картата е замразена — транзакциите са спрени.',
@@ -1285,6 +1287,7 @@
     ════════════════════════════════════════ */
     /* ── Compact card tile used in MyCardsScreen list ── */
     function CardCompactTile({ card, onClick }) {
+      const t = useLang();
       const visa = isVisa(card.name);
       const holderName = (card.holder || 'CARDHOLDER NAME').toUpperCase();
 
@@ -1377,7 +1380,7 @@
             marginLeft: 14,
           }}>
             <span style={{ fontSize: T.overline, color: 'rgba(255,255,255,.75)', fontWeight: W.medium, letterSpacing: '.05em', whiteSpace:'nowrap' }}>
-              Manage
+              {t('cardManageBtn')}
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" style={{width:13,height:13,flexShrink:0}} fill="none"
                  viewBox="0 0 24 24" stroke="rgba(255,255,255,.75)" strokeWidth={2.5}>
@@ -1734,9 +1737,14 @@
 
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
-          <AppHeader onBack={() => nav('cards')} title={t('manageCard')}/>
+          <AppHeader onBack={() => nav('cards')} title={t('appName')}/>
 
           <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
+
+            {/* Page heading */}
+            <div style={{fontSize:T.h1, fontWeight:W.bold, color:C.txtPrimary, marginBottom:20}}>
+              {t('manageCard')}
+            </div>
 
             {/* Card visual */}
             <CardVisual card={card} isFrozen={isFrozen} onCardClick={null}/>
