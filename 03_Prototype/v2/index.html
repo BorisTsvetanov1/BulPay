@@ -279,16 +279,16 @@
     ];
 
     const SEED_TX = [
-      { id:'t1', cid:'c1', who:'Петър Георгиев',     ini:'ПГ', amt:10,   dir:'out', date:'2026-01-14', st:'Completed' },
-      { id:'t2', cid:'c1', who:'Борис Цветанов',     ini:'БЦ', amt:100,   dir:'in', date:'2025-12-22', st:'Completed' },
-      { id:'t3', cid:'c1', who:'Иван Иванов', ini:'ИИ', amt:24.50,   dir:'out', date:'2026-01-03', st:'Completed' },
+      { id:'t1', cid:'c1', who:'Andrea Lopez',     ini:'AL', amt:35,   dir:'out', date:'2026-01-14', st:'Completed' },
+      { id:'t2', cid:'c1', who:'Boris Tsvetanov',     ini:'BT', amt:120,   dir:'in', date:'2025-12-22', st:'Completed' },
+      { id:'t3', cid:'c1', who:'Benjamin Parker',       ini:'BP', amt:24.50,   dir:'out', date:'2026-01-03', st:'Completed' },
 
     ];
 
     const RECIPIENTS = [
-      { id:'r1', name:'Андреа Цветанова',    phone:'+359 892619777', ini:'АЦ' },
-      { id:'r2', name:'Борис Цветанов',    phone:'+359 898688846', ini:'БЦ' },
-      { id:'r3', name:'Иван Петров',       phone:'+359 882345678', ini:'ИП' },
+      { id:'r1', name:'Andrea Lopez',    phone:'+34 892619737', ini:'AL' },
+      { id:'r2', name:'Benjamin Parker',    phone:'+44 852688846', ini:'BP' },
+      { id:'r3', name:'Boris Tsvetanov',       phone:'+359 882345678', ini:'BT' },
     ];
 
     /* ════════════════════════════════════════
@@ -394,7 +394,7 @@
         enterCvv:'Enter 3-digit CVV',
         pleaseEnterValidAmount:'Please enter a valid amount.',
         insufficientBalance:'Insufficient balance. Available: ',
-        navHome:'Home', navCards:'Cards', navProfile:'Profile', navHelp:'Help',
+        navHome:'Home', navSend:'Send', navCards:'Cards', navHelp:'Help',
         tapToManage:'Tap to manage',
         cardManageBtn:'Manage',
         addNewCard:'Add New Card',
@@ -436,7 +436,7 @@
         close:'Затвори',
         viewBalance:'Виж баланс',
         availableBalance:'Наличен баланс',
-        cardSecuredByBulPay:'Вашата ДСК карта, управлявана от BulPay',
+        cardSecuredByBulPay:'Вашата ДСК карта, защитена от BulPay',
         sendingFrom:'Изпращане от',
         chooseRecipient:'Изберете получател',
         searchNameOrNumber:'Търси по име или номер\u2026',
@@ -474,7 +474,7 @@
         enterCvv:'Въведете 3-цифрен CVV',
         pleaseEnterValidAmount:'Моля, въведете валидна сума.',
         insufficientBalance:'Недостатъчен баланс. Налично: ',
-        navHome:'Начало', navCards:'Карти', navProfile:'Профил', navHelp:'Помощ',
+        navHome:'Начало', navSend:'Изпрати', navCards:'Карти', navHelp:'Помощ',
         tapToManage:'Натиснете за управление',
         cardManageBtn:'Действия',
         addNewCard:'Добави нова карта',
@@ -528,6 +528,20 @@
           <div style={{display:'flex', alignItems:'center', gap:0}}>
             <button style={{
               background:'none', border:'none', cursor:'pointer',
+              padding:'10px 6px', color: C.txtMuted,
+              display:'flex', alignItems:'center', minHeight:44, minWidth:36,
+              justifyContent:'center',
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <circle cx="12" cy="12" r="9"/>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                <circle cx="12" cy="17" r=".5" fill="currentColor"/>
+              </svg>
+            </button>
+            <button style={{
+              background:'none', border:'none', cursor:'pointer',
               padding:'10px 10px 10px 4px', color: C.txtMuted,
               display:'flex', alignItems:'center', minHeight:44, minWidth:40,
               justifyContent:'center',
@@ -570,14 +584,12 @@
              className="card-hex-pattern"
              style={{
                background: CARD_BG_DARK,
-               border: '1px solid rgba(0,0,0,.45)',
                borderRadius: 14,
                padding: '20px 22px',
                color: '#fff',
                position: 'relative',
                overflow: 'hidden',
                cursor: clickable ? 'pointer' : 'default',
-               boxShadow: '0 8px 32px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.12)',
                userSelect: 'none',
                width: '100%',
                maxWidth: 400,
@@ -860,7 +872,7 @@
     );
 
     /* ── Bottom Navigation Bar ── */
-    function BottomNav({ nav, active }) {
+    function BottomNav({ nav, active, card }) {
       const t = useLang();
       const items = [
         {
@@ -876,6 +888,25 @@
           ),
         },
         {
+          id: 'send',
+          labelKey: 'navSend',
+          onClick: () => {
+            const cards = Store.cards();
+            const targetCard = card || cards[0];
+            if (targetCard) {
+              nav('send', { cid: targetCard.id, origin: active || 'home' });
+            }
+          },
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} viewBox="0 0 24 24"
+                 fill="none" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}
+                 strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          ),
+        },
+        {
           id: 'cards',
           labelKey: 'navCards',
           onClick: () => nav('cards'),
@@ -884,33 +915,6 @@
                  viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
               <rect x="2" y="5" width="20" height="14" rx="2"/>
               <path strokeLinecap="round" d="M2 10h20"/>
-            </svg>
-          ),
-        },
-        {
-          id: 'profile',
-          labelKey: 'navProfile',
-          onClick: () => {},
-          icon: (isActive) => (
-            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
-                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          ),
-        },
-        {
-          id: 'help',
-          labelKey: 'navHelp',
-          onClick: () => {},
-          icon: (isActive) => (
-            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
-                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
-              <circle cx="12" cy="12" r="9"/>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
-              <circle cx="12" cy="17" r=".5" fill={isActive ? '#2563EB' : '#9CA3AF'}/>
             </svg>
           ),
         },
@@ -1428,7 +1432,7 @@
                         background: C.btnPrimary,
                         color: '#fff',
                         border: 'none',
-                        borderRadius: 30,
+                        borderRadius: 16,
                         padding: '16px 36px',
                         fontWeight: W.semibold, fontSize: T.h3,
                         display: 'flex', alignItems: 'center', gap: 10,
@@ -1616,7 +1620,7 @@
 
             {/* ── Primary Send Money Button ── */}
             <div style={{marginTop:16, marginBottom:20}}>
-              <PrimaryBtn onClick={() => nav('send', {cid: card.id})}>
+              <PrimaryBtn onClick={() => nav('send', { cid: card.id, origin: activeNav })}>
                 <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} viewBox="0 0 24 24"
                      fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13" />
@@ -1668,7 +1672,7 @@
             </WhiteBox>
           </div>
 
-          <BottomNav nav={nav} active={activeNav}/>
+          <BottomNav nav={nav} active={activeNav} card={card}/>
 
           {/* Transaction detail bottom sheet */}
           {selectedTx && (
@@ -1719,7 +1723,7 @@
             />
           )}
 
-          <BottomNav nav={nav} active="home"/>
+          <BottomNav nav={nav} active="home" card={card}/>
         </div>
       );
     }
@@ -1882,7 +1886,7 @@
             </WhiteBox>
           </div>
 
-          <BottomNav nav={nav} active="cards"/>
+          <BottomNav nav={nav} active="cards" card={card}/>
 
           {selectedTx && (
             <TxDetailSheet tx={selectedTx} card={card} onClose={() => setSelectedTx(null)}/>
@@ -1894,7 +1898,7 @@
     /* ════════════════════════════════════════
        SCREEN — SEND MONEY
     ════════════════════════════════════════ */
-    function SendScreen({ nav, cid }) {
+    function SendScreen({ nav, cid, origin = 'home' }) {
       const t = useLang();
       const cards  = Store.cards();
       const card   = cards.find(c=>c.id===cid) || cards[0];
@@ -1922,6 +1926,15 @@
       const parsedAmt = parseFloat(amt);
       const canGo = recip && amt && parsedAmt > 0 && parsedAmt <= card.bal;
 
+      const handleExit = () => {
+        if (origin === 'cards') {
+          // Return to the Cards section root (MyCards list)
+          nav('cards');
+        } else {
+          nav('home');
+        }
+      };
+
       useEffect(() => {
         if (recip && amountSectionRef.current) {
           amountSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1935,7 +1948,7 @@
 
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
-          <AppHeader onBack={()=>nav('card',{cid:card.id})}/>
+          <AppHeader onBack={handleExit}/>
 
           <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
             <div style={{minHeight:'100%', display:'flex', flexDirection:'column'}}>
@@ -2061,7 +2074,7 @@
             borderTop:'1px solid '+C.border,
           }}>
             <PrimaryBtn onClick={go} disabled={!canGo}>{t('continueBtn')}</PrimaryBtn>
-            <button onClick={()=>nav('card',{cid:card.id})}
+            <button onClick={handleExit}
                     style={{
                       width:'100%', marginTop:10, padding:'12px',
                       background:'transparent', border:'none',
@@ -2141,7 +2154,7 @@
                 </div>
 
                 <div style={{
-                  fontSize:T.overline, fontWeight:W.semibold, color:C.txtMuted,
+                  fontSize:14, fontWeight:W.semibold, color:C.txtMuted,
                   textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6,
                 }}>
                   {t('paying')}
@@ -2169,7 +2182,7 @@
               {/* Amount */}
               <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
                 <div style={{
-                  fontSize:T.overline, fontWeight:W.semibold, color:C.txtMuted,
+                  fontSize:14, fontWeight:W.semibold, color:C.txtMuted,
                   textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6,
                 }}>
                   {t('amount')}
@@ -2608,7 +2621,7 @@
           case 'card':        return <CardScreen       nav={nav} cid={route.p.cid} activeNav="cards"/>;
           case 'card-manage': return <CardManageScreen nav={nav} cid={route.p.cid}/>;
           case 'all-transactions': return <AllTransactionsScreen nav={nav} cid={route.p.cid}/>;
-          case 'send':     return <SendScreen     nav={nav} cid={route.p.cid}/>;
+          case 'send':     return <SendScreen     nav={nav} cid={route.p.cid} origin={route.p.origin}/>;
           case 'confirm':  return <ConfirmScreen  nav={nav}/>;
           case 'success':  return <SuccessScreen  nav={nav}/>;
           case 'add-card': return <AddCardScreen  nav={nav}/>;
