@@ -1,0 +1,2945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BulPay — Digital Wallet</title>
+  <!-- VERSION 2 of PROTOTYPE -->
+  <!-- Microsoft Clarity snippet -->
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "vlw0jc2s7b");
+</script>
+  <!-- Viewport-height fix: window.innerHeight is always the true visible area
+       regardless of browser chrome, in-app WebViews (Messenger, Instagram…),
+       or old Android browsers that mis-report 100vh / 100dvh.
+       Runs synchronously so the CSS variable is set before first paint. -->
+  <script>
+    (function(){
+      function setAppH(){
+        document.documentElement.style.setProperty('--app-height', window.innerHeight+'px');
+      }
+      setAppH();
+      window.addEventListener('resize', setAppH);
+      window.addEventListener('orientationchange', function(){ setTimeout(setAppH, 150); });
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    button, input, select, textarea { -webkit-tap-highlight-color: transparent; outline: none; }
+    button:focus-visible { outline: none; }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    body {
+      margin: 0;
+      min-height: 0;
+      font-family: 'Roboto', sans-serif;
+      background: #EEF2F8;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+    #root {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Phone shell
+       Height cascade (last valid value wins per browser):
+         100vh  – universal fallback (may include browser chrome on old Android)
+         100dvh – modern browsers: updates as chrome shows/hides (Chrome 108+, Safari 15.4+, Samsung Internet 21+)
+         var(--app-height) – JS-set from window.innerHeight: always the true visible area
+                             in every browser including in-app WebViews (Messenger, Instagram…) */
+    .phone-shell {
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      height: var(--app-height, 100dvh);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #EEF2F8;
+    }
+    @media (min-width: 500px) {
+      html { overflow-y: auto; }
+      body { display:flex; align-items:flex-start; justify-content:center; padding:24px; background: #94A3B8; overflow-y: auto; min-height: 100%; }
+      #root { overflow: visible; display: block; width: auto; }
+      .phone-shell {
+        position: relative;
+        height: 844px;
+        width: 390px;
+        max-width: 390px;
+        border-radius: 44px;
+        overflow: hidden;
+        /* Inner screen edge (recessed look) */
+        box-shadow:
+          inset 0 0 0 2px rgba(0,0,0,.08),
+          /* Dark bezel – same on all sides */
+          0 0 0 10px #1a1a1a,
+          0 0 0 12px #2d2d2d,
+          /* Drop shadow for depth */
+          0 30px 80px rgba(0,0,0,.5),
+          0 15px 40px rgba(0,0,0,.35);
+      }
+    }
+
+    /* Scroll area - prevent content from breaking out */
+    .scroll-body {
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain; /* prevents scroll leaking on Android */
+    }
+    .scroll-body::-webkit-scrollbar { display: none; }
+
+    /* Animations */
+    .fade-in { animation: fadeUp .22s ease-out both; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .shake { animation: shake .45s ease; }
+    @keyframes shake {
+      0%,100%{ transform:translateX(0); }
+      20%    { transform:translateX(-7px); }
+      40%    { transform:translateX(7px); }
+      60%    { transform:translateX(-5px); }
+      80%    { transform:translateX(5px); }
+    }
+    .spin { animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Freeze overlay */
+    @keyframes frostIn {
+      from { opacity:0; transform:scale(1.06); }
+      to   { opacity:1; transform:scale(1); }
+    }
+    @keyframes frostOut {
+      from { opacity:1; transform:scale(1); }
+      to   { opacity:0; transform:scale(1.06); }
+    }
+    .frost-overlay {
+      animation: frostIn .55s cubic-bezier(.25,.8,.25,1) forwards;
+    }
+    /* Snowflake drift */
+    @keyframes snowDrift0 { 0%{transform:translate(0,0) rotate(0deg);opacity:0} 15%{opacity:1} 100%{transform:translate(-8px,14px) rotate(200deg);opacity:.7} }
+    @keyframes snowDrift1 { 0%{transform:translate(0,0) rotate(0deg);opacity:0} 15%{opacity:1} 100%{transform:translate(6px,12px) rotate(-180deg);opacity:.7} }
+    @keyframes snowDrift2 { 0%{transform:translate(0,0) rotate(0deg);opacity:0} 15%{opacity:1} 100%{transform:translate(-5px,10px) rotate(240deg);opacity:.7} }
+    @keyframes snowDrift3 { 0%{transform:translate(0,0) rotate(0deg);opacity:0} 15%{opacity:1} 100%{transform:translate(7px,16px) rotate(-150deg);opacity:.7} }
+    @keyframes snowDrift4 { 0%{transform:translate(0,0) rotate(0deg);opacity:0} 15%{opacity:1} 100%{transform:translate(-4px,11px) rotate(180deg);opacity:.7} }
+    @keyframes snowDrift5 { 0%{transform:translate(0,0) rotate(0deg);opacity:0} 15%{opacity:1} 100%{transform:translate(5px,13px) rotate(-220deg);opacity:.7} }
+    .sf0{animation:snowDrift0 2.2s ease-in-out infinite alternate .0s}
+    .sf1{animation:snowDrift1 2.4s ease-in-out infinite alternate .3s}
+    .sf2{animation:snowDrift2 2.0s ease-in-out infinite alternate .6s}
+    .sf3{animation:snowDrift3 2.5s ease-in-out infinite alternate .1s}
+    .sf4{animation:snowDrift4 2.1s ease-in-out infinite alternate .45s}
+    .sf5{animation:snowDrift5 2.3s ease-in-out infinite alternate .2s}
+
+    /* Freeze card button pulse when frozen */
+    @keyframes icePulse {
+      0%,100%{ box-shadow:0 0 0 0 rgba(147,197,253,.5); }
+      50%    { box-shadow:0 0 0 6px rgba(147,197,253,0); }
+    }
+    .freeze-pulse { animation: icePulse 2s ease-in-out infinite; }
+
+    /* Amount-box attention pop when recipient is selected */
+    @keyframes amountPop {
+      0%   { transform: scale(1);     box-shadow: 0 1px 8px rgba(0,0,0,.07); }
+      28%  { transform: scale(1.032); box-shadow: 0 0 0 5px rgba(37,99,235,.24), 0 6px 20px rgba(37,99,235,.14); }
+      55%  { transform: scale(.992);  box-shadow: 0 0 0 3px rgba(37,99,235,.13), 0 2px 8px rgba(0,0,0,.07); }
+      78%  { transform: scale(1.008); box-shadow: 0 0 0 2px rgba(37,99,235,.07); }
+      100% { transform: scale(1);     box-shadow: 0 1px 8px rgba(0,0,0,.07); }
+    }
+    .amount-pop {
+      animation: amountPop .52s cubic-bezier(.36,.07,.19,.97) both;
+      border-radius: 16px;
+    }
+
+    /* PIN keys - T.h1 (24px) for 60+ readability */
+    .pin-key {
+      width: 74px; height: 74px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      background: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(0,0,0,.10);
+      cursor: pointer;
+      user-select: none;
+      transition: transform .12s, background .1s;
+      font-size: 24px; font-weight: 400; color: #111827;
+      border: none; outline: none;
+    }
+    .pin-key:active { transform: scale(.87); background: #EFF6FF; }
+    .pin-key.ghost  { background: transparent; box-shadow: none; }
+
+    .pin-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid #2563EB; margin: 0 7px;
+      transition: all .15s;
+    }
+    .pin-dot.on  { background: #2563EB; transform: scale(1.15); }
+    .pin-dot.err { border-color: #EF4444; background: #EF4444; }
+
+    /* Recipient rows */
+    .recip-row { transition: background .12s, box-shadow .12s; cursor: pointer; border: none; }
+    .recip-row:active { background: #E8F0FE !important; }
+
+    /* Suppress number input spinners */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+
+    /* Bank card: dark gradient + hexagonal wireframe pattern */
+    .card-bg-dark {
+      background: linear-gradient(135deg, #1e2a47 0%, #2d1f4e 50%, #1a2744 100%);
+    }
+    .card-hex-pattern {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='24' viewBox='0 0 28 24'%3E%3Cpath fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='0.4' d='M14 0l7 4v8l-7 4-7-4V4L14 0zm-10 6v8l7 4 7-4V6l-7-4-7 4z'/%3E%3C/svg%3E");
+      background-size: 28px 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useRef } = React;
+
+    /* ════════════════════════════════════════
+       DESIGN TOKENS  (inline – never purged)
+    ════════════════════════════════════════ */
+    const C = {
+      pageBg:    '#EEF2F8',
+      headerBg:  '#FFFFFF',
+      headerBdr: '1px solid #F3F4F6',
+      card1:     'linear-gradient(140deg, #93ADFD 0%, #C98EEF 52%, #F0A8D0 100%)',
+      card2:     'linear-gradient(140deg, #6878F5 0%, #9B6BF8 100%)',
+      card3:     'linear-gradient(140deg, #3B82F6 0%, #06B6D4 100%)',
+      btnPrimary:'#2563EB',
+      btnShadow: '0 6px 20px rgba(37,99,235,.38)',
+      white:     '#FFFFFF',
+      avatarBg:  'rgb(221, 230, 245)',
+      avatarTxt: '#5B6B8A',
+      txtPrimary:'#111827',
+      txtSecond: '#374151',
+      txtMuted:  '#4B5563',
+      border:    '#E5E7EB',
+      rowBorder: '#F3F4F6',
+      cardShadow:'0 4px 20px rgba(0,0,0,.13)',
+    };
+
+    /* Type scale for 60+ mobile (px). Body = 18; nothing essential below 14. Screen title = T.h1 + W.bold; amounts = T.display or T.h2 + W.bold; labels = T.caption (min 14px). */
+    const T = {
+      display: 32,
+      h1: 24,
+      h2: 20,
+      h3: 18,
+      body: 18,
+      bodySmall: 16,
+      caption: 14,
+      overline: 12,
+    };
+
+    const W = {
+      light: 300,
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+    };
+
+    const GRAD = { g1: C.card1, g2: C.card2, g3: C.card3 };
+    /* DSK-style dark gradient for bank card look */
+    const CARD_BG_DARK = 'linear-gradient(135deg, #1e2a47 0%, #2d1f4e 50%, #1a2744 100%)';
+
+    /* ════════════════════════════════════════
+       MOCK DATA
+    ════════════════════════════════════════ */
+    const PIN  = '1234';
+    const USER = { first:'Петя', last:'Шукерска' };
+
+    const SEED_CARDS = [
+      { id:'c1', name:'DSK VISA',     last4:'5678', holder:'Petya Shukerska', bal:5200.00, grad:'g2' },
+    ];
+
+    const SEED_TX = [
+      { id:'t1', cid:'c1', who:'Andrea Lopez',     ini:'AL', amt:35,   dir:'out', date:'2026-01-14', st:'Completed' },
+      { id:'t2', cid:'c1', who:'Boris Tsvetanov',     ini:'BT', amt:120,   dir:'in', date:'2025-12-22', st:'Completed' },
+      { id:'t3', cid:'c1', who:'Benjamin Parker',       ini:'BP', amt:24.50,   dir:'out', date:'2026-01-03', st:'Completed' },
+
+    ];
+
+    const RECIPIENTS = [
+      { id:'r1', name:'Andrea Lopez',    phone:'+34 892619737', ini:'AL' },
+      { id:'r2', name:'Benjamin Parker',    phone:'+44 852688846', ini:'BP' },
+      { id:'r3', name:'Boris Tsvetanov',       phone:'+359 882345678', ini:'BT' },
+    ];
+
+    /* ════════════════════════════════════════
+       STORE
+    ════════════════════════════════════════ */
+    const Store = {
+      cards:   ()  => { try { return JSON.parse(localStorage.getItem('bp_c'))  || SEED_CARDS; } catch { return SEED_CARDS; } },
+      setCards:(v) => { try { localStorage.setItem('bp_c', JSON.stringify(v));  } catch {} },
+      tx:      ()  => { try { return JSON.parse(localStorage.getItem('bp_t'))  || SEED_TX;    } catch { return SEED_TX;    } },
+      addTx:   (t) => { const a=Store.tx(); try { localStorage.setItem('bp_t', JSON.stringify([t,...a])); } catch {} },
+      draft:   ()  => { try { return JSON.parse(sessionStorage.getItem('bp_d'))|| null;        } catch { return null; } },
+      setDraft:(v) => { try { sessionStorage.setItem('bp_d', JSON.stringify(v));} catch {} },
+      delDraft:()  => { try { sessionStorage.removeItem('bp_d');                } catch {} },
+    };
+
+    /* ════════════════════════════════════════
+       UTILS
+    ════════════════════════════════════════ */
+    const fmtAmountNum = (n) => (n % 1 === 0 ? String(Math.round(Math.abs(n))) : Math.abs(n).toFixed(2));
+    const fmtAmountWithCommas = (n) => fmtAmountNum(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const fmtEur  = (n) => '€' + fmtAmountWithCommas(n);
+    const fmtDate = (s) => {
+      const part = (s || '').slice(0, 10);
+      const [y, m, d] = part.split('-');
+      return d && m && y ? `${d}.${m}.${y}` : part;
+    };
+    const genRef  = ()  => 'BUL-' + Math.random().toString(36).slice(2,8).toUpperCase();
+    const greet   = (t) => { const h=new Date().getHours(); return h<12?t('goodMorning'):h<17?t('goodAfternoon'):t('goodEvening'); };
+
+    /* ════════════════════════════════════════
+       TRANSLATIONS
+    ════════════════════════════════════════ */
+    const TRANSLATIONS = {
+      en: {
+        appName:'BulPay', help:'Help',
+        goodMorning:'Good morning', goodAfternoon:'Good afternoon', goodEvening:'Good evening',
+        digitalWallet:'Digital Wallet',
+        useBiometric:'Use face / fingerprint',
+        notAvailableProto:'Not available in this web prototype',
+        or:'OR',
+        continueWithPin:'Continue with PIN',
+        pinSecureWallet:'Your 4-digit PIN keeps your wallet secure',
+        enterYourPin:'Enter your PIN',
+        enter4DigitPin:'Enter your 4-digit PIN to continue',
+        incorrectPin:'Incorrect PIN. Please try again.',
+        demoPin:'Demo PIN:',
+        selectPayment:'Select a card to pay.',
+        addCard:'Add Card',
+        sendMoney:'Send Money',
+        cardFrozenSend:'❄ Card Frozen — Cannot Send',
+        pastTransactions:'Recent Transactions',
+        noTransactions:'No transactions yet',
+        seeAll:'See all',
+        allTransactions:'All transactions',
+        goBack:'Go Back',
+        freezeCard:'Freeze Card',
+        unfreezeCard:'Unfreeze Card',
+        topUp:'Top Up',
+        cardDetails:'Card Details',
+        cardFrozenLabel:'❄ Card Frozen',
+        txType:'Type', txCard:'Card', txFrom:'From', txTo:'To',
+        txAmount:'Amount', txFee:'Fee', txStatus:'Status', txDate:'Date',
+        txReference:'Reference',
+        moneyReceived:'Money received', moneySent:'Money sent',
+        close:'Close',
+        viewBalance:'View Balance',
+        availableBalance:'Available balance',
+        cardSecuredByBulPay:'Your DSK Bank card, secured by BulPay',
+        sendingFrom:'Sending from',
+        chooseRecipient:'Choose Recipient',
+        searchNameOrNumber:'Search name or number\u2026',
+        amountToSend:'Amount to Send',
+        fee:'Fee', noFee:'\u20ac0 \u2014 No fee!',
+        estimatedDelivery:'Estimated delivery',
+        instant:'Instant \u26a1',
+        continueBtn:'Continue \u2192',
+        cancel:'Cancel',
+        paying:'Paying',
+        fromCard:'From card',
+        amount:'Amount',
+        total:'Total',
+        useBiometricConfirm:'Use face / fingerprint to confirm',
+        confirmWithPin:'Confirm with PIN',
+        confirmPaymentPin:'Confirm this payment with your PIN',
+        paymentSent:'Payment Sent!',
+        paymentSuccessful:'Your payment was successful',
+        receipt:'Receipt',
+        amountSent:'Amount sent',
+        reference:'Reference',
+        dateTime:'Date & Time',
+        done:'Done',
+        to:'To',
+        addCardVia:'Add Card Via',
+        photo:'Photo', nfcScan:'NFC Scan', appOnly:'App only', manual:'Manual',
+        cardDetails:'Card Details',
+        cardNumber:'Card Number',
+        cardholderName:'Cardholder Name',
+        fullNameOnCard:'Full name as on card',
+        expiry:'Expiry', cvv:'CVV',
+        invalidCardNum:'Enter a valid 16-digit number',
+        enterCardholderName:'Enter cardholder name',
+        enterExpiry:'Enter expiry MM/YY',
+        enterCvv:'Enter 3-digit CVV',
+        pleaseEnterValidAmount:'Please enter a valid amount.',
+        insufficientBalance:'Insufficient balance. Available: ',
+        navHome:'Home', navSend:'Send', navCards:'Cards', navHelp:'Help',
+        tapToManage:'Tap to manage',
+        cardManageBtn:'Manage',
+        addNewCard:'Add New Card',
+        showCardDetails:'See Details',
+        cardFrozenBanner:'Transactions are paused.',
+        manageCard:'Manage Card',
+      },
+      bg: {
+        appName:'BulPay', help:'Помощ',
+        goodMorning:'Добро утро', goodAfternoon:'Добър ден', goodEvening:'Добър вечер',
+        digitalWallet:'Дигитален портфейл',
+        useBiometric:'Лице / пръстов отпечатък',
+        notAvailableProto:'Неналично в тази уеб версия',
+        or:'ИЛИ',
+        continueWithPin:'Продължи с PIN',
+        pinSecureWallet:'4-цифреният ви PIN пази портфейла ви',
+        enterYourPin:'Въведете вашия PIN',
+        enter4DigitPin:'Въведете 4-цифрения си PIN за да продължите',
+        incorrectPin:'Грешен PIN. Моля, опитайте отново.',
+        demoPin:'Демо PIN:',
+        selectPayment:'Изберете карта за плащане.',
+        addCard:'Добави карта',
+        sendMoney:'Изпрати пари',
+        cardFrozenSend:'Замразена карта',
+        pastTransactions:'Скорошни транзакции',
+        noTransactions:'Все още няма транзакции',
+        seeAll:'Виж всички',
+        allTransactions:'Всички транзакции',
+        goBack:'Назад',
+        freezeCard:'Замрази карта',
+        unfreezeCard:'Размрази карта',
+        topUp:'Зареди',
+        cardDetails:'Детайли',
+        cardFrozenLabel:'❄ Картата е замразена',
+        txType:'Тип', txCard:'Карта', txFrom:'От', txTo:'До',
+        txAmount:'Сума', txFee:'Такса', txStatus:'Статус', txDate:'Дата',
+        txReference:'Референция',
+        moneyReceived:'Получени пари', moneySent:'Изпратени пари',
+        close:'Затвори',
+        viewBalance:'Виж баланс',
+        availableBalance:'Наличен баланс',
+        cardSecuredByBulPay:'Вашата ДСК карта, защитена от BulPay',
+        sendingFrom:'Изпращане от',
+        chooseRecipient:'Изберете получател',
+        searchNameOrNumber:'Търси по име или номер\u2026',
+        amountToSend:'Сума за изпращане',
+        fee:'Такса', noFee:'\u20ac0 \u2014 Без такса!',
+        estimatedDelivery:'Очаква се',
+        instant:'Моментално \u26a1',
+        continueBtn:'Продължи \u2192',
+        cancel:'Отказ',
+        paying:'Плащане към',
+        fromCard:'От карта',
+        amount:'Сума',
+        total:'Общо',
+        useBiometricConfirm:'Лице / пръстов отпечатък за потвърждение',
+        confirmWithPin:'Потвърди с PIN',
+        confirmPaymentPin:'Потвърдете плащането с вашия PIN',
+        paymentSent:'Плащането е изпратено!',
+        paymentSuccessful:'Вашето плащане беше успешно',
+        receipt:'Разписка',
+        amountSent:'Изпратена сума',
+        reference:'Референция',
+        dateTime:'Дата и час',
+        done:'Готово',
+        to:'До',
+        addCardVia:'Добави карта чрез',
+        photo:'Снимка', nfcScan:'NFC сканиране', appOnly:'неналично', manual:'Ръчно',
+        cardDetails:'Виж детайли',
+        cardNumber:'Номер на картата',
+        cardholderName:'Титуляр на картата',
+        fullNameOnCard:'Пълно име като на картата',
+        expiry:'Валидност', cvv:'CVV',
+        invalidCardNum:'Въведете валиден 16-цифрен номер',
+        enterCardholderName:'Въведете името на титуляра',
+        enterExpiry:'Въведете валидност ММ/ГГ',
+        enterCvv:'Въведете 3-цифрен CVV',
+        pleaseEnterValidAmount:'Моля, въведете валидна сума.',
+        insufficientBalance:'Недостатъчен баланс. Налично: ',
+        navHome:'Начало', navSend:'Изпрати', navCards:'Карти', navHelp:'Помощ',
+        tapToManage:'Натиснете за управление',
+        cardManageBtn:'Действия',
+        addNewCard:'Добави нова карта',
+        showCardDetails:'Виж детайли на картата',
+        cardFrozenBanner:'Картата е замразена — транзакциите са спрени.',
+        manageCard:'Управление на карта',
+      },
+    };
+
+    const LangContext = React.createContext('en');
+    const useLang = () => {
+      const lang = React.useContext(LangContext);
+      return (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.en[key] || key;
+    };
+
+    /* ════════════════════════════════════════
+       SHARED COMPONENTS
+    ════════════════════════════════════════ */
+
+    /* ── App Header ── */
+    function AppHeader({ onBack, title }) {
+      const t = useLang();
+      return (
+        <div style={{
+          background: C.headerBg, borderBottom: C.headerBdr, flexShrink: 0,
+          position: 'relative', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', padding: '0 8px',
+          height: 52,
+        }}>
+          {onBack
+            ? <button onClick={onBack} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '12px', margin: 0, display: 'flex', alignItems: 'center',
+                color: C.txtSecond, position: 'relative', zIndex: 1,
+                minWidth: 44, minHeight: 44, justifyContent: 'center',
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:24,height:24}} fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+            : <div style={{width:44}}/>}
+
+          <span style={{
+            color: C.txtPrimary, fontSize: T.h1, fontWeight: W.bold,
+            position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+            pointerEvents: 'none', whiteSpace: 'nowrap',
+            maxWidth: 'calc(100% - 108px)', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{title != null ? title : t('appName')}</span>
+
+          <div style={{display:'flex', alignItems:'center', gap:0}}>
+            <button style={{
+              background:'none', border:'none', cursor:'pointer',
+              padding:'10px 6px', color: C.txtMuted,
+              display:'flex', alignItems:'center', minHeight:44, minWidth:36,
+              justifyContent:'center',
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <circle cx="12" cy="12" r="9"/>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                <circle cx="12" cy="17" r=".5" fill="currentColor"/>
+              </svg>
+            </button>
+            <button style={{
+              background:'none', border:'none', cursor:'pointer',
+              padding:'10px 10px 10px 4px', color: C.txtMuted,
+              display:'flex', alignItems:'center', minHeight:44, minWidth:40,
+              justifyContent:'center',
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    /* Card Visual (realistic bank card) - ISO/IEC 7810 ID-1 aspect 86:54, DSK-style layout */
+    const isVisa = (name) => /visa/i.test(name || '');
+    const bankDisplayName = (name) => {
+      const n = (name || '').replace(/\s*(VISA|Mastercard|MC)\s*/gi, '').trim();
+      return n === 'DSK' ? 'DSK Bank' : (n || 'Bank');
+    };
+    /* Snowflake positions (% from left, % from top) */
+    const FLAKES = [
+      {l:'12%',t:'18%'}, {l:'55%',t:'10%'}, {l:'82%',t:'30%'},
+      {l:'28%',t:'60%'}, {l:'68%',t:'65%'}, {l:'44%',t:'40%'},
+    ];
+
+    function CardVisual({ card, onCardClick, showBal, onToggleBal, isFrozen=false, style: extraStyle={} }) {
+      const t = useLang();
+      /* View Balance toggle (kept for possible reuse):
+      const stopProp = (e) => { e.stopPropagation(); onToggleBal && onToggleBal(); }; */
+      const clickable = !!onCardClick;
+      const visa = isVisa(card.name);
+      const holderName = (card.holder || 'CARDHOLDER NAME').toUpperCase();
+      const expiry = card.exp || '12/28';
+
+      return (
+        <div onClick={onCardClick}
+             className="card-hex-pattern"
+             style={{
+               background: CARD_BG_DARK,
+               borderRadius: 14,
+               padding: '20px 22px',
+               color: '#fff',
+               position: 'relative',
+               overflow: 'hidden',
+               cursor: clickable ? 'pointer' : 'default',
+               userSelect: 'none',
+               width: '100%',
+               maxWidth: 400,
+               aspectRatio: '86/54',
+               display: 'flex',
+               flexDirection: 'column',
+               justifyContent: 'space-between',
+               ...extraStyle,
+             }}>
+          {/* Row 1: Bank name (top left), VISA / network (top right) */}
+          <div style={{ position:'relative', zIndex:1, display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+            <div style={{ fontWeight: W.bold, fontSize: T.h3, letterSpacing: '.02em', color: '#fff' }}>
+              {bankDisplayName(card.name)}
+            </div>
+            {visa ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="130" height="52" viewBox="0 0 24 24" style={{ flexShrink:0, transform: 'translateY(-14px)', marginRight: -10 }}>
+                <path fill="#fff" d="M22.222 15.768l-.225-1.125h-2.514l-.4 1.117-2.015.004a4199.19 4199.19 0 0 1 2.884-6.918c.164-.391.455-.59.884-.588.328.003.863.003 1.606.001L24 15.765l-1.778.003zm-2.173-2.666h1.62l-.605-2.82-1.015 2.82zM7.06 8.257l2.026.002-3.132 7.51-2.051-.002a950.849 950.849 0 0 1-1.528-5.956c-.1-.396-.298-.673-.679-.804C1.357 8.89.792 8.71 0 8.465V8.26h3.237c.56 0 .887.271.992.827.106.557.372 1.975.8 4.254L7.06 8.257zm4.81.002l-1.602 7.508-1.928-.002L9.94 8.257l1.93.002zm3.91-.139c.577 0 1.304.18 1.722.345l-.338 1.557c-.378-.152-1-.357-1.523-.35-.76.013-1.23.332-1.23.638 0 .498.816.749 1.656 1.293.959.62 1.085 1.177 1.073 1.782-.013 1.256-1.073 2.495-3.309 2.495-1.02-.015-1.388-.101-2.22-.396l.352-1.625c.847.355 1.206.468 1.93.468.663 0 1.232-.268 1.237-.735.004-.332-.2-.497-.944-.907-.744-.411-1.788-.98-1.774-2.122.017-1.462 1.402-2.443 3.369-2.443z"/>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="24" viewBox="0 0 32 24" style={{ flexShrink:0 }}>
+                <circle cx="14" cy="12" r="10" fill="#EB001B"/>
+                <circle cx="18" cy="12" r="10" fill="#F79E1B"/>
+                <path fill="#FF5F00" d="M16 6.2a9.5 9.5 0 014 10 9.5 9.5 0 01-8 0 9.5 9.5 0 014-10z"/>
+              </svg>
+            )}
+          </div>
+
+          {/* Row 2: EMV chip + NFC (left) */}
+          <div style={{ position:'relative', zIndex:1, display:'flex', alignItems:'center', gap:10, marginTop: -6, transform: 'translateY(-5px)' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="31" height="29" viewBox="0 0 122.879 116.012" style={{ flexShrink:0, filter:'drop-shadow(0 1px 2px rgba(0,0,0,.25))' }}>
+              <path fill="#C0B8A8" d="M102.911,0H19.968c-5.481,0-10.484,2.252-14.1,5.868C2.251,9.484,0,14.464,0,19.968v76.075c0,5.48,2.251,10.484,5.868,14.1 c3.616,3.617,8.597,5.869,14.1,5.869h82.943c5.48,0,10.484-2.252,14.1-5.869c3.616-3.615,5.868-8.596,5.868-14.1V19.946 c0-5.504-2.252-10.485-5.868-14.101C113.396,2.252,108.392,0,102.911,0L102.911,0L102.911,0z M38.89,10.03v0.022v27.519H10.052 V19.946c0-2.729,1.115-5.208,2.912-7.005c1.796-1.797,4.275-2.911,7.004-2.911H38.89L38.89,10.03L38.89,10.03z M10.029,48.01H38.89 v18.808H10.052V48.01H10.029L10.029,48.01z M10.029,77.234H38.89v28.725H19.968c-2.729,0-5.208-1.115-7.004-2.912 c-1.797-1.797-2.912-4.275-2.912-7.004V77.234H10.029L10.029,77.234z M48.919,105.959V73.504c0.136-0.477,0.205-0.955,0.205-1.477 c0-0.523-0.068-1.002-0.205-1.479V44.28c0.136-0.478,0.205-0.955,0.205-1.478s-0.068-1-0.205-1.479V10.075v-0.023h53.992 c2.729,0,5.208,1.115,7.004,2.911c1.797,1.797,2.911,4.276,2.911,7.005V37.64H80.1c-2.774,0-5.026,2.251-5.026,5.026v27.452 c-0.091,0.387-0.159,0.818-0.159,1.25s0.046,0.842,0.159,1.25v33.365l-26.154-0.002V105.959L48.919,105.959z M112.826,47.646v18.49 h-27.7v-18.49H112.826L112.826,47.646L112.826,47.646z M112.826,76.574v19.469c0,2.729-1.114,5.207-2.911,7.004 c-1.796,1.797-4.275,2.912-7.004,2.912H85.126V76.574H112.826L112.826,76.574L112.826,76.574z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.95)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity:.9 }}>
+              <path d="M6 8.32a7.43 7.43 0 0 1 0 7.36"/>
+              <path d="M9.46 6.21a11.76 11.76 0 0 1 0 11.58"/>
+              <path d="M12.91 4.1a15.91 15.91 0 0 1 .01 15.8"/>
+              <path d="M16.37 2a20.16 20.16 0 0 1 0 20"/>
+            </svg>
+          </div>
+
+          {/* Card number (IBAN style) — centered */}
+          <div style={{
+            fontFamily: '"OCR A Std", "Courier New", monospace',
+            fontSize: T.h3,
+            letterSpacing: '.22em',
+            color: '#fff',
+            position: 'relative',
+            zIndex: 1,
+            textAlign: 'center',
+            fontWeight: W.bold,
+            textShadow: '0 1px 0 rgba(0,0,0,.2)',
+            transform: 'translateY(-5px)',
+          }}>
+            {'••••  ••••  ••••  ' + card.last4}
+          </div>
+
+          {/* Bottom row: CARD HOLDER (left), EXPIRES (right) */}
+          <div style={{
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px 12px',
+          }}>
+            <div>
+              <div style={{ fontSize: T.overline, color: '#e4dcdc', letterSpacing: '.18em', marginBottom: 2 }}>CARD HOLDER</div>
+              <div style={{ fontSize: T.caption, fontWeight: W.bold, letterSpacing: '.06em', color: '#fff' }}>{holderName}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: T.overline, color: '#e4dcdc', letterSpacing: '.12em', marginBottom: 2 }}>EXPIRY</div>
+              <div style={{ fontFamily: 'monospace', fontSize: T.caption, fontWeight: W.bold, color: '#fff' }}>{expiry}</div>
+            </div>
+            {/* Balance / View Balance - was shown on card; kept for possible reuse elsewhere:
+            <div style={{ flexBasis: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: 32, perspective: 400 }}>
+              <button onClick={stopProp} style={{
+                position:'absolute', right:0,
+                top:'50%', transform: showBal ? 'translateY(-50%) rotateX(90deg)' : 'translateY(-50%) rotateX(0deg)',
+                background:'rgba(255,255,255,.22)', border:'1px solid rgba(255,255,255,.42)',
+                color:'#fff', borderRadius:20, padding:'5px 14px', fontSize:T.caption, fontWeight:W.medium, cursor:'pointer',
+                backdropFilter:'blur(4px)', fontFamily:'Roboto,sans-serif', transformOrigin:'center center',
+                opacity: showBal ? 0 : 1, transition: 'transform .22s ease-in, opacity .15s ease-in',
+                pointerEvents: showBal ? 'none' : 'auto', backfaceVisibility:'hidden', whiteSpace:'nowrap',
+              }}>
+                {t('viewBalance')}
+              </button>
+              <div onClick={stopProp} style={{
+                position:'absolute', right:0, top:'50%',
+                transform: showBal ? 'translateY(-50%) rotateX(0deg)' : 'translateY(-50%) rotateX(-90deg)',
+                textAlign:'right', cursor:'pointer', transformOrigin:'center center',
+                opacity: showBal ? 1 : 0,
+                transition: showBal ? 'transform .22s ease-out .18s, opacity .15s ease-out .18s' : 'transform .22s ease-in, opacity .15s ease-in',
+                pointerEvents: showBal ? 'auto' : 'none', backfaceVisibility:'hidden', whiteSpace:'nowrap',
+              }}>
+                <div style={{ fontWeight: W.bold, fontSize: T.h2, color: '#fff', letterSpacing: '.02em' }}>{fmtEur(card.bal)}</div>
+              </div>
+            </div>
+            */}
+          </div>
+
+          {/* Frozen overlay */}
+          {isFrozen && (
+            <div className="frost-overlay" style={{
+              position:'absolute', top:0, right:0, bottom:0, left:0, borderRadius:14,
+              background:'linear-gradient(135deg,rgba(186,230,253,.55) 0%,rgba(224,242,254,.45) 50%,rgba(186,230,253,.60) 100%)',
+              backdropFilter:'blur(2px)',
+              zIndex:10,
+              display:'flex', alignItems:'center', justifyContent:'center',
+              pointerEvents:'none',
+            }}>
+              {FLAKES.map((f,i)=>(
+                <span key={i} className={`sf${i}`} style={{
+                  position:'absolute', left:f.l, top:f.t,
+                  fontSize: i%2===0 ? T.h3 : T.caption,
+                  filter:'drop-shadow(0 0 3px rgba(147,197,253,.9))',
+                  userSelect:'none',
+                }}>❄</span>
+              ))}
+              <div style={{
+                background:'rgba(255,255,255,.55)',
+                backdropFilter:'blur(6px)',
+                border:'1px solid rgba(147,197,253,.7)',
+                borderRadius:20,
+                padding:'5px 16px',
+                fontSize:T.bodySmall, fontWeight:W.semibold,
+                color:'#1e40af',
+                letterSpacing:'.03em',
+              }}>
+                {t('cardFrozenLabel')}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ── Primary Button ── */
+    function PrimaryBtn({ onClick, disabled, loading, children, style:s={} }) {
+      return (
+        <button onClick={!disabled && !loading ? onClick : undefined}
+                style={{
+                  background: disabled ? '#D1D5DB' : C.btnPrimary,
+                  color: disabled ? '#9CA3AF' : '#fff',
+                  boxShadow: disabled ? 'none' : C.btnShadow,
+                  borderRadius: 16,
+                  padding: '15px 20px',
+                  fontWeight: W.semibold,
+                  fontSize: T.h3,
+                  width: '100%',
+                  border: 'none',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                  display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+                  fontFamily:'Roboto,sans-serif',
+                  transition:'transform .12s, opacity .12s',
+                  ...s,
+                }}>
+          {loading && <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white spin"/>}
+          {children}
+        </button>
+      );
+    }
+
+    /* ── Outline Button ── */
+    function OutlineBtn({ onClick, children, icon }) {
+      return (
+        <button onClick={onClick}
+                style={{
+                  flex:1, background:C.white, border:'1px solid '+C.border,
+                  borderRadius:14, padding:'13px 10px',
+                  fontSize:T.h3, fontWeight:W.medium, color:'#374151',
+                  cursor:'pointer', display:'flex', alignItems:'center',
+                  justifyContent:'center', gap:6, fontFamily:'Roboto,sans-serif',
+                  transition:'background .12s',
+                }}>
+          {icon}
+          {children}
+        </button>
+      );
+    }
+
+    /* ── Disabled Biometric Button ── */
+    function BiometricBtn({ labelKey='useBiometric' }) {
+      const t = useLang();
+      const [toast,setToast] = useState(false);
+      const tap = () => { setToast(true); setTimeout(()=>setToast(false),2400); };
+      return (
+        <div style={{position:'relative'}}>
+          <button onClick={tap} style={{
+            width:'100%', display:'flex', flexDirection:'column', alignItems:'center',
+            gap:8, padding:'20px 16px', borderRadius:16,
+            border:'2px solid #E5E7EB', background:'#F9FAFB',
+            opacity:.38, cursor:'pointer', fontFamily:'Roboto,sans-serif',
+          }}>
+            {/* Fingerprint SVG */}
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:44,height:44,color:'#9CA3AF'}} fill="none"
+                 viewBox="0 0 50 50" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round">
+              <path d="M25 40 C25 40 14 36 14 24 C14 17.4 18.9 12 25 12 C31.1 12 36 17.4 36 24 C36 30 34 35 32 38"/>
+              <path d="M20 39 C18 35 17 30 17 24 C17 19 20.6 15 25 15 C29.4 15 33 19 33 24 C33 28 31.5 32 30 35"/>
+              <path d="M25 18 C22 18 20 21 20 24 C20 28 21 32 22 35"/>
+              <path d="M25 21 C23.3 21 22 22.4 22 24 C22 26.5 22.5 29 23 31"/>
+              <path d="M11 18 C9 20.5 8 22.2 8 25 C8 32 11 38 16 42"/>
+              <path d="M39 18 C41 20.5 42 22.2 42 25 C42 33 38 39 33 43"/>
+              <path d="M18 11 C20.2 9.7 22.5 9 25 9 C32.7 9 39 15.3 39 24"/>
+              <path d="M11 11 C8 14 6 18.5 6 23"/>
+            </svg>
+            <span style={{fontSize:T.h3, fontWeight:W.medium, color:C.txtSecond}}>{t(labelKey)}</span>
+          </button>
+          {toast && (
+            <div style={{
+              position:'absolute', bottom:-36, left:'50%', transform:'translateX(-50%)',
+              background:'#111827', color:'#fff', fontSize:T.caption, padding:'7px 14px',
+              borderRadius:8, whiteSpace:'nowrap', zIndex:20, pointerEvents:'none',
+            }}>
+              {t('notAvailableProto')}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ── Transaction Row ── */
+    function TxRow({ tx, onClick }) {
+      const isIn = tx.dir === 'in';
+      const ini  = tx.ini || tx.who.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return (
+        <div onClick={onClick} style={{
+          display:'flex', alignItems:'center', padding:'12px 16px',
+          borderBottom:'1px solid '+C.rowBorder, background:C.white,
+          cursor:'pointer', transition:'background .15s',
+        }}
+        onMouseEnter={e=>{ e.currentTarget.style.background='#DCE4F7'; e.currentTarget.style.borderBottomColor='#B8C5E8'; }}
+        onMouseLeave={e=>{ e.currentTarget.style.background=C.white; e.currentTarget.style.borderBottomColor=C.rowBorder; }}>
+          {/* Avatar */}
+          <div style={{
+            width:40, height:40, borderRadius:'50%', flexShrink:0,
+            background:C.avatarBg, color:C.avatarTxt,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:T.bodySmall, fontWeight:W.medium, marginRight:12,
+          }}>
+            {ini}
+          </div>
+          {/* Name + date */}
+          <div style={{flex:1, minWidth:0}}>
+            <div style={{fontSize:T.h3, fontWeight:W.medium, color:C.txtPrimary,
+                         overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+              {tx.who}
+            </div>
+            <div style={{fontSize:T.body, color:C.txtMuted, marginTop:2}}>{fmtDate(tx.date)}</div>
+          </div>
+          {/* Amount + chevron */}
+          <div style={{display:'flex', alignItems:'center', gap:4, marginLeft:8, flexShrink:0}}>
+            <span style={{fontSize:T.h2, fontWeight:W.bold,
+                          color: isIn ? '#16A34A' : C.txtPrimary}}>
+              € {isIn ? '+' : '-'}{fmtAmountWithCommas(tx.amt)}
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:16,height:16,color:'#D1D5DB'}}
+                 fill="none" viewBox="0 0 24 24" stroke="#D1D5DB" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── Section Label ── */
+    const SectionLabel = ({children}) => (
+      <div style={{fontSize:16, fontWeight:W.semibold, color:C.txtMuted,
+                   textTransform:'uppercase', letterSpacing:'.07em', marginBottom:10}}>
+        {children}
+      </div>
+    );
+
+    /* ── White Card Container ── */
+    const WhiteBox = ({children, style:s={}}) => (
+      <div style={{background:C.white, borderRadius:16, overflow:'hidden',
+                   boxShadow:'0 1px 8px rgba(0,0,0,.07)', ...s}}>
+        {children}
+      </div>
+    );
+
+    /* ── Bottom Navigation Bar ── */
+    function BottomNav({ nav, active, card }) {
+      const t = useLang();
+      const items = [
+        {
+          id: 'home',
+          labelKey: 'navHome',
+          onClick: () => nav('home'),
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M3 9.75L12 3l9 6.75V21a1 1 0 01-1 1H15v-5h-6v5H4a1 1 0 01-1-1V9.75z"/>
+            </svg>
+          ),
+        },
+        {
+          id: 'send',
+          labelKey: 'navSend',
+          onClick: () => {
+            const cards = Store.cards();
+            const targetCard = card || cards[0];
+            if (targetCard) {
+              nav('send', { cid: targetCard.id, origin: active || 'home' });
+            }
+          },
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} viewBox="0 0 24 24"
+                 fill="none" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}
+                 strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          ),
+        },
+        {
+          id: 'cards',
+          labelKey: 'navCards',
+          onClick: () => nav('cards'),
+          icon: (isActive) => (
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                 viewBox="0 0 24 24" stroke={isActive ? '#2563EB' : '#9CA3AF'} strokeWidth={isActive ? 2.2 : 1.8}>
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <path strokeLinecap="round" d="M2 10h20"/>
+            </svg>
+          ),
+        },
+      ];
+
+      return (
+        <div style={{
+          display: 'flex',
+          background: '#FFFFFF',
+          borderTop: '1px solid ' + C.border,
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          flexShrink: 0,
+        }}>
+          {items.map(item => {
+            const isActive = active === item.id;
+            const isClickable = item.id === 'home' || item.id === 'cards';
+            return (
+              <button
+                key={item.id}
+                onClick={item.onClick}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 3,
+                  padding: '10px 6px 6px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: isClickable ? 'pointer' : 'default',
+                  color: isActive ? '#2563EB' : '#9CA3AF',
+                  fontFamily: 'Roboto, sans-serif',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {item.icon(isActive)}
+                <span style={{
+                  fontSize: T.caption,
+                  fontWeight: isActive ? W.semibold : W.regular,
+                  color: isActive ? '#2563EB' : '#9CA3AF',
+                  lineHeight: 1,
+                }}>
+                  {t(item.labelKey)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — LANGUAGE SELECTION
+    ════════════════════════════════════════ */
+    function LanguageScreen({ nav, onLangSelect }) {
+      const [selected, setSelected] = useState('en');
+      const [hoveredEn, setHoveredEn] = useState(false);
+      const [hoveredBg, setHoveredBg] = useState(false);
+
+      const confirm = () => {
+        onLangSelect(selected);
+        nav('pin');
+      };
+
+      const optionStyle = (lang, hovered) => ({
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        padding: '16px 20px',
+        borderRadius: 16,
+        border: selected === lang ? '2px solid #2563EB' : '2px solid ' + C.border,
+        background: selected === lang
+          ? '#EFF6FF'
+          : hovered ? '#DCE4F7' : C.white,
+        cursor: 'pointer',
+        fontFamily: 'Roboto,sans-serif',
+        transition: 'background .15s, border-color .15s',
+        boxShadow: selected === lang
+          ? '0 2px 12px rgba(37,99,235,.13)'
+          : '0 1px 6px rgba(0,0,0,.06)',
+      });
+
+      const radioCircle = (lang) => ({
+        width: 24,
+        height: 24,
+        borderRadius: '50%',
+        border: selected === lang ? '2px solid #16A34A' : '2px solid #D1D5DB',
+        background: selected === lang ? '#16A34A' : 'transparent',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        transition: 'background .15s, border-color .15s',
+      });
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
+          <AppHeader/>
+          <div style={{flex:1, minHeight:0, display:'flex', flexDirection:'column', padding:'32px 20px 32px'}}>
+
+            {/* Logo tile */}
+            <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginBottom:40}}>
+              <div style={{
+                width:76, height:76, borderRadius:20,
+                background: GRAD.g2,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                boxShadow:'0 8px 28px rgba(107,120,245,.42)',
+                marginBottom:14,
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:34,height:34}} fill="none"
+                     viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <path d="M2 10h20"/>
+                </svg>
+              </div>
+              <div style={{fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary}}>BulPay</div>
+              <div style={{fontSize:T.bodySmall, color:C.txtMuted, marginTop:4}}>Digital Wallet</div>
+            </div>
+
+            
+
+            {/* Language options */}
+            <div style={{display:'flex', flexDirection:'column', gap:14, marginBottom:'auto'}}>
+
+              {/* English */}
+              <button
+                onClick={() => setSelected('en')}
+                onMouseEnter={() => setHoveredEn(true)}
+                onMouseLeave={() => setHoveredEn(false)}
+                style={optionStyle('en', hoveredEn)}>
+                <div style={radioCircle('en')}>
+                  {selected === 'en' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:14,height:14}} fill="none"
+                         viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  )}
+                </div>
+                <div style={{display:'flex', alignItems:'center', gap:10}}>
+                  <span style={{fontSize:T.h1}}>🇬🇧</span>
+                  <span style={{fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary}}>English</span>
+                </div>
+              </button>
+
+              {/* Bulgarian */}
+              <button
+                onClick={() => setSelected('bg')}
+                onMouseEnter={() => setHoveredBg(true)}
+                onMouseLeave={() => setHoveredBg(false)}
+                style={optionStyle('bg', hoveredBg)}>
+                <div style={radioCircle('bg')}>
+                  {selected === 'bg' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:14,height:14}} fill="none"
+                         viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  )}
+                </div>
+                <div style={{display:'flex', alignItems:'center', gap:10}}>
+                  <span style={{fontSize:T.h1}}>🇧🇬</span>
+                  <span style={{fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary}}>Български</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Confirm button */}
+            <div style={{marginTop:32}}>
+              <PrimaryBtn onClick={confirm}>
+                {selected === 'bg' ? 'Потвърди' : 'Confirm'}
+              </PrimaryBtn>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — LOGIN  [DEACTIVATED]
+    ════════════════════════════════════════ */
+    /*
+    function LoginScreen({ nav }) {
+      const t = useLang();
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg}}>
+          <AppHeader/>
+          <div style={{flex:1, display:'flex', flexDirection:'column', padding:'32px 20px 32px'}}>
+
+            // Logo tile
+            <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginBottom:36}}>
+              <div style={{
+                width:76, height:76, borderRadius:20,
+                background: GRAD.g2,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                boxShadow:'0 8px 28px rgba(107,120,245,.42)',
+                marginBottom:14,
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:34,height:34}} fill="none"
+                     viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <path d="M2 10h20"/>
+                </svg>
+              </div>
+              <div style={{fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary}}>BulPay</div>
+              <div style={{fontSize:T.bodySmall, color:C.txtMuted, marginTop:4}}>{t('digitalWallet')}</div>
+              <div style={{fontSize:T.h3, fontWeight:W.medium, color:'#374151', marginTop:14}}>
+                {greet(t)}
+              </div>
+            </div>
+
+            <BiometricBtn labelKey="useBiometric"/>
+            <div style={{textAlign:'center', fontSize:T.caption, color:C.txtMuted, marginTop:8, marginBottom:24}}>
+              {t('notAvailableProto')}
+            </div>
+
+            <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:20}}>
+              <div style={{flex:1, height:1, background:C.border}}/>
+              <span style={{fontSize:T.h3, color:C.txtMuted, fontWeight:W.medium}}>{t('or')}</span>
+              <div style={{flex:1, height:1, background:C.border}}/>
+            </div>
+
+            <PrimaryBtn onClick={()=>nav('pin')}>{t('continueWithPin')}</PrimaryBtn>
+            <div style={{textAlign:'center', fontSize:T.caption, color:C.txtMuted, marginTop:10}}>
+              {t('pinSecureWallet')}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    */
+
+    /* ════════════════════════════════════════
+       SCREEN — PIN ENTRY
+    ════════════════════════════════════════ */
+    function PinScreen({ nav }) {
+      const t = useLang();
+      const [digits,setDigits] = useState('');
+      const [err,setErr]       = useState('');
+      const [shake,setShake]   = useState(false);
+
+      const push = (k) => {
+        if (digits.length >= 4) return;
+        const next = digits + k;
+        setDigits(next); setErr('');
+        if (next.length === 4) {
+          setTimeout(()=>{
+            if (next === PIN) { nav('home'); }
+            else {
+              setShake(true);
+              setErr(t('incorrectPin'));
+              setTimeout(()=>{ setDigits(''); setShake(false); }, 600);
+            }
+          }, 200);
+        }
+      };
+      const del = () => { setDigits(d=>d.slice(0,-1)); setErr(''); };
+      const letters = {'2':'ABC','3':'DEF','4':'GHI','5':'JKL','6':'MNO','7':'PQRS','8':'TUV','9':'WXYZ'};
+      const hour = new Date().getHours();
+      const greetingKey = hour < 12 ? 'goodMorning' : hour < 17 ? 'goodAfternoon' : 'goodEvening';
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
+          <AppHeader onBack={()=>nav('lang')}/>
+          <div style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', padding:'36px 24px 28px'}}>
+
+            <div style={{fontSize:T.body, color:C.txtSecond, marginBottom:8, fontWeight:W.medium}}>{t(greetingKey)}</div>
+            <div style={{fontSize:T.h1, fontWeight:W.bold, color:C.txtPrimary, marginBottom:20}}>{t('enterYourPin')}</div>
+
+            {/* Dots */}
+            <div className={shake ? 'shake' : ''}
+                 style={{display:'flex', marginBottom:8}}>
+              {[0,1,2,3].map(i=>(
+                <div key={i} className={`pin-dot ${digits.length>i?(err?'err':'on'):''}`}/>
+              ))}
+            </div>
+            <div style={{
+              height:20, fontSize:T.bodySmall, color:'#EF4444', marginBottom:28, textAlign:'center',
+              opacity: err ? 1 : 0,
+            }}>
+              {err||'·'}
+            </div>
+
+            {/* Keypad */}
+            <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16}}>
+              {['1','2','3','4','5','6','7','8','9'].map(k=>(
+                <button key={k} className="pin-key" onClick={()=>push(k)}>
+                  <div style={{fontSize:T.h1}}>{k}</div>
+                  <div style={{fontSize:T.overline, color:C.txtMuted}}>{letters[k]||''}</div>
+                </button>
+              ))}
+              <div/>
+              <button className="pin-key" onClick={()=>push('0')}>0</button>
+              <button className="pin-key ghost" onClick={del}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:24,height:24}} fill="none"
+                     viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414A2 2 0 0010.828 19H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div style={{marginTop:28, fontSize:T.body+3, color:C.txtMuted}}>
+              {t('demoPin')}&nbsp;
+              <span style={{fontFamily:'monospace', background:'#F3F4F6', border:'1px solid #E5E7EB',
+                            padding:'2px 8px', borderRadius:6, color:'#374151'}}>
+                1234
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — HOME
+    ════════════════════════════════════════ */
+    function HomeScreen({ nav }) {
+      const t = useLang();
+      const [cards]  = useState(Store.cards());
+      const [shown, setShown] = useState({});
+      const toggle = (id) => setShown(s=>({...s,[id]:!s[id]}));
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
+          <AppHeader/>
+          <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
+
+            <div style={{fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary, marginBottom:16}}>
+              {t('selectPayment')}
+            </div>
+
+            {/* Card list */}
+            <div style={{display:'flex', flexDirection:'column', gap:14}}>
+              {cards.map(c=>(
+                <CardVisual
+                  key={c.id}
+                  card={c}
+                  showBal={!!shown[c.id]}
+                  onToggleBal={()=>toggle(c.id)}
+                  onCardClick={()=>nav('card',{cid:c.id})}
+                />
+              ))}
+            </div>
+
+            {/* Add Card — right-aligned */}
+            <div style={{display:'flex', justifyContent:'flex-end', marginTop:20}}>
+              <button onClick={()=>nav('add-card')}
+                      style={{
+                        background: C.btnPrimary,
+                        color:'#fff',
+                        border:'none',
+                        borderRadius:20,
+                        padding:'12px 22px',
+                        fontWeight:W.semibold, fontSize:T.h3,
+                        display:'flex', alignItems:'center', gap:8,
+                        cursor:'pointer',
+                        boxShadow: C.btnShadow,
+                        fontFamily:'Roboto,sans-serif',
+                      }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:16,height:16}} fill="none"
+                     viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                {t('addCard')}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — MY CARDS (Cards tab)
+    ════════════════════════════════════════ */
+    /* ── Compact card tile used in MyCardsScreen list ── */
+    function CardCompactTile({ card, onClick }) {
+      const t = useLang();
+      const visa = isVisa(card.name);
+      const holderName = (card.holder || 'CARDHOLDER NAME').toUpperCase();
+
+      return (
+        <button
+          onClick={onClick}
+          className="card-hex-pattern"
+          style={{
+            background: CARD_BG_DARK,
+            border: '1px solid rgba(255,255,255,.10)',
+            borderRadius: 18,
+            padding: '15px 16px 15px 20px',
+            color: '#fff',
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            boxShadow: '0 8px 28px rgba(0,0,0,.26), 0 2px 8px rgba(0,0,0,.12)',
+            userSelect: 'none',
+            width: '100%',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            WebkitTapHighlightColor: 'transparent',
+            fontFamily: 'Roboto, sans-serif',
+          }}
+        >
+          {/* Left accent strip */}
+          <div style={{
+            position: 'absolute',
+            left: 0, top: 0, bottom: 0,
+            width: 4,
+            background: 'linear-gradient(180deg, rgba(147,173,253,1) 0%, rgba(201,142,239,1) 100%)',
+            borderRadius: '18px 0 0 18px',
+          }}/>
+
+          {/* Card info */}
+          <div style={{ flex: 1 }}>
+            {/* Row 1: Bank name + network logo */}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <span style={{ fontSize:T.bodySmall, fontWeight:W.bold, color:'#fff', letterSpacing:'.02em' }}>
+                {bankDisplayName(card.name)}
+              </span>
+              {visa ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="15" viewBox="0 0 24 8">
+                  <path fill="rgba(255,255,255,.88)" d="M22.222 7.884l-.225-1.125h-2.514l-.4 1.117-2.015.004a4199.19 4199.19 0 0 1 2.884-6.918c.164-.391.455-.59.884-.588.328.003.863.003 1.606.001L24 7.881l-1.778.003zm-2.173-2.666h1.62l-.605-2.82-1.015 2.82zM7.06.373l2.026.002-3.132 7.51-2.051-.002A950.849 950.849 0 0 1 2.375 1.927c-.1-.396-.298-.673-.679-.804C1.357 1.006.792.826 0 .581V.376h3.237c.56 0 .887.271.992.827.106.557.372 1.975.8 4.254L7.06.373zm4.81.002L10.268 7.883l-1.928-.002L9.94.373l1.93.002zm3.91-.139c.577 0 1.304.18 1.722.345l-.338 1.557c-.378-.152-1-.357-1.523-.35-.76.013-1.23.332-1.23.638 0 .498.816.749 1.656 1.293.959.62 1.085 1.177 1.073 1.782-.013 1.256-1.073 2.495-3.309 2.495-1.02-.015-1.388-.101-2.22-.396l.352-1.625c.847.355 1.206.468 1.93.468.663 0 1.232-.268 1.237-.735.004-.332-.2-.497-.944-.907-.744-.411-1.788-.98-1.774-2.122.017-1.462 1.402-2.443 3.369-2.443z"/>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="18" viewBox="0 0 32 24">
+                  <circle cx="14" cy="12" r="10" fill="#EB001B" opacity=".9"/>
+                  <circle cx="18" cy="12" r="10" fill="#F79E1B" opacity=".9"/>
+                  <path fill="#FF5F00" d="M16 6.2a9.5 9.5 0 014 10 9.5 9.5 0 01-8 0 9.5 9.5 0 014-10z"/>
+                </svg>
+              )}
+            </div>
+
+            {/* Row 2: Masked card number */}
+            <div style={{
+              fontFamily: '"OCR A Std", "Courier New", monospace',
+              fontSize: 13,
+              letterSpacing: '.2em',
+              color: 'rgba(255,255,255,.72)',
+              marginBottom: 7,
+              lineHeight: 1,
+            }}>
+              {'•••• •••• •••• ' + card.last4}
+            </div>
+
+            {/* Row 3: Cardholder name */}
+            <div style={{
+              fontSize: T.overline,
+              letterSpacing: '.1em',
+              color: 'rgba(255,255,255,.50)',
+              fontWeight: W.medium,
+              lineHeight: 1,
+            }}>
+              {holderName}
+            </div>
+          </div>
+
+          {/* Right: frosted manage pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            background: 'rgba(255,255,255,.10)',
+            border: '1px solid rgba(255,255,255,.16)',
+            borderRadius: 20,
+            padding: '7px 10px 7px 12px',
+            flexShrink: 0,
+            marginLeft: 14,
+          }}>
+            <span style={{ fontSize: T.overline, color: 'rgba(255,255,255,.75)', fontWeight: W.medium, letterSpacing: '.05em', whiteSpace:'nowrap' }}>
+              {t('cardManageBtn')}
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" style={{width:13,height:13,flexShrink:0}} fill="none"
+                 viewBox="0 0 24 24" stroke="rgba(255,255,255,.75)" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </button>
+      );
+    }
+
+    function MyCardsScreen({ nav }) {
+      const t = useLang();
+      const [cards, setCards] = useState(Store.cards());
+
+      useEffect(() => {
+        setCards(Store.cards());
+      }, []);
+
+      return (
+        <div className="fade-in" style={{display:'flex', flexDirection:'column', flex:1, overflow:'hidden', background:C.pageBg}}>
+          <AppHeader title={t('appName')}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'16px 16px 32px'}}>
+
+            {/* Page heading */}
+            <div style={{fontSize:T.h1, fontWeight:W.bold, color:C.txtPrimary, marginBottom:20}}>
+              {t('navCards')}
+            </div>
+
+            {/* Card list — compact tiles */}
+            <div style={{display:'flex', flexDirection:'column', gap:12}}>
+              {cards.map(c => (
+                <CardCompactTile
+                  key={c.id}
+                  card={c}
+                  onClick={() => nav('card-manage', {cid: c.id})}
+                />
+              ))}
+            </div>
+
+            {/* Add New Card — always visible CTA */}
+            <div style={{display:'flex', justifyContent:'center', marginTop:28}}>
+              <button onClick={() => nav('add-card')}
+                      style={{
+                        background: C.btnPrimary,
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 16,
+                        padding: '16px 36px',
+                        fontWeight: W.semibold, fontSize: T.h3,
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        cursor: 'pointer',
+                        boxShadow: C.btnShadow,
+                        fontFamily: 'Roboto,sans-serif',
+                        minWidth: 220,
+                        justifyContent: 'center',
+                      }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:20,height:20}} fill="none"
+                     viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                {t('addNewCard')}
+              </button>
+            </div>
+          </div>
+
+          <BottomNav nav={nav} active="cards"/>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — CARD DETAIL
+    ════════════════════════════════════════ */
+    /* ── Transaction Detail Bottom Sheet ── */
+    function TxDetailSheet({ tx, card, onClose }) {
+      const t = useLang();
+      const [visible, setVisible] = useState(false);
+      useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
+
+      const close = () => {
+        setVisible(false);
+        setTimeout(onClose, 300);
+      };
+
+      if (!tx) return null;
+      const isIn = tx.dir === 'in';
+      const ini  = tx.ini || tx.who.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const ref  = tx.ref || ('BUL-' + tx.id.slice(-6).toUpperCase());
+
+      const rows = [
+        { label: t('txType'),                  value: isIn ? t('moneyReceived') : t('moneySent') },
+        { label: t('txCard'),                  value: `${card.name} •••• ${card.last4}` },
+        { label: isIn ? t('txFrom') : t('txTo'), value: tx.who },
+        { label: t('txAmount'),                value: `€ ${isIn?'+':'-'}${fmtAmountWithCommas(tx.amt)}`, colored: true, isIn },
+        { label: t('txFee'),                   value: '€0', green: true },
+        { label: t('txStatus'),                value: tx.st || 'Completed', green: true },
+        { label: t('txDate'),                  value: fmtDate(tx.date) },
+        { label: t('txReference'),             value: ref, mono: true },
+      ];
+
+      return (
+        <>
+          {/* Backdrop */}
+          <div onClick={close} style={{
+            position:'absolute', inset:0, zIndex:40,
+            background: visible ? 'rgba(0,0,0,.35)' : 'rgba(0,0,0,0)',
+            transition:'background .3s ease',
+          }}/>
+
+          {/* Sheet */}
+          <div style={{
+            position:'absolute', bottom:0, left:0, right:0, zIndex:50,
+            background:C.white,
+            borderRadius:'24px 24px 0 0',
+            boxShadow:'0 -4px 32px rgba(0,0,0,.14)',
+            transform: visible ? 'translateY(0)' : 'translateY(100%)',
+            transition:'transform .3s cubic-bezier(.32,1,.55,1)',
+            maxHeight:'88%',
+            display:'flex', flexDirection:'column',
+          }}>
+            {/* Handle bar */}
+            <div style={{display:'flex', justifyContent:'center', padding:'12px 0 4px'}}>
+              <div style={{width:40, height:4, borderRadius:2, background:'#E5E7EB'}}/>
+            </div>
+
+            {/* Header */}
+            <div style={{
+              display:'flex', alignItems:'center', justifyContent:'space-between',
+              padding:'8px 20px 16px',
+              borderBottom:'1px solid '+C.rowBorder,
+            }}>
+              <div style={{display:'flex', alignItems:'center', gap:12}}>
+                <div style={{
+                  width:44, height:44, borderRadius:'50%',
+                  background: C.avatarBg, color: C.avatarTxt,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:T.h3, fontWeight:W.medium, flexShrink:0,
+                }}>
+                  {ini}
+                </div>
+                <div>
+                  <div style={{fontSize:T.h3, fontWeight:W.medium, color:C.txtPrimary}}>{tx.who}</div>
+                  <div style={{fontSize:T.body, color:C.txtMuted, marginTop:2}}>{fmtDate(tx.date)}</div>
+                </div>
+              </div>
+              <button onClick={close} style={{
+                width:32, height:32, borderRadius:'50%', border:'none',
+                background:'#F3F4F6', cursor:'pointer', display:'flex',
+                alignItems:'center', justifyContent:'center',
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:16,height:16}} fill="none"
+                     viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Detail rows */}
+            <div style={{overflowY:'auto', WebkitOverflowScrolling:'touch'}}>
+              {rows.map(({label,value,colored,isIn,green,mono},i)=>(
+                <div key={label} style={{
+                  display:'flex', justifyContent:'space-between', alignItems:'center',
+                  padding:'13px 20px',
+                  borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
+                }}>
+                  <span style={{fontSize:T.bodySmall, color:C.txtMuted}}>{label}</span>
+                  <span style={{
+                    fontSize:T.bodySmall,
+                    fontWeight: colored ? W.bold : W.medium,
+                    color: colored ? (isIn ? '#16A34A' : C.txtPrimary) : green ? '#16A34A' : '#374151',
+                    fontFamily: mono ? 'monospace' : 'Roboto,sans-serif',
+                  }}>
+                    {value}
+                  </span>
+                </div>
+              ))}
+
+              {/* Close button */}
+              <div style={{padding:'16px 20px 28px'}}>
+                <button onClick={close} style={{
+                  width:'100%', padding:'13px',
+                  background:C.btnPrimary, color:'#fff',
+                  border:'none', borderRadius:14,
+                  fontSize:T.h3, fontWeight:W.semibold, cursor:'pointer',
+                  fontFamily:'Roboto,sans-serif',
+                  boxShadow: C.btnShadow,
+                }}>
+                  {t('close')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    function CardScreen({ nav, cid, activeNav = 'home' }) {
+      const t = useLang();
+      const cards  = Store.cards();
+      const card   = cards.find(c=>c.id===cid) || cards[0];
+      const txs    = Store.tx().filter(tx=>tx.cid===card.id);
+      const [selectedTx, setSelectedTx] = useState(null);
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
+          <AppHeader onBack={activeNav === 'cards' ? () => nav('cards') : undefined}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
+            <CardVisual card={card} onCardClick={null}/>
+
+            {/* ── Available balance ── */}
+            <div style={{
+              marginTop:14,
+              padding:'20px 18px 18px',
+              background:C.white,
+              borderRadius:12,
+              boxShadow:'0 2px 8px rgba(0,0,0,0.06)',
+              border:'1px solid '+C.border,
+              display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+            }}>
+              <span style={{ fontSize:16, color:C.txtMuted, fontWeight:W.medium, fontFamily:'Roboto,sans-serif', letterSpacing:'.06em', textTransform:'uppercase' }}>
+                {t('availableBalance')}
+              </span>
+              <span style={{ fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary, fontFamily:'Roboto,sans-serif', letterSpacing:'-.02em', lineHeight:1.15, marginTop:2 }}>
+                {fmtEur(card.bal ?? 0)}
+              </span>
+              <div style={{ width:32, height:2, borderRadius:2, background:C.border, margin:'6px 0 4px' }} />
+              <span style={{ fontSize:16, color:C.txtMuted, fontWeight:W.regular, lineHeight:1.5, textAlign:'center' }}>
+                {t('cardSecuredByBulPay')}
+              </span>
+            </div>
+
+            {/* ── Primary Send Money Button ── */}
+            <div style={{marginTop:16, marginBottom:20}}>
+              <PrimaryBtn onClick={() => nav('send', { cid: card.id, origin: activeNav })}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} viewBox="0 0 24 24"
+                     fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+                {t('sendMoney')}
+              </PrimaryBtn>
+            </div>
+
+            <div style={{fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary, marginBottom:12}}>
+              {t('pastTransactions')}
+            </div>
+
+            {/* ── Transaction list ── */}
+            <WhiteBox style={{marginBottom:8}}>
+              {txs.length > 0
+                ? (()=>{
+                    const showTxs = txs.slice(0, 3);
+                    return (
+                      <>
+                        {showTxs.map((tx,i)=>(
+                          <div key={tx.id} style={i===showTxs.length-1 && txs.length <= 3 ?{borderBottom:'none'}:{}}>
+                            <TxRow tx={tx} onClick={()=>setSelectedTx(tx)}/>
+                          </div>
+                        ))}
+                        {txs.length > 3 && (
+                          <div style={{borderTop:'1px solid '+C.rowBorder}}>
+                            <button
+                              onClick={()=>nav('all-transactions',{cid:card.id, origin:activeNav})}
+                              style={{
+                                width:'100%', padding:'14px 16px', border:'none', background:C.white,
+                                fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary, cursor:'pointer',
+                                fontFamily:'Roboto,sans-serif', textAlign:'center',
+                                transition:'background .15s',
+                              }}
+                              onMouseEnter={e=>{ e.currentTarget.style.background='#EFF6FF'; }}
+                              onMouseLeave={e=>{ e.currentTarget.style.background=C.white; }}
+                            >
+                              {t('seeAll')}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
+                : <div style={{padding:'40px 16px', textAlign:'center', fontSize:T.body, color:C.txtMuted}}>
+                    {t('noTransactions')}
+                  </div>}
+            </WhiteBox>
+          </div>
+
+          <BottomNav nav={nav} active={activeNav} card={card}/>
+
+          {/* Transaction detail bottom sheet */}
+          {selectedTx && (
+            <TxDetailSheet
+              tx={selectedTx}
+              card={card}
+              onClose={()=>setSelectedTx(null)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    function AllTransactionsScreen({ nav, cid, origin = 'card' }) {
+      const t = useLang();
+      const cards = Store.cards();
+      const card = cards.find(c=>c.id===cid) || cards[0];
+      const txs = Store.tx().filter(tx=>tx.cid===card.id);
+      const [selectedTx, setSelectedTx] = useState(null);
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
+          <AppHeader onBack={() => origin === 'home' ? nav('home') : nav('card',{cid:card.id})}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'16px 16px 8px'}}>
+            {/* Page heading */}
+            <div style={{fontSize:T.h1, fontWeight:W.bold, color:C.txtPrimary, marginBottom:22}}>
+              {t('allTransactions')}
+            </div>
+            <WhiteBox>
+              {txs.length > 0
+                ? txs.map((tx,i)=>(
+                    <div key={tx.id} style={i===txs.length-1?{borderBottom:'none'}:{}}>
+                      <TxRow tx={tx} onClick={()=>setSelectedTx(tx)}/>
+                    </div>
+                  ))
+                : <div style={{padding:'40px 16px', textAlign:'center', fontSize:T.body, color:C.txtMuted}}>
+                    {t('noTransactions')}
+                  </div>}
+            </WhiteBox>
+          </div>
+
+          {selectedTx && (
+            <TxDetailSheet
+              tx={selectedTx}
+              card={card}
+              onClose={()=>setSelectedTx(null)}
+            />
+          )}
+
+          <BottomNav nav={nav} active={origin === 'home' ? 'home' : 'cards'} card={card}/>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — CARD MANAGE (from Cards tab)
+    ════════════════════════════════════════ */
+    function CardManageScreen({ nav, cid }) {
+      const t = useLang();
+      const cards = Store.cards();
+      const card  = cards.find(c => c.id === cid) || cards[0];
+      const txs   = Store.tx().filter(tx => tx.cid === card.id);
+      const [isFrozen,   setIsFrozen]   = useState(false);
+      const [selectedTx, setSelectedTx] = useState(null);
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
+          <AppHeader onBack={() => nav('cards')} title={t('appName')}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
+
+            {/* Page heading */}
+            <div style={{fontSize:T.h1, fontWeight:W.bold, color:C.txtPrimary, marginBottom:20}}>
+              {t('manageCard')}
+            </div>
+
+            {/* Card visual */}
+            <CardVisual card={card} isFrozen={isFrozen} onCardClick={null}/>
+
+            {/* Frozen banner */}
+            {isFrozen && (
+              <div style={{
+                background:'#DBEAFE', border:'1px solid #93C5FD',
+                borderRadius:12, padding:'14px 18px', marginTop:14,
+                display:'flex', alignItems:'center', gap:12,
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22,flexShrink:0}} fill="none"
+                     viewBox="0 0 24 24" stroke="#1D4ED8" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+                </svg>
+                <span style={{fontSize:T.body, color:'#1D4ED8', fontWeight:W.medium}}>
+                  {t('cardFrozenBanner')}
+                </span>
+              </div>
+            )}
+
+            {/* ── Action buttons ── */}
+            <div style={{
+              display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10,
+              marginTop:20, marginBottom:8,
+            }}>
+
+              {/* Freeze / Unfreeze — functional */}
+              <button
+                onClick={() => setIsFrozen(f => !f)}
+                className={isFrozen ? 'freeze-pulse' : ''}
+                style={{
+                  background: isFrozen ? '#DBEAFE' : C.white,
+                  border: '2px solid ' + (isFrozen ? '#1D4ED8' : C.border),
+                  borderRadius: 16, padding: '16px 6px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+                  transition: 'all .2s',
+                  fontFamily: 'Roboto,sans-serif',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <div style={{
+                  width: 46, height: 46, borderRadius: 12,
+                  background: isFrozen ? '#EFF6FF' : '#DDE6F5',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {isFrozen
+                    ? <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                           viewBox="0 0 24 24" stroke="#1D4ED8" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+                      </svg>
+                    : <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                           viewBox="0 0 24 24" stroke="#3B5FC0" strokeWidth={1.8}>
+                        <rect x="5" y="11" width="14" height="10" rx="2"/>
+                        <path strokeLinecap="round" d="M8 11V7a4 4 0 018 0v4"/>
+                      </svg>}
+                </div>
+                <span style={{
+                  fontSize: T.caption, fontWeight: W.semibold,
+                  color: isFrozen ? '#1D4ED8' : C.txtPrimary,
+                  textAlign: 'center', lineHeight: 1.3,
+                  transition: 'color .2s',
+                }}>
+                  {isFrozen ? t('unfreezeCard') : t('freezeCard')}
+                </span>
+              </button>
+
+              {/* Top Up — visual only */}
+              <button style={{
+                background: C.white, border: '2px solid ' + C.border,
+                borderRadius: 16, padding: '16px 6px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                cursor: 'default', boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+                fontFamily: 'Roboto,sans-serif', opacity: 0.65,
+                WebkitTapHighlightColor: 'transparent',
+              }}>
+                <div style={{
+                  width: 46, height: 46, borderRadius: 12, background: '#DDE6F5',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                       viewBox="0 0 24 24" stroke="#3B5FC0" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14"/>
+                  </svg>
+                </div>
+                <span style={{fontSize:T.caption, fontWeight:W.semibold, color:C.txtPrimary, textAlign:'center', lineHeight:1.3}}>
+                  {t('topUp')}
+                </span>
+              </button>
+
+              {/* Show Card Details — visual only */}
+              <button style={{
+                background: C.white, border: '2px solid ' + C.border,
+                borderRadius: 16, padding: '16px 6px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                cursor: 'default', boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+                fontFamily: 'Roboto,sans-serif', opacity: 0.65,
+                WebkitTapHighlightColor: 'transparent',
+              }}>
+                <div style={{
+                  width: 46, height: 46, borderRadius: 12, background: '#DDE6F5',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{width:22,height:22}} fill="none"
+                       viewBox="0 0 24 24" stroke="#3B5FC0" strokeWidth={1.8}>
+                    <rect x="2" y="5" width="20" height="14" rx="3"/>
+                    <path strokeLinecap="round" d="M2 10h20"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 15h4"/>
+                  </svg>
+                </div>
+                <span style={{fontSize:T.caption, fontWeight:W.semibold, color:C.txtPrimary, textAlign:'center', lineHeight:1.3}}>
+                  {t('showCardDetails')}
+                </span>
+              </button>
+            </div>
+
+            {/* Recent transactions */}
+            <div style={{fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary, marginTop:20, marginBottom:12}}>
+              {t('pastTransactions')}
+            </div>
+            <WhiteBox style={{marginBottom:8}}>
+              {txs.length > 0
+                ? txs.slice(0, 3).map((tx, i, arr) => (
+                    <div key={tx.id} style={i === arr.length - 1 ? {borderBottom:'none'} : {}}>
+                      <TxRow tx={tx} onClick={() => setSelectedTx(tx)}/>
+                    </div>
+                  ))
+                : <div style={{padding:'40px 16px', textAlign:'center', fontSize:T.body, color:C.txtMuted}}>
+                    {t('noTransactions')}
+                  </div>}
+            </WhiteBox>
+          </div>
+
+          <BottomNav nav={nav} active="cards" card={card}/>
+
+          {selectedTx && (
+            <TxDetailSheet tx={selectedTx} card={card} onClose={() => setSelectedTx(null)}/>
+          )}
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — SEND MONEY
+    ════════════════════════════════════════ */
+    function SendScreen({ nav, cid, origin = 'home' }) {
+      const t = useLang();
+      const cards  = Store.cards();
+      const card   = cards.find(c=>c.id===cid) || cards[0];
+      const [recip,  setRecip]  = useState(null);
+      const [amt,    setAmt]    = useState('');
+      const [amtErr, setAmtErr] = useState('');
+      const [search, setSearch] = useState('');
+      const [amountKey, setAmountKey] = useState(0);
+      const amountSectionRef = useRef(null);
+      const amountInputRef   = useRef(null);
+
+      const filtered = RECIPIENTS.filter(r=>
+        r.name.toLowerCase().includes(search.toLowerCase()) || r.phone.includes(search)
+      );
+
+      const go = () => {
+        if (!recip) return;
+        const n = parseFloat(amt);
+        if (!n || n<=0)    { setAmtErr(t('pleaseEnterValidAmount')); return; }
+        if (n>card.bal)    { setAmtErr(t('insufficientBalance')+fmtEur(card.bal)); return; }
+        Store.setDraft({ card, recip, amt:n, fee:0, ref:genRef(), ts:new Date().toISOString() });
+        nav('confirm');
+      };
+
+      const parsedAmt = parseFloat(amt);
+      const canGo = recip && amt && parsedAmt > 0 && parsedAmt <= card.bal;
+
+      const handleExit = () => {
+        if (origin === 'cards') {
+          // Return to the Cards section root (MyCards list)
+          nav('cards');
+        } else {
+          nav('home');
+        }
+      };
+
+      useEffect(() => {
+        if (recip && amountSectionRef.current) {
+          amountSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // After scroll lands (~420 ms), pop the input box and focus it
+          setTimeout(() => {
+            setAmountKey(k => k + 1);
+            amountInputRef.current?.focus();
+          }, 420);
+        }
+      }, [recip]);
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,overflow:'hidden',background:C.pageBg}}>
+          <AppHeader onBack={handleExit}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
+            <div style={{minHeight:'100%', display:'flex', flexDirection:'column'}}>
+            <div className="card-hex-pattern" style={{
+              background: CARD_BG_DARK,
+              border: '1px solid rgba(0,0,0,.45)',
+              borderRadius: 14,
+              padding: '14px 18px',
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              boxShadow: '0 8px 32px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.12)',
+              position: 'relative',
+              overflow: 'hidden',
+              color: '#fff',
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" style={{width:20,height:20,flexShrink:0}} fill="none"
+                   viewBox="0 0 24 24" stroke="rgba(255,255,255,.9)" strokeWidth={1.8} opacity={.9}>
+                <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+              </svg>
+              <div>
+                <div style={{fontSize:T.caption, color:'rgba(255,255,255,.65)', fontWeight:W.medium}}>{t('sendingFrom')}</div>
+                <div style={{fontSize:T.h3, fontWeight:W.semibold, color:'#fff'}}>{card.name} •••• {card.last4}</div>
+              </div>
+            </div>
+
+            {/* Recipients */}
+            <SectionLabel>{t('chooseRecipient')}</SectionLabel>
+            {/* Search */}
+            <div style={{position:'relative', marginBottom:10}}>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',width:15,height:15}}
+                   fill="none" viewBox="0 0 24 24" stroke="#9CA3AF" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input value={search} onChange={e=>setSearch(e.target.value)}
+                     placeholder={t('searchNameOrNumber')}
+                     style={{
+                       width:'100%', paddingLeft:36, paddingRight:14, paddingTop:11, paddingBottom:11,
+                       background:C.white, border:'1px solid '+C.border, borderRadius:12,
+                       fontSize:T.h3, color:C.txtPrimary, outline:'none', fontFamily:'Roboto,sans-serif',
+                       boxSizing:'border-box',
+                     }}/>
+            </div>
+
+            <WhiteBox style={{marginBottom:20}}>
+              {filtered.map((r,i)=>(
+                <button key={r.id} onClick={()=>setRecip(r)}
+                        className="recip-row"
+                        style={{
+                          width:'100%', display:'flex', alignItems:'center', gap:14,
+                          padding:'14px 16px', textAlign:'left',
+                          border:'none',
+                          borderBottom: i<filtered.length-1 ? '1px solid '+C.rowBorder : 'none',
+                          background: recip?.id===r.id ? '#EFF6FF' : C.white,
+                          boxShadow: recip?.id===r.id ? 'inset 3px 0 0 #2563EB' : 'none',
+                          cursor:'pointer', fontFamily:'Roboto,sans-serif',
+                          outline:'none',
+                        }}>
+                  <div style={{
+                    width:42,height:42,borderRadius:'50%',flexShrink:0,
+                    background:C.avatarBg, color:C.avatarTxt,
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    fontSize:T.bodySmall, fontWeight:W.medium,
+                  }}>{r.ini}</div>
+                  <div style={{flex:1, minWidth:0}}>
+                    <div style={{fontSize:T.h3,fontWeight:W.medium,color:C.txtPrimary}}>{r.name}</div>
+                    <div style={{fontSize:T.body,color:C.txtMuted,marginTop:3}}>{r.phone}</div>
+                  </div>
+                  {recip?.id===r.id && (
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:20,height:20,flexShrink:0}} fill="none"
+                         viewBox="0 0 24 24" stroke="#2563EB" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </WhiteBox>
+
+            {/* Amount */}
+            <div ref={amountSectionRef} style={{scrollMarginTop:12}}>
+              <SectionLabel>{t('amountToSend')}</SectionLabel>
+              <div key={amountKey} className={amountKey > 0 ? 'amount-pop' : ''}>
+                <WhiteBox style={{marginBottom:8}}>
+                  <div style={{padding:'14px 16px', display:'flex', alignItems:'center', gap:8}}>
+                    <span style={{fontSize:T.display, fontWeight:W.light, color:'#D1D5DB'}}>€</span>
+                    <input ref={amountInputRef} type="number" min="0" step="0.01"
+                           value={amt} onChange={e=>{setAmt(e.target.value);setAmtErr('');}}
+                           placeholder="0.00"
+                           style={{
+                             flex:1, fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary,
+                             border:'none', outline:'none', background:'transparent',
+                             fontFamily:'Roboto,sans-serif',
+                           }}/>
+                  </div>
+                  {amtErr && <div style={{padding:'0 16px 12px',fontSize:T.body,color:'#EF4444'}}>{amtErr}</div>}
+                </WhiteBox>
+              </div>
+            </div>
+
+            <WhiteBox style={{marginBottom:24}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                           padding:'12px 16px', borderBottom:'1px solid '+C.rowBorder}}>
+                <span style={{fontSize:T.body,color:C.txtSecond}}>{t('fee')}</span>
+                <span style={{fontSize:T.body,fontWeight:W.semibold,color:'#16A34A'}}>{t('noFee')}</span>
+              </div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px'}}>
+                <span style={{fontSize:T.body,color:C.txtSecond}}>{t('estimatedDelivery')}</span>
+                <span style={{fontSize:T.body,fontWeight:W.semibold,color:C.txtPrimary}}>{t('instant')}</span>
+              </div>
+            </WhiteBox>
+
+            </div>
+          </div>
+
+          {/* Sticky bottom action bar */}
+          <div style={{
+            padding:'12px 16px',
+            paddingBottom:'max(20px, env(safe-area-inset-bottom, 20px))',
+            background:C.pageBg,
+            flexShrink:0,
+            borderTop:'1px solid '+C.border,
+          }}>
+            <PrimaryBtn onClick={go} disabled={!canGo}>{t('continueBtn')}</PrimaryBtn>
+            <button onClick={handleExit}
+                    style={{
+                      width:'100%', marginTop:10, padding:'12px',
+                      background:'transparent', border:'none',
+                      fontSize:T.body, fontWeight:W.medium, color:C.txtMuted,
+                      cursor:'pointer', fontFamily:'Roboto,sans-serif',
+                    }}>
+              {t('cancel')}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — CONFIRM
+    ════════════════════════════════════════ */
+    function ConfirmScreen({ nav }) {
+      const t = useLang();
+      const draft = Store.draft();
+      const [showPin,  setShowPin]  = useState(false);
+      const [pinVisible, setPinVisible] = useState(false);
+      const [busy,     setBusy]     = useState(false);
+      if (!draft) { nav('home'); return null; }
+
+      const openPin = () => {
+        setShowPin(true);
+        requestAnimationFrame(() => setPinVisible(true));
+      };
+      const closePin = () => {
+        setPinVisible(false);
+        setTimeout(() => setShowPin(false), 300);
+      };
+
+      const onPinSuccess = () => {
+        closePin();
+        setBusy(true);
+        setTimeout(()=>{
+          Store.setCards(Store.cards().map(c=>
+            c.id===draft.card.id ? {...c, bal:c.bal-draft.amt} : c
+          ));
+          Store.addTx({
+            id:'tx-'+Date.now(), cid:draft.card.id,
+            who:draft.recip.name, ini:draft.recip.ini,
+            amt:draft.amt, dir:'out',
+            date:new Date().toISOString().split('T')[0], st:'Completed'
+          });
+          nav('success');
+        }, 400);
+      };
+
+      const rows = [
+        { label:t('fromCard'), value:`${draft.card.name} •••• ${draft.card.last4}` },
+        { label:t('amount'),   value:fmtEur(draft.amt) },
+        { label:t('txFee'),    value:'€0', green:true },
+        { label:t('total'),    value:fmtEur(draft.amt), bold:true },
+      ];
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
+          <AppHeader onBack={()=>nav('send',{cid:draft.card.id})}/>
+
+          <div className="scroll-body" style={{flex:1, padding:'20px 16px 16px'}}>
+
+            {/* Recipient hero tile */}
+            <WhiteBox style={{marginBottom:16, padding:'24px 20px 20px'}}>
+              {/* Avatar + identity */}
+              <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                <div style={{
+                  width:72, height:72, borderRadius:'50%', flexShrink:0,
+                  background:C.avatarBg, color:C.avatarTxt,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:T.h1, fontWeight:W.medium,
+                  marginBottom:14,
+                  boxShadow:'0 2px 10px rgba(91,107,138,.15)',
+                }}>
+                  {draft.recip.ini}
+                </div>
+
+                <div style={{
+                  fontSize:14, fontWeight:W.semibold, color:C.txtMuted,
+                  textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6,
+                }}>
+                  {t('paying')}
+                </div>
+
+                <div style={{
+                  fontSize:T.h2, fontWeight:W.bold, color:C.txtPrimary,
+                  textAlign:'center', lineHeight:1.3, wordBreak:'break-word',
+                  marginBottom:4,
+                }}>
+                  {draft.recip.name}
+                </div>
+
+                <div style={{fontSize:T.bodySmall, color:C.txtMuted}}>
+                  {draft.recip.phone}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{
+                height:1, background:C.rowBorder,
+                margin:'18px -20px 18px',
+              }}/>
+
+              {/* Amount */}
+              <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                <div style={{
+                  fontSize:14, fontWeight:W.semibold, color:C.txtMuted,
+                  textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6,
+                }}>
+                  {t('amount')}
+                </div>
+                <div style={{
+                  fontSize:40, fontWeight:W.bold, color:C.txtPrimary,
+                  lineHeight:1.1, letterSpacing:'-.01em',
+                }}>
+                  {fmtEur(draft.amt)}
+                </div>
+              </div>
+            </WhiteBox>
+
+            {/* Details */}
+            <WhiteBox style={{marginBottom:20}}>
+              {rows.map(({label,value,green,bold,mono},i)=>(
+                <div key={label} style={{
+                  display:'flex',justifyContent:'space-between',alignItems:'center',
+                  padding:'12px 16px',
+                  borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
+                }}>
+                  <span style={{fontSize:T.bodySmall,color:C.txtMuted}}>{label}</span>
+                  <span style={{
+                    fontSize: bold?T.h3:T.bodySmall,
+                    fontWeight: bold?W.bold:W.medium,
+                    color: green?'#16A34A': bold?C.txtPrimary:'#374151',
+                    fontFamily: mono?'monospace':'Roboto,sans-serif',
+                  }}>
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </WhiteBox>
+          </div>
+
+          {/* Sticky bottom action bar */}
+          <div style={{
+            padding:'12px 16px',
+            paddingBottom:'max(20px, env(safe-area-inset-bottom, 20px))',
+            background:C.pageBg,
+            flexShrink:0,
+            borderTop:'1px solid '+C.border,
+          }}>
+            <PrimaryBtn onClick={openPin} loading={busy}>
+              {!busy && t('confirmWithPin')}
+            </PrimaryBtn>
+            <button onClick={()=>nav('send',{cid:draft.card.id})}
+                    style={{
+                      width:'100%', marginTop:10, padding:'12px',
+                      background:'transparent', border:'none',
+                      fontSize:T.body, fontWeight:W.medium, color:C.txtMuted,
+                      cursor:'pointer', fontFamily:'Roboto,sans-serif',
+                    }}>
+              {t('cancel')}
+            </button>
+          </div>
+
+          {/* ── Confirm PIN sheet ── */}
+          {showPin && <ConfirmPinSheet
+            visible={pinVisible}
+            onSuccess={onPinSuccess}
+            onClose={closePin}
+            draft={draft}
+          />}
+        </div>
+      );
+    }
+
+    /* ── Confirm PIN bottom sheet ── */
+    function ConfirmPinSheet({ visible, onSuccess, onClose, draft }) {
+      const t = useLang();
+      const [digits, setDigits] = useState('');
+      const [err,    setErr]    = useState('');
+      const [shake,  setShake]  = useState(false);
+      const letters = {'2':'ABC','3':'DEF','4':'GHI','5':'JKL','6':'MNO','7':'PQRS','8':'TUV','9':'WXYZ'};
+
+      const push = (k) => {
+        if (digits.length >= 4) return;
+        const next = digits + k;
+        setDigits(next); setErr('');
+        if (next.length === 4) {
+          setTimeout(() => {
+            if (next === PIN) {
+              onSuccess();
+            } else {
+              setShake(true);
+              setErr(t('incorrectPin'));
+              setTimeout(() => { setDigits(''); setShake(false); }, 600);
+            }
+          }, 200);
+        }
+      };
+      const del = () => { setDigits(d => d.slice(0,-1)); setErr(''); };
+
+      return (
+        <>
+          {/* Backdrop */}
+          <div onClick={onClose} style={{
+            position:'absolute', inset:0, zIndex:40,
+            background: visible ? 'rgba(0,0,0,.4)' : 'rgba(0,0,0,0)',
+            transition:'background .3s ease',
+          }}/>
+
+          {/* Sheet */}
+          <div style={{
+            position:'absolute', bottom:0, left:0, right:0, zIndex:50,
+            background: C.white,
+            borderRadius:'24px 24px 0 0',
+            boxShadow:'0 -4px 32px rgba(0,0,0,.15)',
+            transform: visible ? 'translateY(0)' : 'translateY(100%)',
+            transition:'transform .3s cubic-bezier(.32,1,.55,1)',
+            paddingBottom:24,
+          }}>
+            {/* Handle */}
+            <div style={{display:'flex',justifyContent:'center',padding:'12px 0 4px'}}>
+              <div style={{width:40,height:4,borderRadius:2,background:'#E5E7EB'}}/>
+            </div>
+
+            {/* Payment summary */}
+            <div style={{
+              margin:'4px 20px 20px',
+              background:C.pageBg, borderRadius:14,
+              padding:'12px 16px',
+              display:'flex', alignItems:'center', justifyContent:'space-between',
+            }}>
+              <div style={{display:'flex', alignItems:'center', gap:10}}>
+                <div style={{
+                  width:36,height:36,borderRadius:'50%',flexShrink:0,
+                  background:C.avatarBg, color:C.avatarTxt,
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontSize:T.h3, fontWeight:W.medium,
+                }}>
+                  {draft.recip.ini}
+                </div>
+                <div>
+                  <div style={{fontSize:T.caption,color:C.txtMuted}}>{t('paying')}</div>
+                  <div style={{fontSize:T.bodySmall,fontWeight:W.medium,color:C.txtPrimary}}>{draft.recip.name}</div>
+                </div>
+              </div>
+              <div style={{fontSize:T.h2,fontWeight:W.bold,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
+            </div>
+
+            {/* Title */}
+            <div style={{textAlign:'center',fontSize:T.h2,fontWeight:W.bold,color:C.txtPrimary,marginBottom:20}}>
+              {t('confirmPaymentPin')}
+            </div>
+
+            {/* Dots */}
+            <div className={shake?'shake':''} style={{display:'flex',justifyContent:'center',marginBottom:6}}>
+              {[0,1,2,3].map(i=>(
+                <div key={i} className={`pin-dot ${digits.length>i?(err?'err':'on'):''}`}/>
+              ))}
+            </div>
+            <div style={{
+              height:20,fontSize:T.body,color:'#EF4444',
+              textAlign:'center',marginBottom:16,
+              opacity: err ? 1 : 0,
+            }}>
+              {err||'·'}
+            </div>
+
+            {/* Keypad */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,padding:'0 32px'}}>
+              {['1','2','3','4','5','6','7','8','9'].map(k=>(
+                <button key={k} className="pin-key" onClick={()=>push(k)}
+                        style={{margin:'0 auto'}}>
+                  <div style={{fontSize:T.h1}}>{k}</div>
+                  <div style={{fontSize:T.overline,color:C.txtMuted}}>{letters[k]||''}</div>
+                </button>
+              ))}
+              <div/>
+              <button className="pin-key" onClick={()=>push('0')} style={{margin:'0 auto'}}>0</button>
+              <button className="pin-key ghost" onClick={del} style={{margin:'0 auto'}}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:24,height:24}} fill="none"
+                     viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414A2 2 0 0010.828 19H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — SUCCESS
+    ════════════════════════════════════════ */
+    function SuccessScreen({ nav }) {
+      const t = useLang();
+      const draft = Store.draft();
+      useEffect(()=>()=>Store.delDraft(),[]);
+      if (!draft) { nav('home'); return null; }
+
+      const dateStr = new Date().toLocaleString('en-GB',{
+        day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'
+      });
+
+      const rows = [
+        { label:t('amountSent'),  value:fmtEur(draft.amt), green:true, bold:true },
+        { label:t('to'),          value:draft.recip.name },
+        { label:t('fromCard'),    value:'•••• '+draft.card.last4 },
+        { label:t('txFee'),       value:'€0', green:true },
+        { label:t('reference'),   value:draft.ref, mono:true },
+        { label:t('dateTime'),    value:dateStr },
+      ];
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
+          <AppHeader/>
+          {/* scroll-body is a plain scroll container — no flex on it, avoiding the
+              iOS Safari bug where overflow-y:auto + display:flex on the same element
+              inside an overflow:hidden parent causes incorrect height calculation */}
+          <div className="scroll-body">
+            <div style={{
+              padding:'28px 20px',
+              paddingBottom:'calc(env(safe-area-inset-bottom, 0px) + 80px)',
+              display:'flex', flexDirection:'column', alignItems:'center',
+            }}>
+
+              {/* Checkmark */}
+              <div style={{
+                width:88,height:88,borderRadius:'50%',background:'#DCFCE7',
+                display:'flex',alignItems:'center',justifyContent:'center',
+                flexShrink:0,
+                boxShadow:'0 8px 28px rgba(22,163,74,.2)', marginBottom:14,
+              }}>
+                <div style={{
+                  width:60,height:60,borderRadius:'50%',background:'#16A34A',
+                  flexShrink:0,
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{width:32,height:32}} fill="none"
+                       viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </div>
+              <div style={{fontSize:T.h1,fontWeight:W.bold,color:C.txtPrimary,marginBottom:4,textAlign:'center'}}>{t('paymentSent')}</div>
+              <div style={{fontSize:T.body,color:C.txtMuted,marginBottom:24,textAlign:'center'}}>{t('paymentSuccessful')}</div>
+
+              {/* Receipt */}
+              <WhiteBox style={{width:'100%',marginBottom:20}}>
+                <div style={{
+                  padding:'12px 16px',borderBottom:'1px dashed #E5E7EB',
+                  background:'#F9FAFB',
+                }}>
+                  <div style={{fontSize:T.caption,fontWeight:W.semibold,color:C.txtMuted,
+                               textAlign:'center',textTransform:'uppercase',letterSpacing:'.07em'}}>
+                    {t('receipt')}
+                  </div>
+                </div>
+                {rows.map(({label,value,green,bold,mono},i)=>(
+                  <div key={label} style={{
+                    display:'flex',justifyContent:'space-between',alignItems:'center',
+                    padding:'13px 16px',
+                    borderBottom: i<rows.length-1 ? '1px solid '+C.rowBorder : 'none',
+                  }}>
+                    <span style={{fontSize:T.bodySmall,color:C.txtMuted}}>{label}</span>
+                    <span style={{
+                      fontSize: bold?T.h3:T.bodySmall,
+                      fontWeight: bold?W.bold:W.medium,
+                      color: green?'#16A34A': C.txtPrimary,
+                      fontFamily: mono?'monospace':'Roboto,sans-serif',
+                    }}>
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </WhiteBox>
+
+              <div style={{width:'100%'}}>
+                <PrimaryBtn onClick={()=>nav('home')}>{t('done')}</PrimaryBtn>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — ADD CARD
+    ════════════════════════════════════════ */
+    function AddCardScreen({ nav }) {
+      const t = useLang();
+      const [f,setF]      = useState({num:'',name:'',exp:'',cvv:''});
+      const [errs,setErrs]= useState({});
+      const [busy,setBusy]= useState(false);
+
+      const upd = (key) => (e) => {
+        let v = e.target.value;
+        if (key==='num') v=v.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
+        if (key==='exp') v=v.replace(/\D/g,'').slice(0,4).replace(/^(\d{2})(\d)/,'$1/$2');
+        if (key==='cvv') v=v.replace(/\D/g,'').slice(0,3);
+        setF(p=>({...p,[key]:v}));
+        setErrs(p=>({...p,[key]:''}));
+      };
+
+      const validate = () => {
+        const e={};
+        if (f.num.replace(/\s/g,'').length<16) e.num=t('invalidCardNum');
+        if (!f.name.trim())                    e.name=t('enterCardholderName');
+        if (f.exp.length<5)                    e.exp=t('enterExpiry');
+        if (f.cvv.length<3)                    e.cvv=t('enterCvv');
+        setErrs(e); return Object.keys(e).length===0;
+      };
+
+      const add = () => {
+        if (!validate()) return;
+        setBusy(true);
+        setTimeout(()=>{
+          Store.setCards([...Store.cards(),{
+            id:'c-'+Date.now(), name:'BulPay VISA',
+            last4:f.num.replace(/\s/g,'').slice(-4),
+            holder:f.name, bal:0, grad:'g3'
+          }]);
+          nav('cards');
+        },1000);
+      };
+
+      const fieldStyle = (key) => ({
+        width:'100%', padding:'12px 14px',
+        background:C.white, border:'1px solid '+(errs[key]?'#EF4444':C.border),
+        borderRadius:12, fontSize:T.body, color:C.txtPrimary,
+        outline:'none', fontFamily:'Roboto,sans-serif',
+        boxSizing:'border-box',
+      });
+      const labelStyle = {
+        fontSize:T.caption, fontWeight:W.semibold, color:C.txtMuted,
+        textTransform:'uppercase', letterSpacing:'.06em',
+        display:'block', marginBottom:6,
+      };
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
+          <AppHeader onBack={()=>nav('cards')}/>
+
+          <div className="scroll-body" style={{padding:'20px 16px 32px'}}>
+
+            {/* Add methods */}
+            <SectionLabel>{t('addCardVia')}</SectionLabel>
+            <div style={{display:'flex', gap:12, marginBottom:24}}>
+              {[{icon:'📷',labelKey:'photo'},{icon:'📡',labelKey:'nfcScan'}].map(m=>(
+                <div key={m.labelKey} style={{
+                  flex:1, background:C.white, borderRadius:12, padding:'12px 8px',
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+                  opacity:.38, border:'1px solid '+C.border, position:'relative',
+                }}>
+                  <span style={{fontSize:T.h1}}>{m.icon}</span>
+                  <span style={{fontSize:T.body,color:C.txtMuted}}>{t(m.labelKey)}</span>
+                  <span style={{
+                    position:'absolute', top:-8, right:-8,
+                    background:C.btnPrimary, color:'#fff', fontSize:T.overline,
+                    padding:'2px 6px', borderRadius:10, fontWeight:600,
+                  }}>{t('appOnly')}</span>
+                </div>
+              ))}
+              <div style={{
+                flex:1, background:C.white, borderRadius:12, padding:'12px 8px',
+                display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+                border:'2px solid '+C.btnPrimary,
+              }}>
+                <span style={{fontSize:T.h1}}>⌨️</span>
+                <span style={{fontSize:T.body, fontWeight:W.semibold, color:C.btnPrimary}}>{t('manual')}</span>
+              </div>
+            </div>
+
+            <SectionLabel>{t('cardDetails')}</SectionLabel>
+
+            <div style={{marginBottom:16}}>
+              <label style={labelStyle}>{t('cardNumber')}</label>
+              <input value={f.num} onChange={upd('num')} placeholder="0000 0000 0000 0000"
+                     style={fieldStyle('num')}/>
+              {errs.num && <div style={{fontSize:T.body,color:'#EF4444',marginTop:4}}>{errs.num}</div>}
+            </div>
+
+            <div style={{marginBottom:16}}>
+              <label style={labelStyle}>{t('cardholderName')}</label>
+              <input value={f.name} onChange={upd('name')} placeholder={t('fullNameOnCard')}
+                     style={fieldStyle('name')}/>
+              {errs.name && <div style={{fontSize:T.body,color:'#EF4444',marginTop:4}}>{errs.name}</div>}
+            </div>
+
+            <div style={{display:'flex', gap:12, marginBottom:24}}>
+              <div style={{flex:1}}>
+                <label style={labelStyle}>{t('expiry')}</label>
+                <input value={f.exp} onChange={upd('exp')} placeholder="MM/YY" inputMode="numeric"
+                       style={fieldStyle('exp')}/>
+                {errs.exp && <div style={{fontSize:T.body,color:'#EF4444',marginTop:4}}>{errs.exp}</div>}
+              </div>
+              <div style={{flex:1}}>
+                <label style={labelStyle}>{t('cvv')}</label>
+                <input value={f.cvv} onChange={upd('cvv')} placeholder="•••"
+                       inputMode="numeric" type="password"
+                       style={fieldStyle('cvv')}/>
+                {errs.cvv && <div style={{fontSize:T.body,color:'#EF4444',marginTop:4}}>{errs.cvv}</div>}
+              </div>
+            </div>
+
+            <PrimaryBtn onClick={add} loading={busy}>
+              {!busy && t('addCard')}
+            </PrimaryBtn>
+            <button onClick={()=>nav('cards')}
+                    style={{
+                      width:'100%', marginTop:12, padding:'12px',
+                      background:'transparent', border:'none',
+                      fontSize:T.body, color:C.txtMuted, cursor:'pointer',
+                      fontFamily:'Roboto,sans-serif',
+                    }}>
+              {t('cancel')}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SCREEN — HOME (Card Carousel Dashboard)
+    ════════════════════════════════════════ */
+    function HomeCarouselScreen({ nav }) {
+      const t = useLang();
+      const [cards, setCards]         = useState(() => Store.cards());
+      const [activeIdx, setActiveIdx] = useState(0);
+      /*
+       * animDir: 0 = idle, 1 = animating forward (→ next card), -1 = animating backward (← prev)
+       * We track direction so we know which card enters from where.
+       */
+      const [animDir, setAnimDir]     = useState(0);
+      const [containerW, setContainerW] = useState(0);
+      const [selectedTx, setSelectedTx] = useState(null);
+      const wrapperRef  = useRef(null);
+      const touchStartX = useRef(null);
+      const timerRef    = useRef(null);
+
+      /* Refresh cards on mount (picks up newly-added cards) */
+      useEffect(() => { setCards(Store.cards()); }, []);
+
+      /* Measure the carousel wrapper so we can position the peek card precisely */
+      useEffect(() => {
+        const measure = () => {
+          if (wrapperRef.current) setContainerW(wrapperRef.current.offsetWidth);
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        return () => window.removeEventListener('resize', measure);
+      }, []);
+
+      /*
+       * PEEK_PX: how many pixels of the NEXT card's face are visible at the right edge.
+       * The card padding stays at 16px on both sides (unchanged from original).
+       * The peek is achieved by absolutely-positioning the next card at
+       *   translateX(containerW - PEEK_PX), then letting the wrapper's overflow:hidden clip it.
+       */
+      const PEEK_PX = 24;
+      const ANIM_MS = 380;
+      const animating = animDir !== 0;
+
+      const goTo = useCallback((newIdx) => {
+        if (animating || newIdx < 0 || newIdx >= cards.length || newIdx === activeIdx) return;
+        const dir = newIdx > activeIdx ? 1 : -1;
+        setAnimDir(dir);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+          setActiveIdx(newIdx);
+          setAnimDir(0);
+        }, ANIM_MS + 40); /* slight buffer so the animation finishes before state swap */
+      }, [animating, cards.length, activeIdx]);
+
+      const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+      const onTouchEnd   = (e) => {
+        if (touchStartX.current === null) return;
+        const dx = touchStartX.current - e.changedTouches[0].clientX;
+        touchStartX.current = null;
+        if (dx > 42)       goTo(activeIdx + 1);
+        else if (dx < -42) goTo(activeIdx - 1);
+      };
+
+      if (!cards.length) return null;
+
+      const activeCard = cards[activeIdx];
+      const nextCard   = activeIdx + 1 < cards.length ? cards[activeIdx + 1] : null;
+      const prevCard   = activeIdx - 1 >= 0            ? cards[activeIdx - 1] : null;
+      const txs        = Store.tx().filter(tx => tx.cid === activeCard.id);
+
+      /*
+       * Dot indicator tracks the DESTINATION index immediately so the dot updates
+       * at the moment the user taps, rather than after the animation finishes.
+       */
+      const dotActiveIdx = animating
+        ? (animDir === 1 ? activeIdx + 1 : activeIdx - 1)
+        : activeIdx;
+
+      /*
+       * Transform helpers — all cards use the same 16px horizontal padding as the
+       * original single-card view, so the card visual remains exactly the same width.
+       *
+       * At idle:
+       *   active card  → translateX(0)                     (fully in view)
+       *   next card    → translateX(containerW - PEEK_PX)  (peeking from right)
+       *   prev card    → translateX(-containerW)            (fully off-screen left)
+       *
+       * During forward animation (animDir=1):
+       *   active card  → translateX(-containerW)            (slides out to left)
+       *   next card    → translateX(0)                      (slides in from peek position)
+       *
+       * During backward animation (animDir=-1):
+       *   active card  → translateX(containerW)             (slides out to right)
+       *   prev card    → translateX(0)                      (slides in from left)
+       */
+      const EASE = `${ANIM_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+
+      const activeStyle = {
+        padding: '20px 16px 0',   /* top-padding here keeps abs-positioned cards aligned */
+        transform: animating
+          ? `translateX(${animDir === 1 ? -containerW : containerW}px)`
+          : 'translateX(0)',
+        transition: animating ? `transform ${EASE}` : 'none',
+        willChange: animating ? 'transform' : 'auto',
+      };
+
+      const nextStyle = nextCard ? {
+        position: 'absolute', top: 0, left: 0, right: 0,
+        padding: '20px 16px 0',   /* match active card's top padding */
+        transform: (animating && animDir === 1)
+          ? 'translateX(0)'
+          : `translateX(${containerW > 0 ? containerW - PEEK_PX : 9999}px)`,
+        transition: (animating && animDir === 1) ? `transform ${EASE}` : 'none',
+        willChange: (animating && animDir === 1) ? 'transform' : 'auto',
+        cursor: !animating ? 'pointer' : 'default',
+      } : null;
+
+      const prevStyle = prevCard ? {
+        position: 'absolute', top: 0, left: 0, right: 0,
+        padding: '20px 16px 0',   /* match active card's top padding */
+        /* Idle: peek symmetrically from the LEFT edge (mirror of next card on right) */
+        transform: (animating && animDir === -1)
+          ? 'translateX(0)'
+          : `translateX(${containerW > 0 ? -(containerW - PEEK_PX) : -9999}px)`,
+        transition: (animating && animDir === -1) ? `transform ${EASE}` : 'none',
+        willChange: (animating && animDir === -1) ? 'transform' : 'auto',
+        cursor: !animating ? 'pointer' : 'default',
+      } : null;
+
+      return (
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
+          <AppHeader/>
+
+          {/*
+           * ── Card Carousel ──
+           * Lives OUTSIDE scroll-body so that scroll-body's implicit overflow-x:auto
+           * cannot clip the peeking next card.  The wrapper's own overflow:hidden does
+           * all the clipping at exactly the screen edge.
+           */}
+          <div
+            ref={wrapperRef}
+            style={{
+              flexShrink: 0,
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            {/* Active card — in-flow; determines the wrapper's height */}
+            <div style={activeStyle}>
+              <CardVisual card={activeCard} onCardClick={null} isFrozen={false}/>
+            </div>
+
+            {/* Next card — peeks at right edge; slides in during forward swipe */}
+            {nextCard && (
+              <div style={nextStyle} onClick={() => !animating && goTo(activeIdx + 1)}>
+                <CardVisual card={nextCard} onCardClick={null} isFrozen={false}/>
+              </div>
+            )}
+
+            {/* Prev card — peeks at left edge; slides in during backward swipe */}
+            {prevCard && (
+              <div style={prevStyle} onClick={() => !animating && goTo(activeIdx - 1)}>
+                <CardVisual card={prevCard} onCardClick={null} isFrozen={false}/>
+              </div>
+            )}
+
+            {/* Tap-zone over right peek (next card) */}
+            {nextCard && !animating && (
+              <div
+                onClick={() => goTo(activeIdx + 1)}
+                style={{
+                  position: 'absolute', right: 0, top: 20, bottom: 0,
+                  width: PEEK_PX, cursor: 'pointer', zIndex: 5,
+                }}
+              />
+            )}
+
+            {/* Tap-zone over left peek (prev card) */}
+            {prevCard && !animating && (
+              <div
+                onClick={() => goTo(activeIdx - 1)}
+                style={{
+                  position: 'absolute', left: 0, top: 20, bottom: 0,
+                  width: PEEK_PX, cursor: 'pointer', zIndex: 5,
+                }}
+              />
+            )}
+          </div>
+
+          {/* ── Dot indicators ── */}
+          {cards.length > 1 && (
+            <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:6, marginTop:10, marginBottom:2}}>
+              {cards.map((_, i) => (
+                <div
+                  key={i}
+                  onClick={() => goTo(i)}
+                  style={{
+                    width: i === dotActiveIdx ? 18 : 6,
+                    height: 6, borderRadius: 3,
+                    background: i === dotActiveIdx ? C.btnPrimary : '#D1D5DB',
+                    transition: 'width 0.28s ease, background 0.28s ease',
+                    cursor: 'pointer',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* ── Scrollable content (balance, button, transactions) ── */}
+          <div className="scroll-body" style={{flex:1, padding:'14px 16px 32px'}}>
+
+            {/* ── Available balance ── */}
+            <div style={{
+              marginTop: 14,
+              padding:'20px 18px 18px',
+              background:C.white,
+              borderRadius:12,
+              boxShadow:'0 2px 8px rgba(0,0,0,0.06)',
+              border:'1px solid '+C.border,
+              display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+            }}>
+              <span style={{ fontSize:16, color:C.txtMuted, fontWeight:W.medium, fontFamily:'Roboto,sans-serif', letterSpacing:'.06em', textTransform:'uppercase' }}>
+                {t('availableBalance')}
+              </span>
+              <span style={{ fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary, fontFamily:'Roboto,sans-serif', letterSpacing:'-.02em', lineHeight:1.15, marginTop:2 }}>
+                {fmtEur(activeCard.bal ?? 0)}
+              </span>
+              <div style={{ width:32, height:2, borderRadius:2, background:C.border, margin:'6px 0 4px' }} />
+              <span style={{ fontSize:16, color:C.txtMuted, fontWeight:W.regular, lineHeight:1.5, textAlign:'center' }}>
+                {t('cardSecuredByBulPay')}
+              </span>
+            </div>
+
+            {/* ── Send Money button ── */}
+            <div style={{marginTop:16, marginBottom:20}}>
+              <PrimaryBtn onClick={() => nav('send', { cid: activeCard.id, origin: 'home' })}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} viewBox="0 0 24 24"
+                     fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+                {t('sendMoney')}
+              </PrimaryBtn>
+            </div>
+
+            <div style={{fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary, marginBottom:12}}>
+              {t('pastTransactions')}
+            </div>
+
+            {/* ── Transaction list ── */}
+            <WhiteBox style={{marginBottom:8}}>
+              {txs.length > 0
+                ? (()=>{
+                    const showTxs = txs.slice(0, 3);
+                    return (
+                      <>
+                        {showTxs.map((tx,i)=>(
+                          <div key={tx.id} style={i===showTxs.length-1 && txs.length<=3?{borderBottom:'none'}:{}}>
+                            <TxRow tx={tx} onClick={()=>setSelectedTx(tx)}/>
+                          </div>
+                        ))}
+                        {txs.length > 3 && (
+                          <div style={{borderTop:'1px solid '+C.rowBorder}}>
+                            <button
+                              onClick={()=>nav('all-transactions',{cid:activeCard.id, origin:'home'})}
+                              style={{
+                                width:'100%', padding:'14px 16px', border:'none', background:C.white,
+                                fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary, cursor:'pointer',
+                                fontFamily:'Roboto,sans-serif', textAlign:'center',
+                                transition:'background .15s',
+                              }}
+                              onMouseEnter={e=>{ e.currentTarget.style.background='#EFF6FF'; }}
+                              onMouseLeave={e=>{ e.currentTarget.style.background=C.white; }}
+                            >
+                              {t('seeAll')}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
+                : <div style={{padding:'40px 16px', textAlign:'center', fontSize:T.body, color:C.txtMuted}}>
+                    {t('noTransactions')}
+                  </div>
+              }
+            </WhiteBox>
+
+          </div>
+
+          <BottomNav nav={nav} active="home" card={activeCard}/>
+
+          {/* Transaction detail bottom sheet */}
+          {selectedTx && (
+            <TxDetailSheet
+              tx={selectedTx}
+              card={activeCard}
+              onClose={()=>setSelectedTx(null)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       APP — ROUTER
+    ════════════════════════════════════════ */
+    function App() {
+      const [route, setRoute] = useState({ page:'lang', p:{} });
+      const [lang,  setLang]  = useState('en');
+
+      const nav = useCallback((page,p={})=>{
+        setRoute({page,p});
+        document.querySelector('.scroll-body')?.scrollTo(0,0);
+      },[]);
+
+      const screen = (()=>{
+        switch(route.page){
+          case 'lang':     return <LanguageScreen nav={nav} onLangSelect={setLang}/>;
+          /* case 'login': — LoginScreen deactivated (lines 1055–1107) */
+          case 'pin':      return <PinScreen      nav={nav}/>;
+          case 'home':     return <HomeCarouselScreen nav={nav}/>;
+          case 'cards':       return <MyCardsScreen    nav={nav}/>;
+          case 'card':        return <CardScreen       nav={nav} cid={route.p.cid} activeNav="cards"/>;
+          case 'card-manage': return <CardManageScreen nav={nav} cid={route.p.cid}/>;
+          case 'all-transactions': return <AllTransactionsScreen nav={nav} cid={route.p.cid} origin={route.p.origin}/>;
+          case 'send':     return <SendScreen     nav={nav} cid={route.p.cid} origin={route.p.origin}/>;
+          case 'confirm':  return <ConfirmScreen  nav={nav}/>;
+          case 'success':  return <SuccessScreen  nav={nav}/>;
+          case 'add-card': return <AddCardScreen  nav={nav}/>;
+          default:         return <PinScreen      nav={nav}/>;
+        }
+      })();
+
+      return (
+        <LangContext.Provider value={lang}>
+          <div className="phone-shell">{screen}</div>
+        </LangContext.Provider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
