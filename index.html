@@ -92,6 +92,39 @@
       border-radius: 6px;
       margin-top: 0.5rem;
     }
+    .section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0.75rem 0;
+}
+.section-divider span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94A3B8;
+  white-space: nowrap;
+}
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E2E8F0;
+}
+.version-card.dashboard-card {
+  border-color: #DBEAFE;
+  background: linear-gradient(135deg, #F0F7FF 0%, #ffffff 100%);
+}
+.version-card.dashboard-card:hover {
+  border-color: #93C5FD;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.10);
+}
+.version-card.dashboard-card .label {
+  color: #2563EB;
+}
+
   </style>
 </head>
 <body>
@@ -115,7 +148,18 @@
         <p class="title">Final version</p>
         <p class="desc">Added swiping card carrousel.</p>
       </a>
+    
+      <div class="section-divider">
+        <span>Analytics</span>
+      </div>
+    
+      <a href="05_Success_Metrics_Dashboard/index.html" class="version-card dashboard-card">
+        <span class="label">📊 Success Metrics</span>
+        <p class="title">MVP Dashboard</p>
+        <p class="desc">Measuring core MVP success metrics across 200 simulated sessions - built with Chart.js from raw CSV data.</p>
+      </a>
     </nav>
+    
   </div>
 </body>
 </html>
