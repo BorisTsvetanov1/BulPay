@@ -9,13 +9,13 @@ To understand the complete picture of the problem and how I've used my Product M
 ## Artifacts
 0. Case-Study.md
 1. MVP experiment canvas
-2. user interviews
-3. user persona
-4. lo-fi wireframes
-5. hi-fi wireframes
-6. prototype
-7. usability research - hypotheses and user testing
-8. iteration log / feedback log
+2. User interviews
+3. User persona
+4. Lo-fi and hi-fi wireframes
+5. BulPay prototype
+6. Usability research - hypotheses and user testing
+7. BulPay Dashboard with Success Metrics
+8. Iteration log / feedback log (in progress)
 
 Link to my clickable prototype: https://boristsvetanov1.github.io/BulPay/
 
