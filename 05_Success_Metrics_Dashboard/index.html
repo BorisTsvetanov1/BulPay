@@ -395,7 +395,7 @@
 
   <!-- ═══ Zone 1 · Health Pulse ════════════════════════════════════════ -->
   <section class="zone">
-    <div class="zone-label">Zone 1 &nbsp;·&nbsp; Health Pulse &nbsp;·&nbsp; filter-independent</div>
+    <div class="zone-label">Health Pulse</div>
     <div class="zone1-grid">
 
       <!-- North Star Metric Card -->
@@ -439,7 +439,7 @@
 
   <!-- ═══ Zone 2 · Financial Performance ══════════════════════════════ -->
   <section class="zone">
-    <div class="zone-label">Zone 2 &nbsp;·&nbsp; Financial Performance</div>
+    <div class="zone-label">Financial Performance</div>
 
     <!-- Row A: GMV · ATV · Cost per Transaction -->
     <div class="zone2-row-a">
@@ -465,12 +465,12 @@
       <!-- Cost per Transaction (static) -->
       <div class="card">
         <div class="card-label">Cost per Transaction</div>
-        <div class="kpi-hero">€0.15</div>
+        <div class="kpi-hero">€0.25</div>
         <div class="kpi-sub">flat processing rate</div>
         <div class="monthly-row">
-          <div class="monthly-item"><div class="monthly-lbl">Jan</div><div class="monthly-val">€0.15</div></div>
-          <div class="monthly-item"><div class="monthly-lbl">Feb</div><div class="monthly-val">€0.15</div></div>
-          <div class="monthly-item"><div class="monthly-lbl">Mar</div><div class="monthly-val">€0.15</div></div>
+          <div class="monthly-item"><div class="monthly-lbl">Jan</div><div class="monthly-val">€0.25</div></div>
+          <div class="monthly-item"><div class="monthly-lbl">Feb</div><div class="monthly-val">€0.25</div></div>
+          <div class="monthly-item"><div class="monthly-lbl">Mar</div><div class="monthly-val">€0.25</div></div>
         </div>
       </div>
 
@@ -508,7 +508,7 @@
 
   <!-- ═══ Zone 3 · User Behaviour ══════════════════════════════════════ -->
   <section class="zone">
-    <div class="zone-label">Zone 3 &nbsp;·&nbsp; User Behaviour</div>
+    <div class="zone-label">User Behaviour</div>
 
     <!-- Heatmap (full width) -->
     <div class="card">
@@ -543,7 +543,7 @@
 
   <!-- ═══ Zone 4 · Payment Flow & Quality ══════════════════════════════ -->
   <section class="zone">
-    <div class="zone-label">Zone 4 &nbsp;·&nbsp; Payment Flow &amp; Quality</div>
+    <div class="zone-label">Payment Flow &amp; Quality</div>
 
     <div class="zone4-row1">
 
@@ -598,7 +598,7 @@
 
   <!-- ═══ Zone 5 · Card Ecosystem ══════════════════════════════════════ -->
   <section class="zone">
-    <div class="zone-label">Zone 5 &nbsp;·&nbsp; Card Ecosystem</div>
+    <div class="zone-label">Card Ecosystem</div>
     <div class="zone5-grid">
 
       <!-- Cards per User Distribution -->
@@ -1158,7 +1158,7 @@ function renderCohortRetention() {
     return `<tr class="${rowClass}">${labelCell}${dataCells}</tr>`;
   }
 
-  const headerCells = ['Signup', 'Month 1', 'Month 2']
+  const headerCells = ['Month 0', 'Month 1', 'Month 2']
     .map(lbl => `<th><div class="cohort-th-main">${lbl}</div></th>`)
     .join('');
 
