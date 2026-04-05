@@ -47,7 +47,7 @@ feedback iterations with my mentor before I had answers I could defend.
 
 ## Talking to Users Before Building
 
-I interviewed **5 people** matching my target profile using the 
+I interviewed **10 people** matching my target profile using the   
 **Mom Test** framework - focusing on real behaviours and pain points, not 
 opinions about my idea.
 
@@ -81,7 +81,7 @@ I moved through two design phases:
 
 - **Lo-fi wireframes in Balsamiq** — mapped the core flow and logic at first, then added a few extra screens such as login and "add new card" functionality to give the prototype a more complete look.
 - **Hi-fi wireframes in Figma** — here I focused on design mentality, thinking about the font size (bigger is better)
-  clear button labels with no jargon, clear confirmation screens, and a choice of colors that feel trustworthy rather than flashy.
+clear button labels with no jargon, clear confirmation screens, and a choice of colors that feel trustworthy rather than flashy.
 
 I then used **Cursor AI** to turn the designs into a clickable 
 prototype. It does not process real transactions but replicates the 
@@ -121,10 +121,10 @@ and fewer than 2 participants will question or resist the additional PIN confirm
 
 - Iterate the prototype based on usability test findings
 - Test whether a visible **fee comparison** ("You saved X vs. your 
-  local bank") meaningfully increases trust - directly targeting 
-  the primary pain point from interviews.
+local bank") meaningfully increases trust - directly targeting 
+the primary pain point from interviews.
 - Define the activation metric that would justify moving from 
-  prototype to build
+prototype to build
 
 ---
 
@@ -139,3 +139,4 @@ prototype, usability testing - taught me how to take a raw observation and turn
 it into a testable and defensible MVP. It also challenged my original assumptions and my prototype hypotheses: I thought speed was a top priority... I also thought my original home screen was easy to use... but based on user feedback I quickly adapted and adjusted my work to deliver a more polished product.
 
 ---
+
