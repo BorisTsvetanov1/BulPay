@@ -1,22 +1,30 @@
-# Prototype
+# BulPay prototype
 
-This folder contains the interactive prototypes for BulPay. These versions showcase my iterative way of working: build, test, gather feedback, and improve.
+This folder contains the interactive prototypes for **BulPay** — a digital wallet MVP aimed at the generational market gap in Bulgaria: older users who are underserved by clunky bank apps and find neobanks hard to trust. The versions below reflect an iterative approach: build, test with users, and improve.
+
+For the full product story and how this fits the portfolio, see the root [README.md](../README.md) and [Case-Study.md](../Case-Study.md). Recommended order for artifacts (including prototype and usability work) is listed there.
 
 ## Versions
 
-### V1 - Initial Prototype
-The first clickable prototype built to validate the core user flow - money transfer. 
-Tested with real users during the first round of usability testing.
+### V1 — Initial prototype
 
-👉 [Open V1 Prototype](https://boristsvetanov1.github.io/BulPay/03_Prototype/v1/)
+The first clickable prototype to validate the core user flow (e.g. money transfer). Used in the first round of usability testing.
 
-### V2 - Improved Prototype *(in progress)*
-Rebuilt based on usability testing insights from V1. Key issues addressed:
-[add my main findings here once V2 is ready].
+👉 [Open V1](https://boristsvetanov1.github.io/BulPay/03_Prototype/v1/)
 
-👉 [Open V2 Prototype](https://boristsvetanov1.github.io/BulPay/03_Prototype/v2/)
+### V2 — Iteration after V1
 
-## What Changed Between Versions
+Rebuilt using insights from V1 usability testing. Focus: addressing friction and clarity issues uncovered in those sessions.
 
-See [04_Usability_Research](https://github.com/BorisTsvetanov1/BulPay/tree/main/04_Usability_Research)
-for the full testing insights that drove the V1 → V2 improvements.
+👉 [Open V2](https://boristsvetanov1.github.io/BulPay/03_Prototype/v2/)
+
+### V3 — Current (final) version
+
+Latest prototype — this is the **current, final** interactive version aligned with the portfolio landing page. It incorporates further refinement after earlier testing rounds and a new card swiping functionality.
+
+👉 [Open V3 (portfolio / latest)](https://boristsvetanov1.github.io/BulPay/)  
+👉 [Open V3 (versioned path)](https://boristsvetanov1.github.io/BulPay/03_Prototype/v3/)
+
+## What changed between versions
+
+Hypotheses, test plans, and findings that drove iteration (including what informed V1 → V2 and later updates toward V3) are documented in the [Usability research folder](https://github.com/BorisTsvetanov1/BulPay/tree/main/04_Usability_Research).
