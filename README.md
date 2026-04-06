@@ -19,7 +19,7 @@ Please note that this project is ongoing as we speak, some artifacts are still i
 7. [BulPay Dashboard with Success Metrics](https://boristsvetanov1.github.io/BulPay/)
 8. Iteration log (in progress)
 
-Link to my clickable prototype & dashboard: https://boristsvetanov1.github.io/BulPay/
+Link to my clickable prototype & custom-made dashboard: https://boristsvetanov1.github.io/BulPay/
 
 ## Key outcomes (in progress)
 
