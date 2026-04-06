@@ -14,9 +14,9 @@ Please note that this project is ongoing as we speak, some artifacts are still i
 2. MVP experiment canvas: [preview](./01_Experimentation/MVP_Experiment_Canvas_Preview.png), [Excel file](./01_Experimentation/MVP_Experiment_Canvas.xlsx)
 3. [User persona](./01_Experimentation/User_Persona.md)
 4. [Lo-fi and hi-fi wireframes](./02_Design/)
-5. [BulPay prototype (latest version: V3)](./03_Prototype/v3/index.html)
+5. [BulPay prototype (latest version: V3)](https://boristsvetanov1.github.io/BulPay/)
 6. [Usability research — hypotheses and user testing](./04_Usability_Research/Usability_Research.md)
-7. [BulPay Dashboard with Success Metrics](./05_Success_Metrics_Dashboard/index.html)
+7. [BulPay Dashboard with Success Metrics](https://boristsvetanov1.github.io/BulPay/)
 8. Iteration log (in progress)
 
 Link to my clickable prototype: https://boristsvetanov1.github.io/BulPay/
