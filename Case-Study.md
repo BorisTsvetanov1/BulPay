@@ -138,7 +138,7 @@ The visual design uses the **exact same color tokens and typography as the BulPa
 
 ---
 
-## Reflections
+## Reflections (project is still in progress so this section is only partially-complete)
 
 This project taught me that the best product insights rarely come from 
 a whiteboard. They come from paying attention to the people around you 
