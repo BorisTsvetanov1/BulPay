@@ -2,7 +2,7 @@
 
 Hello and welcome to my Product Portfolio! My name is Boris Tsvetanov.
 
-The product I am creating is called "BulPay" - a digital wallet app aiming to fill up the generational market gap in Bulgaria when it comes to digital payments. Older Bulgarians, who are digitally inexperienced, are underserved by their current market. On one hand they have confusing, slow and often prone to breakage payment apps designed by traditional local banks, on the other hand they have the modern neobanks such as Revolut that are complex to understand, offer no real local support and bulgarians are often skeptical and untrustworthy when it comes to foreign entities taking care of their money. BulPay is the solution to their problem - simple, reliable and locally focused.
+The product I am creating is called "BulPay" - a digital wallet app aiming to fill up the generational market gap in Bulgaria when it comes to digital payments. Older Bulgarians, who are digitally inexperienced, are underserved by their current market. On one hand they have confusing, slow and often prone to breakage payment apps designed by traditional local banks demanding high fees, on the other hand they have the modern neobanks (e.g. Revolut) that are not targeted at older tech-shy adults, offer no real local support and bulgarians are often skeptical and untrustworthy when it comes to foreign entities taking care of their money. BulPay is the solution to their problem - cheap, simple, reliable and locally focused.
 
 To understand the complete picture of the problem and how I've used my Product Management skills to solve it please check the [Case-Study.md](./Case-Study.md) for the complete story. 
 
