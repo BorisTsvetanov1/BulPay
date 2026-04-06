@@ -47,7 +47,7 @@ feedback iterations with my mentor before I had answers I could defend.
 
 ## Talking to Users Before Building
 
-I interviewed **10 people** matching my target profile using the   
+I interviewed **10 people** matching my target profile using the  
 **Mom Test** framework - focusing on real behaviours and pain points, not 
 opinions about my idea.
 
@@ -108,10 +108,8 @@ than 1 unrelated feature (e.g. tapping on “Add card,” or “Help/Settings”
 that the money was sent at ≥ 5/7 and can identify at least two confirmation cues from the UI 
 (e.g., “Successful transfer” message, green tick, receipt details, transaction reference).
 
-**H4 - Security:** At least 5/6 participants will rate their feeling of safety at ≥ 5/7, 
+**H4 - Security:** At least 5/6 participants will rate their feeling of safety at ≥ 5/7,   
 and fewer than 2 participants will question or resist the additional PIN confirmation step.
-
-> ⚠️ *Testing in progress — results will be added here upon completion.*
 
 📄 *See:* `05_user-testing/hypotheses.md` and `05_user-testing/insights.md`
 
