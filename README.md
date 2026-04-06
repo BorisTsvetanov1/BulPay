@@ -10,7 +10,7 @@ Please note that this project is ongoing as we speak, some artifacts are still i
 
 ## Artifacts
 0. Case-Study.md
-1. Market research 
+1. Competitor Analysis
 2. MVP experiment canvas
 3. User persona 
 4. Lo-fi and hi-fi wireframes
