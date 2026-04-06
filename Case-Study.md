@@ -138,17 +138,6 @@ The visual design uses the **exact same color tokens and typography as the BulPa
 
 ---
 
-## What I Would Do Next
-
-- Iterate the prototype based on usability test findings
-- Test whether a visible **fee comparison** ("You saved X vs. your 
-local bank") meaningfully increases trust - directly targeting 
-the primary pain point from interviews.
-- Define the activation metric that would justify moving from 
-prototype to build
-
----
-
 ## Reflections
 
 This project taught me that the best product insights rarely come from 
