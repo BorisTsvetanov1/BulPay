@@ -10,7 +10,7 @@ Please note that this project is ongoing as we speak, some artifacts are still i
 
 ## Artifacts
 0. [Case-Study.md](./Case-Study.md)
-1. [Competitor Analysis](./01_Experimentation/Competitor_Analysis.md)
+1. [Market Research](./01_Experimentation/BulPay_Market_Research.md) & [Competitor Analysis](./01_Experimentation/Competitor_Analysis.md)
 2. MVP experiment canvas: [preview](./01_Experimentation/MVP_Experiment_Canvas_Preview.png), [Excel file](./01_Experimentation/MVP_Experiment_Canvas.xlsx)
 3. [User persona](./01_Experimentation/User_Persona.md)
 4. [Lo-fi and hi-fi wireframes](./02_Design/)
