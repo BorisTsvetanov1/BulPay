@@ -315,6 +315,8 @@ When mapping the competitive landscape on two axes — ease of use for 45+ and l
 
 BulPay Positioning Map
 
+![BulPay positioning map — trust vs. UX complexity](positioning_map.png)
+
 > *BulPay's target position — High Local Trust + Simple UX — is currently unoccupied by any player in the market.*
 
 ---
