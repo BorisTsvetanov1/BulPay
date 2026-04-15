@@ -126,7 +126,6 @@
       background: var(--color-border);
       align-self: flex-end; margin-bottom: 2px;
     }
-    /* Period breakdown toggle */
     .period-toggle {
       display: flex;
       background: var(--color-bg);
@@ -145,7 +144,6 @@
     }
     .period-btn:hover  { background: var(--color-primary-light); color: var(--color-primary); }
     .period-btn.active { background: var(--color-primary); color: #fff; }
-    /* Reset button */
     .reset-btn {
       background: none;
       border: 1px solid var(--color-border);
@@ -216,8 +214,8 @@
     .delta-down { color: var(--color-bad);  background: rgba(239,68,68,0.09); }
     .delta-flat { color: var(--color-txt-muted); background: var(--color-border-subtle); }
 
-    /* ─── Zone 1 Grid ──────────────────────────────────────────────── */
-    .zone1-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    /* ─── Zone 2 · Health Pulse Grid ───────────────────────────────── */
+    .zone2-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 
     /* NSM Bullet */
     .nsm-svg-wrap { margin-top: 4px; }
@@ -272,12 +270,12 @@
     .cohort-sep         { height: 1px; background: var(--color-border-subtle); margin-bottom: 1px; }
     .cohort-data-row td { padding-top: 3px; padding-bottom: 3px; }
 
-    /* ─── Zone 2 Grid ──────────────────────────────────────────────── */
-    .zone2-row-a {
+    /* ─── Zone 3 · Financial Performance Grid ──────────────────────── */
+    .zone3-row-a {
       display: grid; grid-template-columns: repeat(3, 1fr);
       gap: 20px; margin-bottom: 20px;
     }
-    .zone2-row-b { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .zone3-row-b { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .sparkline-wrap { height: 50px; margin-top: 12px; }
     .sparkline-axis { position: relative; height: 14px; margin-top: 5px; }
     .sparkline-axis-label {
@@ -287,16 +285,25 @@
       top: 0; line-height: 1;
     }
 
-    /* ─── Zone 3 · User Behaviour ──────────────────────────────────── */
-    .zone3-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+    /* ─── Zone 4 · Unit Economics Grid ─────────────────────────────── */
+    .zone4-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+    /* ─── Zone 5 · Growth & Acquisition Grid ───────────────────────── */
+    .zone5-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .zone5-grid > :first-child { grid-column: 1 / -1; }
+
+    /* ─── Zone 6 · User Behaviour & Card Ecosystem ─────────────────── */
+    .zone6-heatmap { margin-bottom: 20px; }
+    .zone6-lower { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .heatmap-legend { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
     .heatmap-legend-label { font-size: 10px; color: var(--color-txt-muted); font-weight: 400; }
     .heatmap-legend-scale { display: flex; gap: 3px; }
     .heatmap-legend-cell  { width: 16px; height: 10px; border-radius: 2px; }
 
-    /* ─── Zone 4 · Payment Flow & Quality ──────────────────────────── */
-    .zone4-row1 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-    .zone4-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    /* ─── Zone 7 · Payment Flow & Quality ──────────────────────────── */
+    .zone7-row1 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
     .pin-status-badge {
       font-size: 10px; font-weight: 600;
       padding: 2px 9px; border-radius: 20px; letter-spacing: 0.3px;
@@ -304,22 +311,35 @@
       position: relative; top: -3px;
     }
 
-    /* ─── Zone 5 · Card Ecosystem ───────────────────────────────────── */
-    .zone5-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
+    /* ─── Zone 8 · Trust, Safety & Compliance ──────────────────────── */
+    .zone8-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .ops-tile { text-align: center; padding: 28px 24px; }
+    .ops-tile .kpi-hero { font-size: 42px; margin-bottom: 4px; }
+    .ops-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 20px; margin-top: 6px;
+    }
+    .ops-badge-good { color: var(--color-good); background: rgba(22,163,74,0.10); }
+    .ops-badge-warn { color: var(--color-warn); background: rgba(217,119,6,0.10); }
+    .ops-badge-bad  { color: var(--color-bad);  background: rgba(239,68,68,0.10); }
 
     /* ─── Responsive ───────────────────────────────────────────────── */
     @media (max-width: 900px) {
-      .zone1-grid, .zone2-row-a { grid-template-columns: 1fr 1fr; }
-      .zone2-row-b, .zone3-row2, .zone4-row1,
-      .zone4-row2, .zone5-grid   { grid-template-columns: 1fr; }
-      .dashboard-content         { padding: 20px 16px 48px; }
-      .dashboard-header          { padding: 0 16px; }
-      .filter-bar                { padding: 8px 16px 10px; gap: 12px; top: 58px; }
+      .zone2-grid, .zone3-row-a     { grid-template-columns: 1fr 1fr; }
+      .zone3-row-b, .zone4-grid, .zone5-grid,
+      .zone6-lower, .zone7-row1,
+      .zone8-grid                    { grid-template-columns: 1fr; }
+      .zone5-grid > :first-child     { grid-column: auto; }
+      .dashboard-content             { padding: 20px 16px 48px; }
+      .dashboard-header              { padding: 0 16px; }
+      .filter-bar                    { padding: 8px 16px 10px; gap: 12px; top: 58px; }
     }
     @media (max-width: 600px) {
-      .zone1-grid, .zone2-row-a, .zone2-row-b,
-      .zone3-row2, .zone4-row1, .zone4-row2,
-      .zone5-grid                          { grid-template-columns: 1fr; }
+      .zone2-grid, .zone3-row-a, .zone3-row-b,
+      .zone4-grid, .zone5-grid, .zone6-lower,
+      .zone7-row1, .zone8-grid          { grid-template-columns: 1fr; }
+      .zone5-grid > :first-child         { grid-column: auto; }
       .kpi-hero { font-size: 30px; }
       .header-subtitle { display: none; }
       .filter-bar { gap: 10px; }
@@ -333,20 +353,8 @@
       padding: 0 32px;
       box-shadow: 0 3px 12px rgba(0,0,0,0.07);
     }
-    .exec-strip-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 11px 0 0;
-    }
-    .exec-strip-title {
-      font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 1.1px;
-      color: var(--color-primary);
-    }
-    .exec-strip-note {
-      font-size: 10px; color: var(--color-txt-muted); font-weight: 300;
-    }
     .exec-strip-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
+      display: grid; grid-template-columns: repeat(8, 1fr);
       gap: 0; padding: 13px 0 17px;
     }
     .exec-tile {
@@ -385,13 +393,13 @@
     .exec-badge-blue { color: var(--color-primary); background: var(--color-primary-light); }
     @media (max-width: 1200px) {
       .exec-strip-grid { grid-template-columns: repeat(4, 1fr); row-gap: 14px; }
-      .exec-tile:nth-child(4) { border-right: none; padding-right: 0; }
-      .exec-tile:nth-child(5) { padding-left: 0; }
+      .exec-tile:nth-child(4n) { border-right: none; padding-right: 0; }
+      .exec-tile:nth-child(4n+1) { padding-left: 0; }
     }
     @media (max-width: 700px) {
       .exec-strip-grid { grid-template-columns: repeat(2, 1fr); row-gap: 14px; }
       .exec-strip { padding: 0 16px; }
-      .exec-tile:nth-child(4) { border-right: 1px solid var(--color-border); }
+      .exec-tile:nth-child(4n) { border-right: 1px solid var(--color-border); }
       .exec-tile:nth-child(2n) { border-right: none; padding-right: 0; }
       .exec-tile:nth-child(odd) { padding-left: 0; }
       .exec-tile:nth-child(even) { padding-left: 18px; }
@@ -485,12 +493,8 @@
   <button class="reset-btn" onclick="resetFilters()">Reset filters</button>
 </div>
 
-<!-- ═══ Executive Summary Strip ════════════════════════════════════════ -->
+<!-- ═══ Executive Summary Strip (8 tiles) ══════════════════════════════ -->
 <div class="exec-strip">
-  <div class="exec-strip-header">
-    <span class="exec-strip-title">Executive Overview</span>
-    <span class="exec-strip-note">Top-line signals &nbsp;·&nbsp; all metrics respond to filters above</span>
-  </div>
   <div class="exec-strip-grid">
 
     <div class="exec-tile">
@@ -501,6 +505,13 @@
     </div>
 
     <div class="exec-tile">
+      <div class="exec-tile-label">MoM User Growth</div>
+      <div class="exec-tile-hero" id="ex-growth-hero">—</div>
+      <div class="exec-tile-sub" id="ex-growth-sub">New registrations vs prior month</div>
+      <div id="ex-growth-badge"></div>
+    </div>
+
+    <div class="exec-tile">
       <div class="exec-tile-label">Monthly Churn Rate</div>
       <div class="exec-tile-hero" id="ex-churn-hero">—</div>
       <div class="exec-tile-sub">Prior-month actives lost</div>
@@ -508,7 +519,7 @@
     </div>
 
     <div class="exec-tile">
-      <div class="exec-tile-label">Txns / User / Month</div>
+      <div class="exec-tile-label">Transactions per user/month</div>
       <div class="exec-tile-hero" id="ex-nsm-hero">—</div>
       <div class="exec-tile-sub">North Star Metric</div>
       <div id="ex-nsm-badge"></div>
@@ -529,10 +540,10 @@
     </div>
 
     <div class="exec-tile">
-      <div class="exec-tile-label">Gross Transaction Value</div>
-      <div class="exec-tile-hero" id="ex-gmv-hero">—</div>
-      <div class="exec-tile-sub">Selected period total</div>
-      <div id="ex-gmv-badge"></div>
+      <div class="exec-tile-label">Revenue</div>
+      <div class="exec-tile-hero" id="ex-revenue-hero">—</div>
+      <div class="exec-tile-sub" id="ex-revenue-sub">Selected period total</div>
+      <div id="ex-revenue-badge"></div>
     </div>
 
     <div class="exec-tile">
@@ -547,10 +558,10 @@
 
 <main class="dashboard-content">
 
-  <!-- ═══ Zone 1 · Health Pulse ════════════════════════════════════════ -->
-  <section class="zone">
+  <!-- ═══ Zone 2 · Health Pulse ════════════════════════════════════════ -->
+  <section class="zone" id="zone-2">
     <div class="zone-label">Health Pulse</div>
-    <div class="zone1-grid">
+    <div class="zone2-grid">
 
       <!-- North Star Metric Card -->
       <div class="card">
@@ -573,9 +584,10 @@
       <!-- MAU Card -->
       <div class="card">
         <div class="card-label">Monthly Active Users</div>
-        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">Most recent month in range &nbsp;·&nbsp; filtered view</div>
+        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">Most recent selected month &nbsp;·&nbsp; filtered view</div>
         <div class="kpi-hero" id="mau-hero">—</div>
         <div class="kpi-sub" id="mau-sub">of — registered</div>
+        <div id="mau-delta"></div>
         <div style="height:90px;margin-top:10px;padding-top:10px;border-top:1px solid var(--color-border-subtle);">
           <canvas id="mau-bar"></canvas>
         </div>
@@ -591,14 +603,14 @@
     </div>
   </section>
 
-  <!-- ═══ Zone 2 · Financial Performance ══════════════════════════════ -->
-  <section class="zone">
+  <!-- ═══ Zone 3 · Financial Performance ══════════════════════════════ -->
+  <section class="zone" id="zone-3">
     <div class="zone-label">Financial Performance</div>
 
-    <!-- Row A: GMV · ATV · Cost per Transaction -->
-    <div class="zone2-row-a">
+    <!-- Row A: GTV · ATV · Revenue -->
+    <div class="zone3-row-a">
 
-      <!-- GMV -->
+      <!-- GTV -->
       <div class="card">
         <div class="card-label">Gross Transaction Value</div>
         <div class="kpi-hero" id="gmv-hero">—</div>
@@ -616,20 +628,31 @@
         <div class="sparkline-axis" id="atv-spark-axis"></div>
       </div>
 
-      <!-- Cost per Transaction (static) -->
+      <!-- Revenue -->
       <div class="card">
-        <div class="card-label">Cost per Transaction</div>
-        <div class="kpi-hero">€0.25</div>
-        <div class="kpi-sub">flat processing rate</div>
-        <div class="monthly-row" id="cpt-monthly"></div>
+        <div class="card-label">Revenue</div>
+        <div class="kpi-hero" id="rev-hero">—</div>
+        <div id="rev-delta"></div>
+        <div class="sparkline-wrap"><canvas id="rev-spark"></canvas></div>
+        <div class="sparkline-axis" id="rev-spark-axis"></div>
       </div>
 
     </div>
 
-    <!-- Row B: Total BulPay Balance · Avg Balance per Active User -->
-    <div class="zone2-row-b">
+    <!-- Row B: ARPU · Money Under Management -->
+    <div class="zone3-row-b">
 
-      <!-- Total BulPay Balance -->
+      <!-- ARPU -->
+      <div class="card">
+        <div class="card-label">Average Revenue Per User</div>
+        <div class="kpi-hero" id="arpu-hero">—</div>
+        <div class="kpi-sub" id="arpu-sub">Revenue ÷ MAU · monthly basis</div>
+        <div id="arpu-delta"></div>
+        <div class="sparkline-wrap"><canvas id="arpu-spark"></canvas></div>
+        <div class="sparkline-axis" id="arpu-spark-axis"></div>
+      </div>
+
+      <!-- Money Under Management -->
       <div class="card">
         <div class="card-label">Money Under Management</div>
         <div class="kpi-hero" id="bal-total-hero">—</div>
@@ -640,40 +663,111 @@
         <div class="sparkline-axis" id="bal-total-spark-axis"></div>
       </div>
 
-      <!-- Avg BulPay Balance per Active User -->
-      <div class="card">
-        <div class="card-label">AVG BulPay Balance per active user</div>
-        <div class="kpi-hero" id="bal-avg-hero">—</div>
-        <div class="kpi-sub" id="bal-avg-sub">Month-end snapshot · filtered users</div>
-        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:2px;">Point-in-time metric. Trend line reflects selected period.</div>
-        <div id="bal-avg-delta"></div>
-        <div class="sparkline-wrap"><canvas id="bal-avg-spark"></canvas></div>
-        <div class="sparkline-axis" id="bal-avg-spark-axis"></div>
-      </div>
-
     </div>
 
   </section>
 
+  <!-- ═══ Zone 4 · Unit Economics ═════════════════════════════════════ -->
+  <section class="zone" id="zone-4">
+    <div class="zone-label">Unit Economics</div>
+    <div class="zone4-grid">
 
-  <!-- ═══ Zone 3 · User Behaviour ══════════════════════════════════════ -->
-  <section class="zone">
-    <div class="zone-label">User Behaviour</div>
+      <!-- LTV -->
+      <div class="card">
+        <div class="card-label">Lifetime Value</div>
+        <div class="kpi-hero" id="ltv-hero">—</div>
+        <div class="kpi-sub" id="ltv-sub">ARPU ÷ churn rate</div>
+        <div id="ltv-delta"></div>
+      </div>
+
+      <!-- CAC -->
+      <div class="card">
+        <div class="card-label">Customer Acquisition Cost</div>
+        <div class="kpi-hero" id="cac-hero">—</div>
+        <div class="kpi-sub" id="cac-sub">LTV : CAC ratio below</div>
+        <div id="cac-ratio"></div>
+      </div>
+
+      <!-- Revenue per Active User -->
+      <div class="card">
+        <div class="card-label">Revenue / Active User</div>
+        <div class="kpi-hero" id="rpau-hero">—</div>
+        <div class="kpi-sub" id="rpau-sub">Monthly average over period</div>
+        <div id="rpau-delta"></div>
+      </div>
+
+      <!-- Gross Margin % -->
+      <div class="card">
+        <div class="card-label">Gross Margin</div>
+        <div class="kpi-hero" id="gm-hero">—</div>
+        <div class="kpi-sub" id="gm-sub">Fee minus processing cost</div>
+        <div id="gm-badge"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ Zone 5 · Growth & Acquisition ═══════════════════════════════ -->
+  <section class="zone" id="zone-5">
+    <div class="zone-label">Growth &amp; Acquisition</div>
+    <div class="zone5-grid">
+
+      <!-- Registration & Activation Funnel (full width) -->
+      <div class="card">
+        <div class="card-label">REGISTRATION &amp; ACTIVATION FUNNEL</div>
+        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Installs → KYC → First Login within 24h of KYC → First Transaction within 7d of Login</div>
+        <svg id="reg-funnel-svg" width="100%" style="display:block;overflow:visible;"></svg>
+      </div>
+
+      <!-- New User Registrations -->
+      <div class="card">
+        <div class="card-label">New User Registrations</div>
+        <div class="kpi-hero" id="reg-hero">—</div>
+        <div class="kpi-sub" id="reg-sub">Selected period total</div>
+        <div id="reg-delta"></div>
+        <div style="height:90px;margin-top:10px;padding-top:10px;border-top:1px solid var(--color-border-subtle);">
+          <canvas id="reg-trend-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Referral Rate -->
+      <div class="card">
+        <div class="card-label">Referral Rate</div>
+        <div class="kpi-hero" id="referral-hero">—</div>
+        <div class="kpi-sub" id="referral-sub">Of filtered users acquired via referral</div>
+        <div id="referral-delta"></div>
+      </div>
+
+      <!-- Acquisition Channel Split -->
+      <div class="card">
+        <div class="card-label">Acquisition Channel Split</div>
+        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Filtered registered users</div>
+        <div style="height:150px;"><canvas id="channel-split-canvas"></canvas></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ Zone 6 · User Behaviour & Card Ecosystem ═══════════════════ -->
+  <section class="zone" id="zone-6">
+    <div class="zone-label">User Behaviour &amp; Card Ecosystem</div>
 
     <!-- Heatmap (full width) -->
-    <div class="card">
-      <div class="card-label">SESSION HEATMAP CALENDAR</div>
-      <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">All session types · filtered date range</div>
-      <canvas id="heatmap-canvas" style="display:block;width:100%;"></canvas>
-      <div class="heatmap-legend">
-        <span class="heatmap-legend-label">Fewer</span>
-        <div class="heatmap-legend-scale" id="heatmap-legend-scale"></div>
-        <span class="heatmap-legend-label">More</span>
+    <div class="zone6-heatmap">
+      <div class="card">
+        <div class="card-label">SESSION HEATMAP CALENDAR</div>
+        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">All session types · filtered date range</div>
+        <canvas id="heatmap-canvas" style="display:block;width:100%;"></canvas>
+        <div class="heatmap-legend">
+          <span class="heatmap-legend-label">Fewer</span>
+          <div class="heatmap-legend-scale" id="heatmap-legend-scale"></div>
+          <span class="heatmap-legend-label">More</span>
+        </div>
       </div>
     </div>
 
-    <!-- Row 2: Frequency Distribution + Time to First Payment -->
-    <div class="zone3-row2">
+    <!-- 2×2 grid: Freq Dist · TTFP · Cards per User · Bilateral Rate -->
+    <div class="zone6-lower">
 
       <div class="card">
         <div class="card-label">PAYMENT FREQUENCY DISTRIBUTION</div>
@@ -688,14 +782,28 @@
         <div style="height:175px;"><canvas id="ttfp-bar"></canvas></div>
       </div>
 
+      <div class="card">
+        <div class="card-label">LINKED CARDS PER USER</div>
+        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;" id="cards-per-user-sub">Distribution across filtered users</div>
+        <div style="height:170px;"><canvas id="cards-per-user-bar"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">BILATERAL TRANSACTION RATE</div>
+        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">P2P users who both send and receive</div>
+        <div class="kpi-hero" id="bilateral-hero">—</div>
+        <div class="kpi-sub" id="bilateral-sub">Of P2P senders</div>
+        <div id="bilateral-delta"></div>
+      </div>
+
     </div>
   </section>
 
-  <!-- ═══ Zone 4 · Payment Flow & Quality ══════════════════════════════ -->
-  <section class="zone">
+  <!-- ═══ Zone 7 · Payment Flow & Quality ════════════════════════════ -->
+  <section class="zone" id="zone-7">
     <div class="zone-label">Payment Flow &amp; Quality</div>
 
-    <div class="zone4-row1">
+    <div class="zone7-row1">
 
       <!-- SVG Funnel -->
       <div class="card">
@@ -713,58 +821,62 @@
 
     </div>
 
-    <div class="zone4-row2">
-
-      <!-- PIN Attempts KPI -->
-      <div class="card">
-        <div class="card-label">AVG PIN ATTEMPTS / PAYMENT</div>
-        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:10px;">Send sessions reaching PIN step (≥ 5) &nbsp;·&nbsp; Target: 1.0</div>
-        <div style="display:flex;align-items:center;margin-bottom:16px;">
-          <span class="kpi-hero" id="pin-hero">—</span>
-          <span class="pin-status-badge" id="pin-status-badge">—</span>
-        </div>
-        <div class="nsm-svg-wrap">
-          <svg id="pin-svg" width="100%" height="54" style="display:block;overflow:visible;"></svg>
-          <div class="nsm-band-labels">
-            <span style="color:var(--color-good);">Good (≤1.3)</span>
-            <span style="color:var(--color-warn);">Caution (≤1.8)</span>
-            <span style="color:var(--color-bad);">Poor (>1.8)</span>
-          </div>
-        </div>
-        <div class="monthly-row" id="pin-monthly"></div>
+    <!-- PIN Attempts KPI (full width) -->
+    <div class="card">
+      <div class="card-label">AVG PIN ATTEMPTS / PAYMENT</div>
+      <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:10px;">Send sessions reaching PIN step (≥ 5) &nbsp;·&nbsp; Target: 1.0</div>
+      <div style="display:flex;align-items:center;margin-bottom:16px;">
+        <span class="kpi-hero" id="pin-hero">—</span>
+        <span class="pin-status-badge" id="pin-status-badge">—</span>
       </div>
-
-      <!-- Technical Success Rate -->
-      <div class="card">
-        <div class="card-label">TECHNICAL SUCCESS RATE</div>
-        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:18px;">Send sessions with no technical failure</div>
-        <div style="display:flex;align-items:center;justify-content:center;flex:1;">
-          <div class="kpi-hero" id="tech-success-hero" style="font-size:64px;line-height:1;">—</div>
+      <div class="nsm-svg-wrap">
+        <svg id="pin-svg" width="100%" height="54" style="display:block;overflow:visible;"></svg>
+        <div class="nsm-band-labels">
+          <span style="color:var(--color-good);">Good (≤1.3)</span>
+          <span style="color:var(--color-warn);">Caution (≤1.8)</span>
+          <span style="color:var(--color-bad);">Poor (>1.8)</span>
         </div>
       </div>
-
+      <div class="monthly-row" id="pin-monthly"></div>
     </div>
+
   </section>
 
-  <!-- ═══ Zone 5 · Card Ecosystem ══════════════════════════════════════ -->
-  <section class="zone">
-    <div class="zone-label">Card Ecosystem</div>
-    <div class="zone5-grid">
+  <!-- ═══ Zone 8 · Trust, Safety & Compliance ════════════════════════ -->
+  <section class="zone" id="zone-8">
+    <div class="zone-label">Trust, Safety &amp; Compliance</div>
+    <div class="zone8-grid">
 
-      <!-- Cards per User Distribution -->
-      <div class="card">
-        <div class="card-label">LINKED CARDS PER USER</div>
-        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;" id="cards-per-user-sub">Distribution across filtered users</div>
-        <div style="height:170px;"><canvas id="cards-per-user-bar"></canvas></div>
+      <!-- App Crash Rate -->
+      <div class="card ops-tile">
+        <div class="card-label">App Crash Rate</div>
+        <div class="kpi-hero" id="crash-hero">—</div>
+        <div class="kpi-sub">per 1 000 sessions</div>
+        <div id="crash-badge"></div>
       </div>
 
-      <!-- Card Switch Rate -->
-      <div class="card">
-        <div class="card-label">CARD SWITCH RATE</div>
-        <div style="font-size:11px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">% of send sessions where users switched from their default card</div>
-        <div class="kpi-hero" id="switch-rate-hero">—</div>
-        <div id="switch-rate-delta"></div>
-        <div class="monthly-row" id="switch-rate-monthly"></div>
+      <!-- Payment Processing Uptime -->
+      <div class="card ops-tile">
+        <div class="card-label">Payment Processing Uptime</div>
+        <div class="kpi-hero" id="uptime-hero">—</div>
+        <div class="kpi-sub">Average over selected period</div>
+        <div id="uptime-badge"></div>
+      </div>
+
+      <!-- KYC Pass Rate -->
+      <div class="card ops-tile">
+        <div class="card-label">KYC Pass Rate</div>
+        <div class="kpi-hero" id="kyc-hero">—</div>
+        <div class="kpi-sub">Approved ÷ started</div>
+        <div id="kyc-badge"></div>
+      </div>
+
+      <!-- Regulatory Incident Count -->
+      <div class="card ops-tile">
+        <div class="card-label">Regulatory Incidents</div>
+        <div class="kpi-hero" id="incidents-hero">—</div>
+        <div class="kpi-sub">Cumulative over period</div>
+        <div id="incidents-badge"></div>
       </div>
 
     </div>
@@ -786,13 +898,15 @@ const state = {
   users:    [],
   sessions: [],
   balances: [],
+  ops:      [],
 };
 
 /* Chart instances */
 let instMauBar = null, instGmv = null, instAtv = null,
-    instBalTotal = null, instBalAvg = null,
+    instBalTotal = null, instRevSpark = null, instArpuSpark = null,
     instFreqDist = null, instTtfp = null, instTtc = null,
-    instCardsPerUser = null;
+    instCardsPerUser = null, instRegTrend = null,
+    instChannelSplit = null;
 
 /* ═══════════════════════════════════════════════════════════════════════
    CONSTANTS
@@ -801,14 +915,11 @@ const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun',
                      'Jul','Aug','Sep','Oct','Nov','Dec'];
 const DAYS_ORDER  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-/* ─── Executive Strip Constants ──────────────────────────────────────── */
-/* Revenue BulPay earns per completed send transaction (after processing cost) */
-const BULPAY_FEE_EUR = 2.50;
-/* Average customer acquisition cost — reflects referral-heavy, low-paid channel mix */
-const CAC_EUR = 5.50;
+const BULPAY_FEE_EUR   = 2.50;
+const CAC_EUR          = 5.50;
+const PROCESSING_COST  = 0.25;
+const GROSS_MARGIN_PCT = (BULPAY_FEE_EUR - PROCESSING_COST) / BULPAY_FEE_EUR;
 
-/* Monthly NPS survey results — external data, not derivable from session CSVs.
-   Trend: slow build Apr 2024 → strong trust by Mar 2026 as word-of-mouth compounds. */
 const NPS_MONTHLY = {
   '2024-04': 31, '2024-05': 34, '2024-06': 37,
   '2024-07': 40, '2024-08': 43, '2024-09': 47,
@@ -904,6 +1015,14 @@ function getFilteredSessions() {
   });
 }
 
+function getFilteredOps() {
+  const { start, end } = getDateRange();
+  return state.ops.filter(o => {
+    const d = ymToDate(o.year_month);
+    return d >= start && d < end;
+  });
+}
+
 /* paymentType filter only applied to completed-send queries */
 function completedSends(sessions) {
   return sessions.filter(s =>
@@ -914,10 +1033,9 @@ function completedSends(sessions) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   METRIC COMPUTATIONS
+   METRIC COMPUTATIONS — Existing (Health Pulse / Financial)
 ═══════════════════════════════════════════════════════════════════════ */
 
-/* MAU for a specific calendar month from a sessions array */
 function monthlyMAU(sessions, year, m) {
   const s = new Date(year, m - 1, 1), e = new Date(year, m, 1);
   const ids = new Set();
@@ -925,10 +1043,8 @@ function monthlyMAU(sessions, year, m) {
   return ids.size;
 }
 
-/* NSM: avg completed-send txns per active user per month (normalised to monthly) */
 function computeNSM(filteredSessions) {
   const { start, end } = getDateRange();
-  /* Build a monthly series to sum MAUs correctly */
   let cur = new Date(start.getFullYear(), start.getMonth(), 1);
   let totalTxns = 0, sumMAU = 0;
   const periods = [];
@@ -962,13 +1078,10 @@ function computeNSM(filteredSessions) {
   };
 }
 
-/* Cohort Retention — always monthly cohorts, last 6 in range, 3 follow-up months */
 function computeCohortRetention() {
   const filteredUsers = getFilteredUsers();
-  /* Use FULL session set (all dates) for retention — filter only by user segment */
   const allSessions = state.sessions;
 
-  /* Build session lookup for performance */
   const sessByUser = {};
   allSessions.forEach(s => {
     if (!sessByUser[s.user_id]) sessByUser[s.user_id] = [];
@@ -976,7 +1089,6 @@ function computeCohortRetention() {
   });
 
   const { end } = getDateRange();
-  /* Walk back 6 calendar months from the month before end */
   const cohortMonths = [];
   let cm = new Date(end.getFullYear(), end.getMonth() - 1, 1);
   for (let i = 0; i < 6; i++) {
@@ -1024,7 +1136,6 @@ function computeCohortRetention() {
   return { cohorts: computed, avgs };
 }
 
-/* GMV and ATV from already-filtered sessions */
 function computeGMV(sessions) {
   return completedSends(sessions).reduce((s, r) => s + (parseFloat(r.amount_eur) || 0), 0);
 }
@@ -1034,7 +1145,6 @@ function computeATV(sessions) {
   return rows.reduce((s, r) => s + (parseFloat(r.amount_eur) || 0), 0) / rows.length;
 }
 
-/* Balance sums from bulpay_balances.csv for filtered users */
 function buildMonthlyBalanceSums(filteredUserIds) {
   const sums = {};
   state.balances.forEach(b => {
@@ -1042,7 +1152,7 @@ function buildMonthlyBalanceSums(filteredUserIds) {
     if (!sums[b.year_month]) sums[b.year_month] = 0;
     sums[b.year_month] += parseFloat(b.balance_eur) || 0;
   });
-  return sums; /* { 'YYYY-MM': totalEur } */
+  return sums;
 }
 
 function getBalanceAtDate(monthSums, date) {
@@ -1060,7 +1170,6 @@ function getBalanceAtDate(monthSums, date) {
   return monthSums[p] * (1 - t) + monthSums[n] * t;
 }
 
-/* Build sparkline data arrays aligned to period buckets */
 function buildGMVSparklinesFromBuckets(sessions, buckets) {
   return buckets.map(b => {
     const rows = sessions.filter(s => {
@@ -1071,7 +1180,7 @@ function buildGMVSparklinesFromBuckets(sessions, buckets) {
         && inRange(d, b.start, b.end);
     });
     const gmv = rows.reduce((s, r) => s + (parseFloat(r.amount_eur) || 0), 0);
-    return { gmv, atv: rows.length ? gmv / rows.length : null };
+    return { gmv, atv: rows.length ? gmv / rows.length : null, rev: rows.length * BULPAY_FEE_EUR };
   });
 }
 
@@ -1090,11 +1199,305 @@ function buildBalanceSparklinesFromBuckets(filteredUserIds, sessions, buckets) {
   });
 }
 
-/* ─── Last N periods for "monthly row" displays ─── */
 function getLastNPeriods(n) {
   const { start, end } = getDateRange();
   const buckets = buildPeriodBuckets(start, end);
   return buckets.slice(-n);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   METRIC COMPUTATIONS — New (V3 additions)
+═══════════════════════════════════════════════════════════════════════ */
+
+/* MoM User Growth — registrations per calendar month */
+function computeMoMUserGrowth(filteredUsers) {
+  const monthCounts = {};
+  filteredUsers.forEach(u => {
+    const d = parseDate(u.registered_at);
+    if (!d) return;
+    const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    monthCounts[ym] = (monthCounts[ym] || 0) + 1;
+  });
+  const sorted = Object.keys(monthCounts).sort();
+  const result = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const ym = sorted[i];
+    const cur = monthCounts[ym];
+    const prev = i > 0 ? monthCounts[sorted[i-1]] : null;
+    const growth = (prev !== null && prev > 0) ? (cur - prev) / prev : null;
+    result.push({ ym, count: cur, growth });
+  }
+  return result;
+}
+
+/* Revenue = completed sends × fee */
+function computeRevenue(sessions) {
+  return completedSends(sessions).length * BULPAY_FEE_EUR;
+}
+
+/* ARPU = Revenue ÷ MAU */
+function computeARPU(revenue, mauCount) {
+  if (!mauCount || mauCount === 0) return 0;
+  return revenue / mauCount;
+}
+
+/* LTV = ARPU × min(1/churn, 60) */
+function computeLTV(arpu, churnRate) {
+  if (!churnRate || churnRate <= 0) return arpu * 60;
+  const avgLifespan = Math.min(1 / churnRate, 60);
+  return arpu * avgLifespan;
+}
+
+/* Revenue per Active User = same as ARPU on monthly basis */
+function computeRevenuePerActiveUser(revenue, mauCount) {
+  return computeARPU(revenue, mauCount);
+}
+
+/* Registration & Activation Funnel (5 steps) */
+function computeRegistrationFunnel(filteredOps, filteredUsers, allSessions) {
+  const { start, end } = getDateRange();
+
+  const installs    = filteredOps.reduce((s, o) => s + (parseInt(o.app_installs) || 0), 0);
+  const kycStarted  = filteredOps.reduce((s, o) => s + (parseInt(o.kyc_started)   || 0), 0);
+  const kycCompleted = filteredOps.reduce((s, o) => s + (parseInt(o.kyc_approved) || 0), 0);
+
+  /* Restrict steps 4 & 5 to users who registered within the selected date range
+     so they align with the ops-derived counts above. */
+  const periodUsers = filteredUsers.filter(u => {
+    const d = parseDate(u.registered_at);
+    return d && d >= start && d < end;
+  });
+
+  const userSessLookup = {};
+  allSessions.forEach(s => {
+    if (!userSessLookup[s.user_id]) userSessLookup[s.user_id] = [];
+    userSessLookup[s.user_id].push(s);
+  });
+
+  /* Step 4: first session within 24 hours of KYC completion (= registered_at).
+     We record both the user and their exact first-login timestamp so Step 5
+     can measure from that moment rather than from registration. */
+  const firstLoginUsersWithTime = periodUsers.map(u => {
+    const reg = parseDate(u.registered_at);
+    if (!reg) return null;
+    const cutoff24h = new Date(reg.getTime() + 24 * 60 * 60 * 1000);
+    const uSess = userSessLookup[u.user_id] || [];
+    const loginSess = uSess
+      .map(s => parseDate(s.started_at))
+      .filter(sd => sd && sd >= reg && sd <= cutoff24h)
+      .sort((a, b) => a - b);
+    if (!loginSess.length) return null;
+    return { user: u, firstLoginAt: loginSess[0] };
+  }).filter(Boolean);
+
+  /* Step 5: of users who logged in within 24h post-KYC, how many completed
+     a send within 7 days after that first login. */
+  const firstTxnCount = firstLoginUsersWithTime.filter(({ user, firstLoginAt }) => {
+    const d7AfterLogin = addDays(firstLoginAt, 7);
+    const uSess = userSessLookup[user.user_id] || [];
+    return uSess.some(s => {
+      const sd = parseDate(s.started_at);
+      return sd && sd >= firstLoginAt && sd <= d7AfterLogin
+        && s.core_action_performed === 'send'
+        && parseInt(s.funnel_step_reached) === 6;
+    });
+  }).length;
+
+  /* Steps 1-3 capped at the step above (ops data can occasionally be noisy) */
+  const cappedKycStarted   = Math.min(kycStarted, installs);
+  const cappedKycCompleted = Math.min(kycCompleted, cappedKycStarted);
+  const cappedFirstLogin   = Math.min(firstLoginUsersWithTime.length, cappedKycCompleted);
+  const cappedFirstTxn     = Math.min(firstTxnCount, cappedFirstLogin);
+
+  return [
+    { step: 'App Installs',               count: installs },
+    { step: 'KYC Started',                count: cappedKycStarted },
+    { step: 'KYC Completed',              count: cappedKycCompleted },
+    { step: 'First Login (24h post-KYC)', count: cappedFirstLogin },
+    { step: 'First Transaction (7d)',      count: cappedFirstTxn },
+  ];
+}
+
+/* Referral Rate */
+function computeReferralRate(filteredUsers) {
+  if (!filteredUsers.length) return 0;
+  return filteredUsers.filter(u => u.acquisition_channel === 'referral').length / filteredUsers.length;
+}
+
+/* Acquisition Channel Split */
+function computeChannelSplit(filteredUsers) {
+  const counts = {};
+  filteredUsers.forEach(u => {
+    const ch = u.acquisition_channel || 'unknown';
+    counts[ch] = (counts[ch] || 0) + 1;
+  });
+  return counts;
+}
+
+/* Bilateral Transaction Rate */
+function computeBilateralTransactionRate(sessions) {
+  const p2pCompleted = sessions.filter(s =>
+    s.core_action_performed === 'send'
+    && parseInt(s.funnel_step_reached) === 6
+    && s.payment_type === 'p2p'
+  );
+  const senders = new Set();
+  const receivers = new Set();
+  p2pCompleted.forEach(s => {
+    senders.add(s.user_id);
+    if (s.recipient_user_id) receivers.add(s.recipient_user_id);
+  });
+  if (!senders.size) return 0;
+  let bilateralCount = 0;
+  senders.forEach(uid => { if (receivers.has(uid)) bilateralCount++; });
+  return bilateralCount / senders.size;
+}
+
+/* Ops Metrics (from bulpay_ops.csv) */
+function computeOpsMetrics(filteredOps) {
+  if (!filteredOps.length) return { crashRate: null, uptime: null, kycPassRate: null, incidents: 0 };
+  const crashRate = filteredOps.reduce((s, o) => s + (parseFloat(o.crash_rate_per_1000) || 0), 0) / filteredOps.length;
+  const uptime = filteredOps.reduce((s, o) => s + (parseFloat(o.uptime_pct) || 0), 0) / filteredOps.length;
+  const totalKycStarted = filteredOps.reduce((s, o) => s + (parseInt(o.kyc_started) || 0), 0);
+  const totalKycApproved = filteredOps.reduce((s, o) => s + (parseInt(o.kyc_approved) || 0), 0);
+  const kycPassRate = totalKycStarted > 0 ? totalKycApproved / totalKycStarted : null;
+  const incidents = filteredOps.reduce((s, o) => s + (parseInt(o.regulatory_incidents) || 0), 0);
+  return { crashRate, uptime, kycPassRate, incidents };
+}
+
+/* Gross Margin % — static from constants */
+function computeGrossMargin() { return GROSS_MARGIN_PCT; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   METRIC COMPUTATIONS — User Behaviour / Payment Flow (existing)
+═══════════════════════════════════════════════════════════════════════ */
+
+function computeHeatmap(sessions) {
+  const matrix = DAYS_ORDER.map(() => new Array(24).fill(0));
+  sessions.forEach(s => {
+    const dayIdx = DAYS_ORDER.indexOf(s.day_of_week);
+    const hour   = parseInt(s.hour_of_day);
+    if (dayIdx >= 0 && !isNaN(hour) && hour >= 0 && hour < 24) matrix[dayIdx][hour]++;
+  });
+  return matrix;
+}
+
+function computePaymentFreqDist(sessions) {
+  const counts = {};
+  completedSends(sessions).forEach(s => { counts[s.user_id] = (counts[s.user_id] || 0) + 1; });
+  const bins = [0, 0, 0, 0, 0];
+  Object.values(counts).forEach(c => {
+    if      (c === 1) bins[0]++;
+    else if (c <= 3)  bins[1]++;
+    else if (c <= 6)  bins[2]++;
+    else if (c <= 10) bins[3]++;
+    else              bins[4]++;
+  });
+  return { labels: ['1','2–3','4–6','7–10','10+'], bins };
+}
+
+function computeTimeToFirstPayment(filteredUsers, allSessions) {
+  const bins = [0, 0, 0, 0, 0, 0];
+  filteredUsers.forEach(u => {
+    const regDate = parseDate(u.registered_at);
+    if (!regDate) return;
+    const completed = allSessions
+      .filter(s => s.user_id === u.user_id && s.core_action_performed === 'send' && parseInt(s.funnel_step_reached) === 6)
+      .map(s => parseDate(s.started_at)).filter(Boolean);
+    if (!completed.length) return;
+    const first = completed.reduce((min, d) => d < min ? d : min);
+    const days  = Math.floor((first - regDate) / 86400000);
+    if      (days <= 1)  bins[0]++;
+    else if (days <= 3)  bins[1]++;
+    else if (days <= 7)  bins[2]++;
+    else if (days <= 14) bins[3]++;
+    else if (days <= 30) bins[4]++;
+    else                 bins[5]++;
+  });
+  return { labels: ['0–1 d','2–3 d','4–7 d','8–14 d','15–30 d','30+ d'], bins };
+}
+
+function computeCardsPerUser(users) {
+  const dist = [0,0,0,0];
+  users.forEach(u => { const n=parseInt(u.num_linked_cards); if(n>=1&&n<=4) dist[n-1]++; });
+  return dist;
+}
+
+function computeFunnel(sessions) {
+  const sends = sessions.filter(s => s.core_action_performed === 'send');
+  return [1,2,3,4,5,6].map(step => ({
+    step, count: sends.filter(s => parseInt(s.funnel_step_reached) >= step).length,
+  }));
+}
+
+function computeTimeToComplete(sessions) {
+  const bins = [0,0,0,0,0];
+  completedSends(sessions).forEach(s => {
+    const dur = parseFloat(s.payment_duration_seconds);
+    if (isNaN(dur)) return;
+    if      (dur <=  10) bins[0]++;
+    else if (dur <=  30) bins[1]++;
+    else if (dur <=  60) bins[2]++;
+    else if (dur <= 120) bins[3]++;
+    else                 bins[4]++;
+  });
+  return { labels: ['0–10 s','10–30 s','30–60 s','60–120 s','120+ s'], bins };
+}
+
+function computePinAttempts(sessions) {
+  const relevant = sessions.filter(s =>
+    s.core_action_performed === 'send'
+    && parseInt(s.funnel_step_reached) >= 5
+    && s.pin_attempts !== '' && s.pin_attempts != null
+    && (state.paymentType === 'all' || s.payment_type === state.paymentType)
+  );
+  if (!relevant.length) return 0;
+  return relevant.reduce((sum,s) => sum + (parseFloat(s.pin_attempts)||0), 0) / relevant.length;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   METRIC COMPUTATIONS — Executive Strip helpers
+═══════════════════════════════════════════════════════════════════════ */
+
+function computeMonthlyChurnRates(sessions, filteredUserIds) {
+  const monthSets = {};
+  sessions.forEach(s => {
+    if (!filteredUserIds.has(s.user_id)) return;
+    const d = parseDate(s.started_at);
+    if (!d) return;
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthSets[ym]) monthSets[ym] = new Set();
+    monthSets[ym].add(s.user_id);
+  });
+  const sortedYMs = Object.keys(monthSets).sort();
+  const result = [];
+  for (let i = 1; i < sortedYMs.length; i++) {
+    const prev = monthSets[sortedYMs[i - 1]];
+    const curr = monthSets[sortedYMs[i]];
+    const churned = [...prev].filter(uid => !curr.has(uid)).length;
+    result.push({ ym: sortedYMs[i], rate: prev.size > 0 ? churned / prev.size : 0 });
+  }
+  return result;
+}
+
+function computeD30RetentionBlended(filteredUsers) {
+  const DATASET_END = new Date(2026, 3, 1);
+  const sessByUser = {};
+  state.sessions.forEach(s => {
+    if (!sessByUser[s.user_id]) sessByUser[s.user_id] = [];
+    sessByUser[s.user_id].push(parseDate(s.started_at));
+  });
+  const evaluable = filteredUsers.filter(u => {
+    const reg = parseDate(u.registered_at);
+    return reg && addDays(reg, 30) <= DATASET_END;
+  });
+  if (!evaluable.length) return null;
+  const retained = evaluable.filter(u => {
+    const reg = parseDate(u.registered_at);
+    const d30 = addDays(reg, 30);
+    return (sessByUser[u.user_id] || []).some(d => d >= d30);
+  });
+  return retained.length / evaluable.length;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1107,6 +1510,15 @@ const fmtEur = (v, dec = 0) =>
 
 const fmtPct = (v, dec = 0) =>
   (v == null || isNaN(v)) ? '—' : (v * 100).toFixed(dec) + '%';
+
+function fmtEurAbbrev(v) {
+  if (v == null || isNaN(v)) return '—';
+  const abs = Math.abs(v);
+  const sign = v < 0 ? '-' : '';
+  if (abs >= 1000000) return sign + '€' + (abs / 1000000).toFixed(1) + 'M';
+  if (abs >= 1000) return sign + '€' + Math.round(abs / 1000) + 'K';
+  return sign + '€' + abs.toFixed(0);
+}
 
 function deltaBadge(cur, prev, higherGood = true, isEur = false) {
   if (prev == null || isNaN(prev)) return '';
@@ -1139,7 +1551,6 @@ function renderSparklineAxis(containerId, buckets) {
   if (!container) return;
   const n = buckets.length;
   if (!n) return;
-  /* Show at most 5 evenly-spaced labels */
   const indices = n <= 5
     ? buckets.map((_, i) => i)
     : [0, Math.floor(n/4), Math.floor(n/2), Math.floor(3*n/4), n-1];
@@ -1153,16 +1564,14 @@ function renderSparklineAxis(containerId, buckets) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ZONE 1 RENDERERS
+   ZONE 2 RENDERERS — Health Pulse
 ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── NSM ── */
 function renderNSM(filteredSessions) {
   const { nsmOverall, periods } = computeNSM(filteredSessions);
   document.getElementById('nsm-hero').textContent = nsmOverall.toFixed(2);
   drawNSMBullet(nsmOverall);
 
-  /* Monthly row: last 3 calendar months in range */
   const last3 = periods.slice(-3);
   document.getElementById('nsm-monthly').innerHTML = monthlyHTML(
     last3.map(p => [p.label, p.nsm.toFixed(2)])
@@ -1212,10 +1621,8 @@ function drawPINBullet(value) {
   `;
 }
 
-/* ── MAU ── */
 function renderMAU(filteredSessions, filteredUsers) {
   const { start, end } = getDateRange();
-  /* Build monthly MAU bars — up to the last 12 months in range */
   const monthBuckets = [];
   let cur = new Date(start.getFullYear(), start.getMonth(), 1);
   while (cur < end) {
@@ -1230,13 +1637,18 @@ function renderMAU(filteredSessions, filteredUsers) {
     monthBuckets.push({ label: `${MONTH_NAMES[cur.getMonth()]}${yr}`, mau: mauSet.size });
     cur = nm;
   }
-  /* Show last 12 months max */
   const display = monthBuckets.slice(-12);
   const latestMAU = display.length ? display[display.length - 1].mau : 0;
   const totalRegistered = filteredUsers.length;
+  const latestMonthLabel = display.length ? display[display.length - 1].label : '—';
+  const latestRate = totalRegistered > 0 ? latestMAU / totalRegistered : null;
+  const prevMAU = display.length > 1 ? display[display.length - 2].mau : null;
+  const prevRate = (prevMAU != null && totalRegistered > 0) ? prevMAU / totalRegistered : null;
 
-  document.getElementById('mau-hero').textContent = latestMAU;
-  document.getElementById('mau-sub').textContent  = `of ${totalRegistered} filtered registered users`;
+  document.getElementById('mau-hero').textContent = fmtPct(latestRate, 1);
+  document.getElementById('mau-sub').textContent  =
+    `${latestMonthLabel} (most recent selected month)`;
+  document.getElementById('mau-delta').innerHTML = deltaBadge(latestRate, prevRate, true, false);
 
   const ctx = document.getElementById('mau-bar').getContext('2d');
   if (instMauBar) instMauBar.destroy();
@@ -1245,7 +1657,7 @@ function renderMAU(filteredSessions, filteredUsers) {
     data: {
       labels: display.map(d => d.label),
       datasets: [{
-        data: display.map(d => d.mau),
+        data: display.map(d => totalRegistered > 0 ? d.mau / totalRegistered : 0),
         backgroundColor: display.map((_, i, a) => {
           const t = a.length > 1 ? i / (a.length - 1) : 1;
           return `rgba(37,99,235,${(0.3 + t * 0.7).toFixed(2)})`;
@@ -1259,7 +1671,13 @@ function renderMAU(filteredSessions, filteredUsers) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          callbacks: { label: item => ` ${item.raw} active users` },
+          callbacks: {
+            label: item => {
+              const bucket = display[item.dataIndex];
+              const rate = totalRegistered > 0 ? bucket.mau / totalRegistered : 0;
+              return ` ${fmtPct(rate, 1)} (${bucket.mau}/${totalRegistered} users)`;
+            },
+          },
           bodyFont: { family: 'Roboto, sans-serif', size: 12 }, padding: 8,
         },
       },
@@ -1267,14 +1685,17 @@ function renderMAU(filteredSessions, filteredUsers) {
         x: { grid: { display: false }, border: { display: false },
              ticks: { font: { size: 9, family: 'Roboto, sans-serif' }, color: '#374151',
                       maxRotation: 45, minRotation: 0 } },
-        y: { display: false, min: 0, max: Math.max(...display.map(d=>d.mau), 1) * 1.25 },
+        y: {
+          display: false,
+          min: 0,
+          max: Math.max(...display.map(d => totalRegistered > 0 ? d.mau / totalRegistered : 0), 0.01) * 1.25,
+        },
       },
       animation: { duration: 400, easing: 'easeOutQuart' },
     },
   });
 }
 
-/* ── Cohort Retention ── */
 function renderCohortRetention() {
   const { cohorts, avgs } = computeCohortRetention();
 
@@ -1324,56 +1745,60 @@ function renderCohortRetention() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ZONE 2 RENDERER
+   ZONE 3 RENDERER — Financial Performance
 ═══════════════════════════════════════════════════════════════════════ */
-function renderZone2(filteredSessions, filteredUsers) {
+function renderFinancialPerformance(filteredSessions, filteredUsers) {
   const { start, end } = getDateRange();
   const buckets = buildPeriodBuckets(start, end);
   const filteredUserIds = new Set(filteredUsers.map(u => u.user_id));
 
-  /* ── GMV & ATV hero (full range) ── */
   const gmvTotal = computeGMV(filteredSessions);
   const atvTotal = computeATV(filteredSessions);
+  const revTotal = computeRevenue(filteredSessions);
   document.getElementById('gmv-hero').textContent = fmtEur(gmvTotal, 0);
   document.getElementById('atv-hero').textContent = fmtEur(atvTotal, 2);
+  document.getElementById('rev-hero').textContent = fmtEurAbbrev(revTotal);
 
-  /* Delta: compare last half vs first half of range */
   if (buckets.length >= 2) {
     const mid = Math.floor(buckets.length / 2);
     const firstHalf = filteredSessions.filter(s => inRange(parseDate(s.started_at), buckets[0].start, buckets[mid].start));
     const secondHalf = filteredSessions.filter(s => inRange(parseDate(s.started_at), buckets[mid].start, buckets[buckets.length-1].end));
     document.getElementById('gmv-delta').innerHTML = deltaBadge(computeGMV(secondHalf), computeGMV(firstHalf), true, true);
     document.getElementById('atv-delta').innerHTML = deltaBadge(computeATV(secondHalf), computeATV(firstHalf), true, true);
+    document.getElementById('rev-delta').innerHTML = deltaBadge(computeRevenue(secondHalf), computeRevenue(firstHalf), true, true);
+
+    const mauSetFirst = new Set(), mauSetSecond = new Set();
+    firstHalf.forEach(s => mauSetFirst.add(s.user_id));
+    secondHalf.forEach(s => mauSetSecond.add(s.user_id));
+    const arpuFirst = mauSetFirst.size > 0 ? computeRevenue(firstHalf) / mauSetFirst.size : 0;
+    const arpuSecond = mauSetSecond.size > 0 ? computeRevenue(secondHalf) / mauSetSecond.size : 0;
+    document.getElementById('arpu-delta').innerHTML = deltaBadge(arpuSecond, arpuFirst, true, true);
   }
 
-  /* ── Sparklines ── */
-  const gmvAtvData    = buildGMVSparklinesFromBuckets(filteredSessions, buckets);
-  const balanceData   = buildBalanceSparklinesFromBuckets(filteredUserIds, filteredSessions, buckets);
+  /* Sparkline data */
+  const gmvAtvData = buildGMVSparklinesFromBuckets(filteredSessions, buckets);
+  const balanceData = buildBalanceSparklinesFromBuckets(filteredUserIds, filteredSessions, buckets);
 
-  /* Latest balance values */
+  /* ARPU sparkline data: revenue / MAU for each bucket */
+  const arpuData = buckets.map((b, i) => {
+    const mauSet = new Set();
+    filteredSessions.forEach(s => {
+      const d = parseDate(s.started_at);
+      if (inRange(d, b.start, b.end)) mauSet.add(s.user_id);
+    });
+    const mau = mauSet.size;
+    return mau > 0 ? gmvAtvData[i].rev / mau : null;
+  });
+
+  /* Latest balance and ARPU values */
   const monthSums = buildMonthlyBalanceSums(filteredUserIds);
   const toDate = ymToDate(state.toYM);
   const latestTotal = getBalanceAtDate(monthSums, toDate);
-  const latestMauSet = new Set();
-  filteredSessions.forEach(s => {
-    const d = parseDate(s.started_at);
-    const lastMonthStart = new Date(toDate.getFullYear(), toDate.getMonth() - 1, 1);
-    if (inRange(d, lastMonthStart, toDate)) latestMauSet.add(s.user_id);
-  });
-  const latestMau    = latestMauSet.size;
-  const latestAvgBal = latestMau > 0 ? latestTotal / latestMau : 0;
 
-  /* Previous period for delta */
-  let prevTotal = null, prevAvg = null;
+  let prevTotal = null;
   if (buckets.length >= 2) {
     const prevStart = buckets[Math.floor(buckets.length/2)].start;
     prevTotal = getBalanceAtDate(monthSums, prevStart);
-    const prevMauSet = new Set();
-    filteredSessions.forEach(s => {
-      const d = parseDate(s.started_at);
-      if (inRange(d, buckets[0].start, prevStart)) prevMauSet.add(s.user_id);
-    });
-    prevAvg = prevMauSet.size > 0 ? prevTotal / prevMauSet.size : 0;
   }
 
   document.getElementById('bal-total-hero').textContent = fmtEur(latestTotal, 0);
@@ -1381,20 +1806,31 @@ function renderZone2(filteredSessions, filteredUsers) {
     `As of ${MONTH_NAMES[toDate.getMonth()]} ${toDate.getFullYear()} · ${filteredUsers.length} filtered users`;
   document.getElementById('bal-total-delta').innerHTML  = deltaBadge(latestTotal, prevTotal, true, true);
 
-  document.getElementById('bal-avg-hero').textContent = fmtEur(latestAvgBal, 2);
-  document.getElementById('bal-avg-sub').textContent  =
-    `As of ${MONTH_NAMES[toDate.getMonth()]} ${toDate.getFullYear()} · ${latestMau} MAU`;
-  document.getElementById('bal-avg-delta').innerHTML  = deltaBadge(latestAvgBal, prevAvg, true, true);
+  /* ARPU hero */
+  const totalRev = revTotal;
+  const { start: rangeStart, end: rangeEnd } = getDateRange();
+  let sumMAU = 0;
+  let mCur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
+  while (mCur < rangeEnd) {
+    const nm = new Date(mCur.getFullYear(), mCur.getMonth() + 1, 1);
+    const bEnd = new Date(Math.min(nm.getTime(), rangeEnd.getTime()));
+    const mauSet = new Set();
+    filteredSessions.forEach(s => {
+      const d = parseDate(s.started_at);
+      if (inRange(d, mCur, bEnd)) mauSet.add(s.user_id);
+    });
+    sumMAU += mauSet.size;
+    mCur = nm;
+  }
+  const arpuVal = sumMAU > 0 ? totalRev / sumMAU : 0;
+  document.getElementById('arpu-hero').textContent = fmtEur(arpuVal, 2);
+  document.getElementById('arpu-sub').textContent = `Revenue ÷ MAU · ${sumMAU} cumulative user-months`;
 
-  /* Cost per Transaction — last 3 periods */
-  const last3 = getLastNPeriods(3);
-  document.getElementById('cpt-monthly').innerHTML = monthlyHTML(
-    last3.map(b => [b.label, '€0.25'])
-  );
-
-  /* ── Draw sparklines ── */
+  /* Draw sparklines */
   function makeSparkline(id, data, color) {
-    const ctx = document.getElementById(id).getContext('2d');
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const ctx = el.getContext('2d');
     return new Chart(ctx, {
       type: 'line',
       data: { labels: buckets.map(b=>b.label), datasets: [{ data, borderColor: color, borderWidth: 2,
@@ -1408,71 +1844,238 @@ function renderZone2(filteredSessions, filteredUsers) {
     });
   }
 
-  if (instGmv)      instGmv.destroy();
-  if (instAtv)      instAtv.destroy();
-  if (instBalTotal) instBalTotal.destroy();
-  if (instBalAvg)   instBalAvg.destroy();
+  if (instGmv)       instGmv.destroy();
+  if (instAtv)       instAtv.destroy();
+  if (instRevSpark)  instRevSpark.destroy();
+  if (instArpuSpark) instArpuSpark.destroy();
+  if (instBalTotal)  instBalTotal.destroy();
 
-  instGmv      = makeSparkline('gmv-spark',       gmvAtvData.map(d=>d.gmv),  '#2563EB');
-  instAtv      = makeSparkline('atv-spark',       gmvAtvData.map(d=>d.atv),  '#6878F5');
-  instBalTotal = makeSparkline('bal-total-spark', balanceData.map(d=>d.total),'#2563EB');
-  instBalAvg   = makeSparkline('bal-avg-spark',   balanceData.map(d=>d.avg), '#2563EB');
+  instGmv       = makeSparkline('gmv-spark',       gmvAtvData.map(d=>d.gmv),   '#2563EB');
+  instAtv       = makeSparkline('atv-spark',       gmvAtvData.map(d=>d.atv),   '#6878F5');
+  instRevSpark  = makeSparkline('rev-spark',       gmvAtvData.map(d=>d.rev),   '#9B6BF8');
+  instArpuSpark = makeSparkline('arpu-spark',      arpuData,                    '#06B6D4');
+  instBalTotal  = makeSparkline('bal-total-spark', balanceData.map(d=>d.total), '#2563EB');
 
   renderSparklineAxis('gmv-spark-axis',       buckets);
   renderSparklineAxis('atv-spark-axis',       buckets);
+  renderSparklineAxis('rev-spark-axis',       buckets);
+  renderSparklineAxis('arpu-spark-axis',      buckets);
   renderSparklineAxis('bal-total-spark-axis', buckets);
-  renderSparklineAxis('bal-avg-spark-axis',   buckets);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ZONE 3 RENDERER
+   ZONE 4 RENDERER — Unit Economics (stub)
 ═══════════════════════════════════════════════════════════════════════ */
-function computeHeatmap(sessions) {
-  const matrix = DAYS_ORDER.map(() => new Array(24).fill(0));
-  sessions.forEach(s => {
-    const dayIdx = DAYS_ORDER.indexOf(s.day_of_week);
-    const hour   = parseInt(s.hour_of_day);
-    if (dayIdx >= 0 && !isNaN(hour) && hour >= 0 && hour < 24) matrix[dayIdx][hour]++;
+function renderUnitEconomics(filteredSessions, filteredUsers) {
+  const { start, end } = getDateRange();
+  const filteredUserIds = new Set(filteredUsers.map(u => u.user_id));
+
+  const totalRev = computeRevenue(filteredSessions);
+  let sumMAU = 0;
+  let mCur = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (mCur < end) {
+    const nm = new Date(mCur.getFullYear(), mCur.getMonth() + 1, 1);
+    const bEnd = new Date(Math.min(nm.getTime(), end.getTime()));
+    const mauSet = new Set();
+    filteredSessions.forEach(s => {
+      const d = parseDate(s.started_at);
+      if (inRange(d, mCur, bEnd)) mauSet.add(s.user_id);
+    });
+    sumMAU += mauSet.size;
+    mCur = nm;
+  }
+
+  const arpu = computeARPU(totalRev, sumMAU);
+  const rangeChurnRates = computeMonthlyChurnRates(state.sessions, filteredUserIds);
+  const { start: rs, end: re } = getDateRange();
+  const inRangeChurn = rangeChurnRates.filter(c => {
+    const d = ymToDate(c.ym);
+    return d >= rs && d < re;
   });
-  return matrix;
+  const avgChurn = inRangeChurn.length
+    ? inRangeChurn.reduce((s, c) => s + c.rate, 0) / inRangeChurn.length
+    : null;
+
+  const ltv = (arpu > 0 && avgChurn) ? computeLTV(arpu, avgChurn) : 0;
+  const ltvCacRatio = ltv > 0 ? (ltv / CAC_EUR) : 0;
+  const rpau = computeRevenuePerActiveUser(totalRev, sumMAU);
+  const gm = computeGrossMargin();
+
+  document.getElementById('ltv-hero').textContent = fmtEur(ltv, 2);
+  document.getElementById('ltv-sub').textContent = avgChurn
+    ? `Avg lifespan: ${Math.min(1/avgChurn, 60).toFixed(1)} months`
+    : 'Insufficient churn data';
+  if (ltv > 0 && ltvCacRatio > 0) {
+    const ltvCls = ltvCacRatio >= 3 ? 'delta-up' : ltvCacRatio >= 1.5 ? 'delta-flat' : 'delta-down';
+    const ltvLbl = ltvCacRatio >= 3 ? 'Healthy payback' : ltvCacRatio >= 1.5 ? 'Marginal' : 'Below target';
+    document.getElementById('ltv-delta').innerHTML = `<span class="delta ${ltvCls}">${ltvLbl}</span>`;
+  } else {
+    document.getElementById('ltv-delta').innerHTML = '';
+  }
+
+  document.getElementById('cac-hero').textContent = fmtEur(CAC_EUR, 2);
+  const ratioEl = document.getElementById('cac-ratio');
+  if (ltvCacRatio > 0) {
+    const cls = ltvCacRatio >= 3 ? 'delta-up' : ltvCacRatio >= 1.5 ? 'delta-flat' : 'delta-down';
+    ratioEl.innerHTML = `<span class="delta ${cls}">LTV:CAC = ${ltvCacRatio.toFixed(1)} : 1</span>`;
+  } else {
+    ratioEl.innerHTML = '';
+  }
+
+  document.getElementById('rpau-hero').textContent = fmtEur(rpau, 2);
+  document.getElementById('rpau-sub').textContent = `Monthly average · ${sumMAU > 0 ? Math.round(totalRev / (sumMAU * BULPAY_FEE_EUR)) : 0} txns avg/user`;
+  if (rpau > 0) {
+    const rpauCls = rpau >= BULPAY_FEE_EUR * 3 ? 'delta-up' : rpau >= BULPAY_FEE_EUR ? 'delta-flat' : 'delta-down';
+    const rpauLbl = rpau >= BULPAY_FEE_EUR * 3 ? 'Strong' : rpau >= BULPAY_FEE_EUR ? 'On track' : 'Low engagement';
+    document.getElementById('rpau-delta').innerHTML = `<span class="delta ${rpauCls}">${rpauLbl}</span>`;
+  } else {
+    document.getElementById('rpau-delta').innerHTML = '';
+  }
+  document.getElementById('gm-hero').textContent = fmtPct(gm, 0);
+  document.getElementById('gm-sub').textContent = `€${BULPAY_FEE_EUR.toFixed(2)} fee − €${PROCESSING_COST.toFixed(2)} cost`;
+  const gmBadge = document.getElementById('gm-badge');
+  gmBadge.innerHTML = `<span class="delta delta-up">Healthy</span>`;
 }
 
-function computePaymentFreqDist(sessions) {
-  const counts = {};
-  completedSends(sessions).forEach(s => { counts[s.user_id] = (counts[s.user_id] || 0) + 1; });
-  const bins = [0, 0, 0, 0, 0];
-  Object.values(counts).forEach(c => {
-    if      (c === 1) bins[0]++;
-    else if (c <= 3)  bins[1]++;
-    else if (c <= 6)  bins[2]++;
-    else if (c <= 10) bins[3]++;
-    else              bins[4]++;
+/* ═══════════════════════════════════════════════════════════════════════
+   ZONE 5 RENDERER — Growth & Acquisition (stub)
+═══════════════════════════════════════════════════════════════════════ */
+function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
+  /* Registration Funnel SVG */
+  const funnelData = computeRegistrationFunnel(filteredOps, filteredUsers, state.sessions);
+  drawRegistrationFunnel(funnelData);
+
+  /* New User Registrations */
+  const { start, end } = getDateRange();
+  const regsInRange = filteredUsers.filter(u => {
+    const d = parseDate(u.registered_at);
+    return d && d >= start && d < end;
   });
-  return { labels: ['1','2–3','4–6','7–10','10+'], bins };
+  document.getElementById('reg-hero').textContent = regsInRange.length.toLocaleString();
+  document.getElementById('reg-sub').textContent = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()} – ${MONTH_NAMES[end.getMonth()-1 < 0 ? 11 : end.getMonth()-1]} ${end.getMonth()===0?end.getFullYear()-1:end.getFullYear()}`;
+  {
+    const midDate = new Date((start.getTime() + end.getTime()) / 2);
+    const firstHalfRegs = regsInRange.filter(u => parseDate(u.registered_at) < midDate).length;
+    const secondHalfRegs = regsInRange.filter(u => parseDate(u.registered_at) >= midDate).length;
+    document.getElementById('reg-delta').innerHTML = deltaBadge(secondHalfRegs, firstHalfRegs, true);
+  }
+
+  /* MoM growth data for trend chart */
+  const growthData = computeMoMUserGrowth(filteredUsers);
+  const rangeGrowth = growthData.filter(g => {
+    const d = ymToDate(g.ym);
+    return d >= start && d < end;
+  });
+
+  const trendCtx = document.getElementById('reg-trend-canvas');
+  if (trendCtx) {
+    if (instRegTrend) instRegTrend.destroy();
+    instRegTrend = new Chart(trendCtx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: rangeGrowth.map(g => { const [y,m] = g.ym.split('-'); return MONTH_NAMES[parseInt(m)-1]; }),
+        datasets: [{
+          data: rangeGrowth.map(g => g.count),
+          backgroundColor: 'rgba(37,99,235,0.65)',
+          borderRadius: 3, borderSkipped: false,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: i => ` ${i.raw} users` }, bodyFont: { family: 'Roboto, sans-serif', size: 12 }, padding: 8 } },
+        scales: {
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9, family: 'Roboto, sans-serif' }, color: '#374151', maxRotation: 45 } },
+          y: { display: false },
+        },
+        animation: { duration: 400, easing: 'easeOutQuart' },
+      },
+    });
+  }
+
+  /* Referral Rate */
+  const refRate = computeReferralRate(filteredUsers);
+  document.getElementById('referral-hero').textContent = fmtPct(refRate, 1);
+  const refCount = filteredUsers.filter(u => u.acquisition_channel === 'referral').length;
+  document.getElementById('referral-sub').textContent = `${refCount} of ${filteredUsers.length} users via referral`;
+  {
+    const cls = refRate >= 0.40 ? 'delta-up' : refRate >= 0.25 ? 'delta-flat' : 'delta-down';
+    const lbl = refRate >= 0.40 ? 'Strong organic loop' : refRate >= 0.25 ? 'Healthy' : 'Below target';
+    document.getElementById('referral-delta').innerHTML = `<span class="delta ${cls}">${lbl}</span>`;
+  }
+
+  /* Channel Split */
+  const channels = computeChannelSplit(filteredUsers);
+  const channelLabels = Object.keys(channels).sort();
+  const channelColors = { referral: '#2563EB', organic: '#6878F5', paid: '#9B6BF8', app_store: '#06B6D4', unknown: '#93ADFD' };
+  const channelCtx = document.getElementById('channel-split-canvas');
+  if (channelCtx) {
+    if (instChannelSplit) instChannelSplit.destroy();
+    instChannelSplit = new Chart(channelCtx.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: channelLabels.map(c => c.replace('_', ' ')),
+        datasets: [{
+          data: channelLabels.map(c => channels[c]),
+          backgroundColor: channelLabels.map(c => channelColors[c] || '#93ADFD'),
+          borderWidth: 2, borderColor: '#fff',
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 11, family: 'Roboto, sans-serif' }, padding: 10, usePointStyle: true, pointStyleWidth: 10 } },
+          tooltip: { callbacks: { label: i => ` ${i.raw} users (${((i.raw/filteredUsers.length)*100).toFixed(1)}%)` }, bodyFont: { family: 'Roboto, sans-serif', size: 12 }, padding: 8 },
+        },
+        cutout: '55%',
+        animation: { duration: 400, easing: 'easeOutQuart' },
+      },
+    });
+  }
 }
 
-function computeTimeToFirstPayment(filteredUsers, allSessions) {
-  const bins = [0, 0, 0, 0, 0, 0];
-  filteredUsers.forEach(u => {
-    const regDate = parseDate(u.registered_at);
-    if (!regDate) return;
-    const completed = allSessions
-      .filter(s => s.user_id === u.user_id && s.core_action_performed === 'send' && parseInt(s.funnel_step_reached) === 6)
-      .map(s => parseDate(s.started_at)).filter(Boolean);
-    if (!completed.length) return;
-    const first = completed.reduce((min, d) => d < min ? d : min);
-    const days  = Math.floor((first - regDate) / 86400000);
-    if      (days <= 1)  bins[0]++;
-    else if (days <= 3)  bins[1]++;
-    else if (days <= 7)  bins[2]++;
-    else if (days <= 14) bins[3]++;
-    else if (days <= 30) bins[4]++;
-    else                 bins[5]++;
+function drawRegistrationFunnel(funnelData) {
+  const svg = document.getElementById('reg-funnel-svg');
+  if (!svg) return;
+  const svgW = svg.parentElement.clientWidth || 500;
+  const STEP_H = 48, GAP = 5;
+  /* MAX_W = full available width. Bars scale 0 → MAX_W purely by proportion. */
+  const MAX_W = svgW - 40;
+  /* TEXT_MIN: minimum bar width needed to render two lines of white text legibly.
+     Only applied per-bar if that bar's proportional width falls below this. */
+  const TEXT_MIN = 200;
+  const cx = svgW / 2;
+  const totalH = funnelData.length * (STEP_H + GAP) + 10;
+  svg.setAttribute('viewBox', `0 0 ${svgW} ${totalH}`);
+  svg.setAttribute('height', totalH);
+  const maxCount = funnelData[0] ? (funnelData[0].count || 1) : 1;
+
+  /* Pre-compute each bar's display width: proportional, floored only if too narrow for text. */
+  const barW = funnelData.map(item =>
+    Math.max(TEXT_MIN, (item.count / maxCount) * MAX_W)
+  );
+
+  let inner = '';
+  funnelData.forEach((item, i) => {
+    const y1 = i*(STEP_H+GAP), y2 = y1+STEP_H;
+    const topW = barW[i];
+    const botW = barW[i+1] !== undefined ? barW[i+1] : topW * 0.97;
+    const x1=cx-topW/2, x2=cx+topW/2, x3=cx+botW/2, x4=cx-botW/2;
+    const isLast = i===funnelData.length-1;
+    const opacity = 0.50 + i*0.08;
+    const fill = isLast ? 'rgba(22,163,74,0.85)' : `rgba(37,99,235,${opacity.toFixed(2)})`;
+    const stepPct = i===0?'100.0%':((item.count/funnelData[0].count)*100).toFixed(1)+'%';
+    inner += `
+      <polygon points="${x1},${y1} ${x2},${y1} ${x3},${y2} ${x4},${y2}" fill="${fill}"/>
+      <text x="${cx}" y="${y1+STEP_H/2-7}" text-anchor="middle" font-size="11.5" font-weight="600" fill="rgba(255,255,255,0.97)" font-family="Roboto,sans-serif" style="pointer-events:none;">${item.step}</text>
+      <text x="${cx}" y="${y1+STEP_H/2+9}" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.90)" font-family="Roboto,sans-serif" style="pointer-events:none;">${item.count.toLocaleString()} · ${stepPct}</text>`;
   });
-  return { labels: ['0–1 d','2–3 d','4–7 d','8–14 d','15–30 d','30+ d'], bins };
+  svg.innerHTML = inner;
 }
 
-function renderZone3(filteredSessions, filteredUsers) {
+/* ═══════════════════════════════════════════════════════════════════════
+   ZONE 6 RENDERER — User Behaviour & Card Ecosystem
+═══════════════════════════════════════════════════════════════════════ */
+function renderUserBehaviour(filteredSessions, filteredUsers) {
   drawHeatmap(computeHeatmap(filteredSessions));
 
   const { labels: fLbls, bins: fBins } = computePaymentFreqDist(filteredSessions);
@@ -1516,6 +2119,64 @@ function renderZone3(filteredSessions, filteredUsers) {
       animation: { duration: 400, easing: 'easeOutQuart' },
     },
   });
+}
+
+function renderCardEcosystem(filteredSessions, filteredUsers) {
+  const cardDist = computeCardsPerUser(filteredUsers);
+  const cpuCtx   = document.getElementById('cards-per-user-bar').getContext('2d');
+  document.getElementById('cards-per-user-sub').textContent =
+    `Distribution across ${filteredUsers.length} filtered registered users`;
+  if (instCardsPerUser) instCardsPerUser.destroy();
+  instCardsPerUser = new Chart(cpuCtx, {
+    type: 'bar',
+    data: {
+      labels: ['1 card','2 cards','3 cards','4 cards'],
+      datasets: [{
+        data: cardDist,
+        backgroundColor: ['rgba(37,99,235,0.40)','rgba(37,99,235,0.60)','rgba(37,99,235,0.80)','#2563EB'],
+        borderRadius: 5, borderSkipped: false,
+      }],
+    },
+    plugins: [{
+      id: 'cpuValueLabels',
+      afterDraw(chart) {
+        const { ctx: c, data } = chart;
+        chart.getDatasetMeta(0).data.forEach((bar, i) => {
+          c.save();
+          c.font = '500 12px Roboto, sans-serif'; c.fillStyle = '#374151';
+          c.textAlign = 'left'; c.textBaseline = 'middle';
+          c.fillText(data.datasets[0].data[i]+' users', bar.x+6, bar.y);
+          c.restore();
+        });
+      },
+    }],
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{callbacks:{label:i=>` ${i.raw} users`}, bodyFont:{family:'Roboto, sans-serif',size:12}, padding:8} },
+      layout: { padding: { right: 70 } },
+      scales: {
+        x: { display: false, min: 0, max: Math.max(...cardDist)+4 },
+        y: { grid:{display:false}, border:{display:false}, ticks:{font:{size:12,family:'Roboto, sans-serif'},color:'#374151'} },
+      },
+      animation: { duration: 400, easing: 'easeOutQuart' },
+    },
+  });
+
+  /* Bilateral Transaction Rate */
+  const bilateralRate = computeBilateralTransactionRate(filteredSessions);
+  document.getElementById('bilateral-hero').textContent = fmtPct(bilateralRate, 1);
+  const p2pSends = filteredSessions.filter(s =>
+    s.core_action_performed === 'send'
+    && parseInt(s.funnel_step_reached) === 6
+    && s.payment_type === 'p2p'
+  );
+  const senderCount = new Set(p2pSends.map(s => s.user_id)).size;
+  document.getElementById('bilateral-sub').textContent = `Of ${senderCount} P2P senders`;
+  {
+    const cls = bilateralRate >= 0.30 ? 'delta-up' : bilateralRate >= 0.15 ? 'delta-flat' : 'delta-down';
+    const lbl = bilateralRate >= 0.30 ? 'Strong network effect' : bilateralRate >= 0.15 ? 'Building' : 'Early stage';
+    document.getElementById('bilateral-delta').innerHTML = `<span class="delta ${cls}">${lbl}</span>`;
+  }
 }
 
 function drawHeatmap(matrix) {
@@ -1563,47 +2224,9 @@ function drawHeatmap(matrix) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ZONE 4 RENDERER
+   ZONE 7 RENDERER — Payment Flow & Quality
 ═══════════════════════════════════════════════════════════════════════ */
-function computeFunnel(sessions) {
-  const sends = sessions.filter(s => s.core_action_performed === 'send');
-  return [1,2,3,4,5,6].map(step => ({
-    step, count: sends.filter(s => parseInt(s.funnel_step_reached) >= step).length,
-  }));
-}
-
-function computeTimeToComplete(sessions) {
-  const bins = [0,0,0,0,0];
-  completedSends(sessions).forEach(s => {
-    const dur = parseFloat(s.payment_duration_seconds);
-    if (isNaN(dur)) return;
-    if      (dur <=  10) bins[0]++;
-    else if (dur <=  30) bins[1]++;
-    else if (dur <=  60) bins[2]++;
-    else if (dur <= 120) bins[3]++;
-    else                 bins[4]++;
-  });
-  return { labels: ['0–10 s','10–30 s','30–60 s','60–120 s','120+ s'], bins };
-}
-
-function computePinAttempts(sessions) {
-  const relevant = sessions.filter(s =>
-    s.core_action_performed === 'send'
-    && parseInt(s.funnel_step_reached) >= 5
-    && s.pin_attempts !== '' && s.pin_attempts != null
-    && (state.paymentType === 'all' || s.payment_type === state.paymentType)
-  );
-  if (!relevant.length) return 0;
-  return relevant.reduce((sum,s) => sum + (parseFloat(s.pin_attempts)||0), 0) / relevant.length;
-}
-
-function computeTechSuccess(sessions) {
-  const sends = sessions.filter(s => s.core_action_performed === 'send');
-  if (!sends.length) return 0;
-  return sends.filter(s => s.technical_success === 'true' || s.technical_success === true).length / sends.length;
-}
-
-function renderZone4(filteredSessions) {
+function renderPaymentFlow(filteredSessions) {
   drawFunnel(computeFunnel(filteredSessions));
 
   const { labels: ttcLbls, bins: ttcBins } = computeTimeToComplete(filteredSessions);
@@ -1631,7 +2254,6 @@ function renderZone4(filteredSessions) {
   const pb = document.getElementById('pin-status-badge');
   if (pb) { pb.textContent=pinZone; pb.style.background=pinColor+'22'; pb.style.color=pinColor; pb.style.border=`1px solid ${pinColor}66`; }
 
-  /* PIN monthly row — last 3 periods */
   const last3 = getLastNPeriods(3);
   let prevPinVal = null;
   document.getElementById('pin-monthly').innerHTML = last3.map((b, i) => {
@@ -1643,11 +2265,6 @@ function renderZone4(filteredSessions) {
     prevPinVal = pv;
     return `<div class="monthly-item"><div class="monthly-lbl">${b.label}</div><div class="monthly-val">${pv.toFixed(2)}${arrow}</div></div>`;
   }).join('');
-
-  const techRate  = computeTechSuccess(filteredSessions);
-  const techColor = techRate >= 0.90 ? '#16A34A' : techRate >= 0.80 ? '#D97706' : '#EF4444';
-  const techEl = document.getElementById('tech-success-hero');
-  if (techEl) { techEl.textContent = fmtPct(techRate); techEl.style.color = techColor; }
 }
 
 function drawFunnel(funnelData) {
@@ -1681,135 +2298,56 @@ function drawFunnel(funnelData) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ZONE 5 RENDERER
+   ZONE 8 RENDERER — Trust, Safety & Compliance
 ═══════════════════════════════════════════════════════════════════════ */
-function computeCardsPerUser(users) {
-  const dist = [0,0,0,0];
-  users.forEach(u => { const n=parseInt(u.num_linked_cards); if(n>=1&&n<=4) dist[n-1]++; });
-  return dist;
-}
-function computeCardSwitchRate(sessions) {
-  const sends = sessions.filter(s => s.core_action_performed === 'send');
-  if (!sends.length) return 0;
-  return sends.filter(s => s.switched_source === 'true' || s.switched_source === true).length / sends.length;
-}
+function renderTrustSafety(filteredOps) {
+  const { crashRate, uptime, kycPassRate, incidents } = computeOpsMetrics(filteredOps);
 
-function renderZone5(filteredSessions, filteredUsers) {
-  const cardDist = computeCardsPerUser(filteredUsers);
-  const cpuCtx   = document.getElementById('cards-per-user-bar').getContext('2d');
-  document.getElementById('cards-per-user-sub').textContent =
-    `Distribution across ${filteredUsers.length} filtered registered users`;
-  if (instCardsPerUser) instCardsPerUser.destroy();
-  instCardsPerUser = new Chart(cpuCtx, {
-    type: 'bar',
-    data: {
-      labels: ['1 card','2 cards','3 cards','4 cards'],
-      datasets: [{
-        data: cardDist,
-        backgroundColor: ['rgba(37,99,235,0.40)','rgba(37,99,235,0.60)','rgba(37,99,235,0.80)','#2563EB'],
-        borderRadius: 5, borderSkipped: false,
-      }],
-    },
-    plugins: [{
-      id: 'cpuValueLabels',
-      afterDraw(chart) {
-        const { ctx: c, data } = chart;
-        chart.getDatasetMeta(0).data.forEach((bar, i) => {
-          c.save();
-          c.font = '500 12px Roboto, sans-serif'; c.fillStyle = '#374151';
-          c.textAlign = 'left'; c.textBaseline = 'middle';
-          c.fillText(data.datasets[0].data[i]+' users', bar.x+6, bar.y);
-          c.restore();
-        });
-      },
-    }],
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{display:false}, tooltip:{callbacks:{label:i=>` ${i.raw} users`}, bodyFont:{family:'Roboto, sans-serif',size:12}, padding:8} },
-      layout: { padding: { right: 70 } },
-      scales: {
-        x: { display: false, min: 0, max: Math.max(...cardDist)+4 },
-        y: { grid:{display:false}, border:{display:false}, ticks:{font:{size:12,family:'Roboto, sans-serif'},color:'#374151'} },
-      },
-      animation: { duration: 400, easing: 'easeOutQuart' },
-    },
-  });
+  /* Crash Rate */
+  const crashEl = document.getElementById('crash-hero');
+  crashEl.textContent = crashRate !== null ? crashRate.toFixed(2) : '—';
+  const crashBadge = document.getElementById('crash-badge');
+  if (crashRate !== null) {
+    const cls = crashRate <= 1.0 ? 'ops-badge-good' : crashRate <= 2.5 ? 'ops-badge-warn' : 'ops-badge-bad';
+    const lbl = crashRate <= 1.0 ? 'Excellent' : crashRate <= 2.5 ? 'Acceptable' : 'Needs Fix';
+    crashBadge.innerHTML = `<span class="ops-badge ${cls}">${lbl}</span>`;
+  } else { crashBadge.innerHTML = ''; }
 
-  const switchCur = computeCardSwitchRate(filteredSessions);
-  document.getElementById('switch-rate-hero').textContent = fmtPct(switchCur, 1);
+  /* Uptime */
+  const uptimeEl = document.getElementById('uptime-hero');
+  uptimeEl.textContent = uptime !== null ? uptime.toFixed(2) + '%' : '—';
+  const uptimeBadge = document.getElementById('uptime-badge');
+  if (uptime !== null) {
+    const cls = uptime >= 99.5 ? 'ops-badge-good' : uptime >= 99.0 ? 'ops-badge-warn' : 'ops-badge-bad';
+    const lbl = uptime >= 99.5 ? 'Excellent' : uptime >= 99.0 ? 'Acceptable' : 'Below Target';
+    uptimeBadge.innerHTML = `<span class="ops-badge ${cls}">${lbl}</span>`;
+  } else { uptimeBadge.innerHTML = ''; }
 
-  const last3 = getLastNPeriods(3);
-  document.getElementById('switch-rate-monthly').innerHTML = monthlyHTML(
-    last3.map(b => {
-      const periodSessions = filteredSessions.filter(s => inRange(parseDate(s.started_at), b.start, b.end));
-      return [b.label, fmtPct(computeCardSwitchRate(periodSessions), 1)];
-    })
-  );
+  /* KYC Pass Rate */
+  const kycEl = document.getElementById('kyc-hero');
+  kycEl.textContent = kycPassRate !== null ? fmtPct(kycPassRate, 1) : '—';
+  const kycBadge = document.getElementById('kyc-badge');
+  if (kycPassRate !== null) {
+    const cls = kycPassRate >= 0.80 ? 'ops-badge-good' : kycPassRate >= 0.70 ? 'ops-badge-warn' : 'ops-badge-bad';
+    const lbl = kycPassRate >= 0.80 ? 'Strong' : kycPassRate >= 0.70 ? 'Moderate' : 'Low';
+    kycBadge.innerHTML = `<span class="ops-badge ${cls}">${lbl}</span>`;
+  } else { kycBadge.innerHTML = ''; }
 
-  /* Switch rate delta */
-  const mid = Math.floor(last3.length / 2);
-  if (last3.length >= 2) {
-    const prevSess = filteredSessions.filter(s => inRange(parseDate(s.started_at), last3[0].start, last3[mid].start));
-    const currSess = filteredSessions.filter(s => inRange(parseDate(s.started_at), last3[mid].start, last3[last3.length-1].end));
-    document.getElementById('switch-rate-delta').innerHTML =
-      deltaBadge(computeCardSwitchRate(currSess), computeCardSwitchRate(prevSess), false);
-  }
+  /* Regulatory Incidents */
+  document.getElementById('incidents-hero').textContent = incidents.toString();
+  const incBadge = document.getElementById('incidents-badge');
+  const cls = incidents === 0 ? 'ops-badge-good' : incidents <= 2 ? 'ops-badge-warn' : 'ops-badge-bad';
+  const lbl = incidents === 0 ? 'Clean Record' : incidents <= 2 ? 'Monitor' : 'Action Required';
+  incBadge.innerHTML = `<span class="ops-badge ${cls}">${lbl}</span>`;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   EXECUTIVE STRIP COMPUTATIONS & RENDERER
+   EXECUTIVE STRIP RENDERER
 ═══════════════════════════════════════════════════════════════════════ */
-
-/* Monthly churn: for each month in the session history, measure what % of
-   prior-month actives did NOT return. Returns array of { ym, rate } objects. */
-function computeMonthlyChurnRates(sessions, filteredUserIds) {
-  const monthSets = {};
-  sessions.forEach(s => {
-    if (!filteredUserIds.has(s.user_id)) return;
-    const d = parseDate(s.started_at);
-    if (!d) return;
-    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    if (!monthSets[ym]) monthSets[ym] = new Set();
-    monthSets[ym].add(s.user_id);
-  });
-  const sortedYMs = Object.keys(monthSets).sort();
-  const result = [];
-  for (let i = 1; i < sortedYMs.length; i++) {
-    const prev = monthSets[sortedYMs[i - 1]];
-    const curr = monthSets[sortedYMs[i]];
-    const churned = [...prev].filter(uid => !curr.has(uid)).length;
-    result.push({ ym: sortedYMs[i], rate: prev.size > 0 ? churned / prev.size : 0 });
-  }
-  return result;
-}
-
-/* D30 Retention: blended across all evaluable users (registered ≥ 30 days before
-   dataset end). A user is retained if they have any session ≥ 30 days after signup. */
-function computeD30RetentionBlended(filteredUsers) {
-  const DATASET_END = new Date(2026, 3, 1);
-  const sessByUser = {};
-  state.sessions.forEach(s => {
-    if (!sessByUser[s.user_id]) sessByUser[s.user_id] = [];
-    sessByUser[s.user_id].push(parseDate(s.started_at));
-  });
-  const evaluable = filteredUsers.filter(u => {
-    const reg = parseDate(u.registered_at);
-    return reg && addDays(reg, 30) <= DATASET_END;
-  });
-  if (!evaluable.length) return null;
-  const retained = evaluable.filter(u => {
-    const reg = parseDate(u.registered_at);
-    const d30 = addDays(reg, 30);
-    return (sessByUser[u.user_id] || []).some(d => d >= d30);
-  });
-  return retained.length / evaluable.length;
-}
-
 function renderExecStrip(filteredSessions, filteredUsers) {
   const { start, end } = getDateRange();
   const filteredUserIds = new Set(filteredUsers.map(u => u.user_id));
 
-  /* ── Build monthly MAU series for the selected range ── */
   const monthBuckets = [];
   let cur = new Date(start.getFullYear(), start.getMonth(), 1);
   while (cur < end) {
@@ -1830,10 +2368,18 @@ function renderExecStrip(filteredSessions, filteredUsers) {
   /* ── 1. MAU ── */
   const latestMAU = monthBuckets.length ? monthBuckets[monthBuckets.length - 1].mau : 0;
   const prevMAU   = monthBuckets.length > 1 ? monthBuckets[monthBuckets.length - 2].mau : null;
-  document.getElementById('ex-mau-hero').textContent = latestMAU;
-  document.getElementById('ex-mau-sub').textContent  = `of ${filteredUsers.length} registered`;
-  if (prevMAU !== null && prevMAU > 0) {
-    const pct = (latestMAU - prevMAU) / prevMAU * 100;
+  const regCount = filteredUsers.length;
+  const latestMAURate = regCount > 0 ? latestMAU / regCount : null;
+  const prevMAURate = (prevMAU !== null && regCount > 0) ? prevMAU / regCount : null;
+  const latestMonth = monthBuckets.length
+    ? monthBuckets[monthBuckets.length - 1].start
+    : null;
+  const latestMonthTxt = latestMonth ? `${MONTH_NAMES[latestMonth.getMonth()]} ${latestMonth.getFullYear()}` : '—';
+  document.getElementById('ex-mau-hero').textContent = fmtPct(latestMAURate, 1);
+  document.getElementById('ex-mau-sub').textContent  =
+    `${latestMonthTxt} (most recent selected month)`;
+  if (prevMAURate !== null && prevMAURate > 0) {
+    const pct = (latestMAURate - prevMAURate) / prevMAURate * 100;
     const cls = pct >= 0 ? 'exec-badge-up' : 'exec-badge-down';
     document.getElementById('ex-mau-badge').innerHTML =
       `<span class="exec-badge ${cls}">${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% MoM</span>`;
@@ -1841,9 +2387,27 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     document.getElementById('ex-mau-badge').innerHTML = '';
   }
 
-  /* ── 2. Churn Rate ── */
+  /* ── 2. MoM User Growth % ── */
+  const growthData = computeMoMUserGrowth(filteredUsers);
+  const rangeGrowth = growthData.filter(g => {
+    const d = ymToDate(g.ym);
+    return d >= start && d < end;
+  });
+  const latestGrowth = rangeGrowth.length ? rangeGrowth[rangeGrowth.length - 1] : null;
+  if (latestGrowth && latestGrowth.growth !== null) {
+    const pct = latestGrowth.growth * 100;
+    document.getElementById('ex-growth-hero').textContent = `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
+    const cls = pct >= 0 ? 'exec-badge-up' : 'exec-badge-down';
+    document.getElementById('ex-growth-badge').innerHTML =
+      `<span class="exec-badge ${cls}">${latestGrowth.count} new users</span>`;
+  } else {
+    document.getElementById('ex-growth-hero').textContent = latestGrowth ? latestGrowth.count.toString() : '—';
+    document.getElementById('ex-growth-badge').innerHTML =
+      `<span class="exec-badge exec-badge-flat">First month</span>`;
+  }
+
+  /* ── 3. Churn Rate ── */
   const allChurnRates = computeMonthlyChurnRates(state.sessions, filteredUserIds);
-  /* Filter to months within selected date range */
   const rangeChurnRates = allChurnRates.filter(c => {
     const d = ymToDate(c.ym);
     return d >= start && d < end;
@@ -1854,7 +2418,6 @@ function renderExecStrip(filteredSessions, filteredUsers) {
   if (latestChurn !== null && prevChurn !== null) {
     const diff = latestChurn - prevChurn;
     const diffAbs = Math.abs(prevChurn > 0 ? diff / prevChurn * 100 : 0);
-    /* Lower churn is better — down arrow is good */
     const cls = diff <= 0 ? 'exec-badge-up' : 'exec-badge-down';
     document.getElementById('ex-churn-badge').innerHTML =
       `<span class="exec-badge ${cls}">${diff <= 0 ? '▼' : '▲'} ${diffAbs.toFixed(1)}% MoM</span>`;
@@ -1866,14 +2429,14 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     document.getElementById('ex-churn-badge').innerHTML = '';
   }
 
-  /* ── 3. NSM ── */
+  /* ── 4. NSM ── */
   const { nsmOverall } = computeNSM(filteredSessions);
   document.getElementById('ex-nsm-hero').textContent = nsmOverall.toFixed(2);
   const nsmCls = nsmOverall < 2 ? 'exec-badge-down' : nsmOverall < 3 ? 'exec-badge-warn' : 'exec-badge-up';
   const nsmLbl = nsmOverall < 2 ? 'Poor' : nsmOverall < 3 ? 'Satisfactory' : 'Good';
   document.getElementById('ex-nsm-badge').innerHTML = `<span class="exec-badge ${nsmCls}">${nsmLbl}</span>`;
 
-  /* ── 4. D30 Retention ── */
+  /* ── 5. D30 Retention ── */
   const d30 = computeD30RetentionBlended(filteredUsers);
   document.getElementById('ex-d30-hero').textContent = d30 !== null ? fmtPct(d30, 1) : '—';
   if (d30 !== null) {
@@ -1885,7 +2448,7 @@ function renderExecStrip(filteredSessions, filteredUsers) {
       `<span class="exec-badge exec-badge-flat">Insufficient data</span>`;
   }
 
-  /* ── 5. NPS ── */
+  /* ── 6. NPS ── */
   const rangeYMs = monthBuckets.map(b => b.ym);
   const npsInRange = rangeYMs.map(ym => ({ ym, val: NPS_MONTHLY[ym] }))
                               .filter(x => x.val !== undefined);
@@ -1908,36 +2471,30 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     document.getElementById('ex-nps-badge').innerHTML  = '';
   }
 
-  /* ── 6. GMV ── */
-  const gmvTotal = computeGMV(filteredSessions);
-  document.getElementById('ex-gmv-hero').textContent = fmtEur(gmvTotal, 0);
-  /* MoM badge: last two full months in range */
+  /* ── 7. Revenue ── */
+  const totalRevenue = computeRevenue(filteredSessions);
+  document.getElementById('ex-revenue-hero').textContent = fmtEurAbbrev(totalRevenue);
   if (monthBuckets.length >= 2) {
     const lastB = monthBuckets[monthBuckets.length - 1];
     const prevB = monthBuckets[monthBuckets.length - 2];
-    const lastGMV = computeGMV(filteredSessions.filter(s => inRange(parseDate(s.started_at), lastB.start, lastB.end)));
-    const prevGMV = computeGMV(filteredSessions.filter(s => inRange(parseDate(s.started_at), prevB.start, prevB.end)));
-    if (prevGMV > 0) {
-      const pct = (lastGMV - prevGMV) / prevGMV * 100;
+    const lastRev = computeRevenue(filteredSessions.filter(s => inRange(parseDate(s.started_at), lastB.start, lastB.end)));
+    const prevRev = computeRevenue(filteredSessions.filter(s => inRange(parseDate(s.started_at), prevB.start, prevB.end)));
+    if (prevRev > 0) {
+      const pct = (lastRev - prevRev) / prevRev * 100;
       const cls = pct >= 0 ? 'exec-badge-up' : 'exec-badge-down';
-      document.getElementById('ex-gmv-badge').innerHTML =
+      document.getElementById('ex-revenue-badge').innerHTML =
         `<span class="exec-badge ${cls}">${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% MoM</span>`;
     } else {
-      document.getElementById('ex-gmv-badge').innerHTML = '';
+      document.getElementById('ex-revenue-badge').innerHTML = '';
     }
   } else {
-    document.getElementById('ex-gmv-badge').innerHTML = '';
+    document.getElementById('ex-revenue-badge').innerHTML = '';
   }
 
-  /* ── 7. LTV : CAC ── */
-  /* Revenue = completed sends × per-transaction fee.
-     ARPU (monthly) = total revenue ÷ sum of monthly MAU values.
-     Avg monthly churn = mean of rangeChurnRates.
-     LTV = ARPU ÷ churn_rate (standard formula), capped at 60 months × ARPU. */
-  const totalRevenue = completedSends(filteredSessions).length * BULPAY_FEE_EUR;
-  const sumMAU       = monthBuckets.reduce((s, b) => s + b.mau, 0);
-  const arpu         = sumMAU > 0 ? totalRevenue / sumMAU : 0;
-  const avgChurn     = rangeChurnRates.length
+  /* ── 8. LTV : CAC ── */
+  const sumMAU = monthBuckets.reduce((s, b) => s + b.mau, 0);
+  const arpu   = sumMAU > 0 ? totalRevenue / sumMAU : 0;
+  const avgChurn = rangeChurnRates.length
     ? rangeChurnRates.reduce((s, c) => s + c.rate, 0) / rangeChurnRates.length
     : null;
 
@@ -1965,7 +2522,6 @@ function onFilterChange() {
   state.ageCohort = document.getElementById('filter-age-cohort').value;
   state.paymentType = document.getElementById('filter-payment-type').value;
 
-  /* Guard: ensure fromYM <= toYM */
   if (state.fromYM > state.toYM) {
     state.toYM = state.fromYM;
     document.getElementById('filter-to-month').value = state.toYM;
@@ -2020,6 +2576,7 @@ function populateMonthDropdowns() {
 function renderAll() {
   const filteredUsers    = getFilteredUsers();
   const filteredSessions = getFilteredSessions();
+  const filteredOps      = getFilteredOps();
 
   /* Update header subtitle */
   const { start, end } = getDateRange();
@@ -2029,39 +2586,57 @@ function renderAll() {
     `Success Metrics · Simulated data · ${filteredUsers.length} users · ${sm} – ${em}`;
 
   renderExecStrip(filteredSessions, filteredUsers);
+
+  /* Zone 2 — Health Pulse */
   renderNSM(filteredSessions);
   renderMAU(filteredSessions, filteredUsers);
   renderCohortRetention();
-  renderZone2(filteredSessions, filteredUsers);
-  renderZone3(filteredSessions, filteredUsers);
-  renderZone4(filteredSessions);
-  renderZone5(filteredSessions, filteredUsers);
+
+  /* Zone 3 — Financial Performance */
+  renderFinancialPerformance(filteredSessions, filteredUsers);
+
+  /* Zone 4 — Unit Economics */
+  renderUnitEconomics(filteredSessions, filteredUsers);
+
+  /* Zone 5 — Growth & Acquisition */
+  renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps);
+
+  /* Zone 6 — User Behaviour & Card Ecosystem */
+  renderUserBehaviour(filteredSessions, filteredUsers);
+  renderCardEcosystem(filteredSessions, filteredUsers);
+
+  /* Zone 7 — Payment Flow & Quality */
+  renderPaymentFlow(filteredSessions);
+
+  /* Zone 8 — Trust, Safety & Compliance */
+  renderTrustSafety(filteredOps);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
    DATA LOADING
 ═══════════════════════════════════════════════════════════════════════ */
 async function loadData() {
-  const [uRes, sRes, bRes] = await Promise.all([
+  const [uRes, sRes, bRes, oRes] = await Promise.all([
     fetch('bulpay_users.csv'),
     fetch('bulpay_sessions.csv'),
     fetch('bulpay_balances.csv'),
+    fetch('bulpay_ops.csv'),
   ]);
 
-  if (!uRes.ok || !sRes.ok || !bRes.ok) throw new Error('CSV fetch failed');
+  if (!uRes.ok || !sRes.ok || !bRes.ok || !oRes.ok) throw new Error('CSV fetch failed');
 
-  const [uText, sText, bText] = await Promise.all([uRes.text(), sRes.text(), bRes.text()]);
+  const [uText, sText, bText, oText] = await Promise.all([uRes.text(), sRes.text(), bRes.text(), oRes.text()]);
 
   state.users    = Papa.parse(uText, { header: true, skipEmptyLines: true }).data;
   state.sessions = Papa.parse(sText, { header: true, skipEmptyLines: true }).data;
   state.balances = Papa.parse(bText, { header: true, skipEmptyLines: true }).data;
+  state.ops      = Papa.parse(oText, { header: true, skipEmptyLines: true }).data;
 
   populateMonthDropdowns();
   document.getElementById('loading-overlay').style.display = 'none';
 
   renderAll();
 
-  /* Re-draw canvas/SVG after layout settles */
   requestAnimationFrame(() => {
     const fs = getFilteredSessions();
     const { nsmOverall } = computeNSM(fs);
@@ -2069,6 +2644,7 @@ async function loadData() {
     drawPINBullet(computePinAttempts(fs));
     drawHeatmap(computeHeatmap(fs));
     drawFunnel(computeFunnel(fs));
+    drawRegistrationFunnel(computeRegistrationFunnel(getFilteredOps(), getFilteredUsers(), state.sessions));
   });
 }
 
@@ -2080,6 +2656,7 @@ window.addEventListener('resize', () => {
   drawPINBullet(computePinAttempts(fs));
   drawHeatmap(computeHeatmap(fs));
   drawFunnel(computeFunnel(fs));
+  drawRegistrationFunnel(computeRegistrationFunnel(getFilteredOps(), getFilteredUsers(), state.sessions));
 });
 
 /* ═══════════════════════════════════════════════════════════════════════
