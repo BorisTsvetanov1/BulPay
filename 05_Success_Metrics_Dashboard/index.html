@@ -354,32 +354,91 @@
       box-shadow: 0 3px 12px rgba(0,0,0,0.07);
     }
     .exec-strip-grid {
-      display: grid; grid-template-columns: repeat(8, 1fr);
+      display: grid; grid-template-columns: repeat(6, 1fr);
       gap: 0; padding: 13px 0 17px;
     }
     .exec-tile {
       padding: 2px 18px 2px 0;
       border-right: 1px solid var(--color-border);
-      min-width: 0; overflow: hidden;
+      min-width: 0; overflow: visible;
     }
     .exec-tile:first-child { padding-left: 0; }
     .exec-tile:last-child  { border-right: none; padding-right: 0; }
     .exec-tile + .exec-tile { padding-left: 18px; }
+    .exec-tile-label-row {
+      display: flex; align-items: flex-start; gap: 5px;
+      margin-bottom: 4px; min-width: 0;
+    }
     .exec-tile-label {
       font-size: 11.5px; font-weight: 600;
       letter-spacing: 0.02em;
-      color: var(--color-txt-muted); margin-bottom: 4px;
+      color: var(--color-txt-muted); margin-bottom: 0;
+      flex: 1; min-width: 0;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .exec-tip {
+      position: relative; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; margin-top: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(248, 250, 252, 0.85);
+      color: #94A3B8;
+      cursor: help;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .exec-tip:hover {
+      border-color: rgba(148, 163, 184, 0.55);
+      background: rgba(241, 245, 249, 0.95);
+      color: #64748B;
+    }
+    .exec-tip-icon {
+      font-family: 'Roboto', sans-serif;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 10px;
+      line-height: 1;
+      margin-top: 0;
+      opacity: 0.92;
+    }
+    .exec-tip:focus {
+      outline: 1px solid rgba(37, 99, 235, 0.35);
+      outline-offset: 2px;
+    }
+    .exec-tip:focus:not(:focus-visible) {
+      outline: none;
+    }
+    .exec-tip-popup {
+      position: absolute; left: 50%; top: calc(100% + 8px);
+      transform: translateX(-50%);
+      width: 228px; max-width: min(260px, 88vw);
+      padding: 10px 12px;
+      font-size: 11.5px; font-weight: 400; line-height: 1.45;
+      letter-spacing: normal;
+      color: var(--color-txt-primary);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+      z-index: 200;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.12s ease, visibility 0.12s ease;
+    }
+    .exec-tip-line { display: block; }
+    .exec-tip-line + .exec-tip-line { margin-top: 6px; }
+    .exec-tip-muted {
+      color: var(--color-txt-muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .exec-tip:hover .exec-tip-popup,
+    .exec-tip:focus-within .exec-tip-popup {
+      opacity: 1; visibility: visible; pointer-events: auto;
     }
     .exec-tile-hero {
       font-size: 29px; font-weight: 700;
       color: var(--color-txt-primary); line-height: 1.1;
-      margin-bottom: 3px; letter-spacing: -0.5px;
-    }
-    .exec-tile-sub {
-      font-size: 12.5px; color: var(--color-txt-muted);
-      font-weight: 300; margin-bottom: 6px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 6px; letter-spacing: -0.5px;
     }
     .exec-badge {
       display: inline-flex; align-items: center; gap: 3px;
@@ -391,6 +450,11 @@
     .exec-badge-warn { color: var(--color-warn); background: rgba(217,119,6,0.10); }
     .exec-badge-flat { color: var(--color-txt-muted); background: var(--color-border-subtle); }
     .exec-badge-blue { color: var(--color-primary); background: var(--color-primary-light); }
+    .exec-mau-compound.exec-badge {
+      white-space: normal;
+      line-height: 1.35;
+      max-width: 100%;
+    }
     @media (max-width: 1200px) {
       .exec-strip-grid { grid-template-columns: repeat(4, 1fr); row-gap: 14px; }
       .exec-tile:nth-child(4n) { border-right: none; padding-right: 0; }
@@ -493,63 +557,98 @@
   <button class="reset-btn" onclick="resetFilters()">Reset filters</button>
 </div>
 
-<!-- ═══ Executive Summary Strip (8 tiles) ══════════════════════════════ -->
+<!-- ═══ Executive Summary Strip (6 tiles) ══════════════════════════════ -->
 <div class="exec-strip">
   <div class="exec-strip-grid">
 
     <div class="exec-tile">
-      <div class="exec-tile-label">Monthly Active Users</div>
+      <div class="exec-tile-label-row">
+        <div class="exec-tile-label">Monthly active users</div>
+        <span class="exec-tip" tabindex="0" aria-label="About Monthly Active Users and signup growth">
+          <span class="exec-tip-icon" aria-hidden="true">i</span>
+          <span class="exec-tip-popup" role="tooltip">
+            <span class="exec-tip-line exec-tip-muted" id="ex-mau-tip-range"></span>
+            <span class="exec-tip-line">MAU reach: share of registered users who were active (session or qualifying action) at least once in the latest month.</span>
+            <span class="exec-tip-line exec-tip-muted">Below: reach vs prior month and signup MoM (counts live in New User Registrations).</span>
+          </span>
+        </span>
+      </div>
       <div class="exec-tile-hero" id="ex-mau-hero">—</div>
-      <div class="exec-tile-sub" id="ex-mau-sub">of — registered</div>
       <div id="ex-mau-badge"></div>
     </div>
 
     <div class="exec-tile">
-      <div class="exec-tile-label">MoM User Growth</div>
-      <div class="exec-tile-hero" id="ex-growth-hero">—</div>
-      <div class="exec-tile-sub" id="ex-growth-sub">New registrations vs prior month</div>
-      <div id="ex-growth-badge"></div>
-    </div>
-
-    <div class="exec-tile">
-      <div class="exec-tile-label">Monthly Churn Rate</div>
+      <div class="exec-tile-label-row">
+        <div class="exec-tile-label">Monthly Churn Rate</div>
+        <span class="exec-tip" tabindex="0" aria-label="About Monthly Churn Rate">
+          <span class="exec-tip-icon" aria-hidden="true">i</span>
+          <span class="exec-tip-popup" role="tooltip">
+            <span class="exec-tip-line">Share of users who were active last month but not this month.</span>
+            <span class="exec-tip-line exec-tip-muted">Higher churn means more of last month’s active base dropped off—watch alongside growth.</span>
+          </span>
+        </span>
+      </div>
       <div class="exec-tile-hero" id="ex-churn-hero">—</div>
-      <div class="exec-tile-sub">Prior-month actives lost</div>
       <div id="ex-churn-badge"></div>
     </div>
 
     <div class="exec-tile">
-      <div class="exec-tile-label">Transactions per user/month</div>
+      <div class="exec-tile-label-row">
+        <div class="exec-tile-label">Transactions per user/month</div>
+        <span class="exec-tip" tabindex="0" aria-label="About Transactions per user per month">
+          <span class="exec-tip-icon" aria-hidden="true">i</span>
+          <span class="exec-tip-popup" role="tooltip">
+            <span class="exec-tip-line">North Star: average transactions per monthly active user (blended over the selected range).</span>
+            <span class="exec-tip-line exec-tip-muted">Tracks depth of engagement—how often actives transact, not just that they exist.</span>
+          </span>
+        </span>
+      </div>
       <div class="exec-tile-hero" id="ex-nsm-hero">—</div>
-      <div class="exec-tile-sub">North Star Metric</div>
       <div id="ex-nsm-badge"></div>
     </div>
 
     <div class="exec-tile">
-      <div class="exec-tile-label">D30 Retention</div>
+      <div class="exec-tile-label-row">
+        <div class="exec-tile-label">D30 Retention</div>
+        <span class="exec-tip" tabindex="0" aria-label="About D30 Retention">
+          <span class="exec-tip-icon" aria-hidden="true">i</span>
+          <span class="exec-tip-popup" role="tooltip">
+            <span class="exec-tip-line">Share of new signups who perform a qualifying return visit within 30 days of registration.</span>
+            <span class="exec-tip-line exec-tip-muted">Early stickiness signal: whether onboarding leads to real product use.</span>
+          </span>
+        </span>
+      </div>
       <div class="exec-tile-hero" id="ex-d30-hero">—</div>
-      <div class="exec-tile-sub">Return within 30 days of signup</div>
       <div id="ex-d30-badge"></div>
     </div>
 
     <div class="exec-tile">
-      <div class="exec-tile-label">NPS Score</div>
-      <div class="exec-tile-hero" id="ex-nps-hero">—</div>
-      <div class="exec-tile-sub">Survey data &nbsp;·&nbsp; most recent month</div>
-      <div id="ex-nps-badge"></div>
-    </div>
-
-    <div class="exec-tile">
-      <div class="exec-tile-label">Revenue</div>
+      <div class="exec-tile-label-row">
+        <div class="exec-tile-label">Revenue</div>
+        <span class="exec-tip" tabindex="0" aria-label="About Revenue">
+          <span class="exec-tip-icon" aria-hidden="true">i</span>
+          <span class="exec-tip-popup" role="tooltip">
+            <span class="exec-tip-line">Total recognized revenue summed across every month in the selected From–To period.</span>
+            <span class="exec-tip-line exec-tip-muted">Respects device, age, and payment-type filters so you see revenue for the same cohort as the charts.</span>
+          </span>
+        </span>
+      </div>
       <div class="exec-tile-hero" id="ex-revenue-hero">—</div>
-      <div class="exec-tile-sub" id="ex-revenue-sub">Selected period total</div>
       <div id="ex-revenue-badge"></div>
     </div>
 
     <div class="exec-tile">
-      <div class="exec-tile-label">LTV : CAC</div>
+      <div class="exec-tile-label-row">
+        <div class="exec-tile-label">LTV : CAC</div>
+        <span class="exec-tip" tabindex="0" aria-label="About LTV to CAC">
+          <span class="exec-tip-icon" aria-hidden="true">i</span>
+          <span class="exec-tip-popup" role="tooltip">
+            <span class="exec-tip-line">Ratio of customer lifetime value to acquisition cost (how much value you earn per dollar spent acquiring users).</span>
+            <span class="exec-tip-line exec-tip-muted">Healthy SaaS-style benchmark is often ≥ 3 : 1; below 1 means you pay more to acquire than you expect to earn back.</span>
+          </span>
+        </span>
+      </div>
       <div class="exec-tile-hero" id="ex-ltvcac-hero">—</div>
-      <div class="exec-tile-sub">Target ≥ 3 : 1</div>
       <div id="ex-ltvcac-badge"></div>
     </div>
 
@@ -919,17 +1018,6 @@ const BULPAY_FEE_EUR   = 2.50;
 const CAC_EUR          = 5.50;
 const PROCESSING_COST  = 0.25;
 const GROSS_MARGIN_PCT = (BULPAY_FEE_EUR - PROCESSING_COST) / BULPAY_FEE_EUR;
-
-const NPS_MONTHLY = {
-  '2024-04': 31, '2024-05': 34, '2024-06': 37,
-  '2024-07': 40, '2024-08': 43, '2024-09': 47,
-  '2024-10': 51, '2024-11': 54, '2024-12': 56,
-  '2025-01': 58, '2025-02': 60, '2025-03': 62,
-  '2025-04': 61, '2025-05': 63, '2025-06': 65,
-  '2025-07': 67, '2025-08': 68, '2025-09': 70,
-  '2025-10': 71, '2025-11': 72, '2025-12': 73,
-  '2026-01': 75, '2026-02': 76, '2026-03': 77,
-};
 
 /* ═══════════════════════════════════════════════════════════════════════
    DATE UTILITIES
@@ -2387,7 +2475,14 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     cur = nm;
   }
 
-  /* ── 1. MAU ── */
+  const growthData = computeMoMUserGrowth(filteredUsers);
+  const rangeGrowth = growthData.filter(g => {
+    const d = ymToDate(g.ym);
+    return d >= start && d < end;
+  });
+  const latestGrowth = rangeGrowth.length ? rangeGrowth[rangeGrowth.length - 1] : null;
+
+  /* ── 1. MAU + MoM signup growth (merged tile) ── */
   const latestMAU = monthBuckets.length ? monthBuckets[monthBuckets.length - 1].mau : 0;
   const prevMAU   = monthBuckets.length > 1 ? monthBuckets[monthBuckets.length - 2].mau : null;
   const regCount = filteredUsers.length;
@@ -2398,37 +2493,45 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     : null;
   const latestMonthTxt = latestMonth ? `${MONTH_NAMES[latestMonth.getMonth()]} ${latestMonth.getFullYear()}` : '—';
   document.getElementById('ex-mau-hero').textContent = fmtPct(latestMAURate, 1);
-  document.getElementById('ex-mau-sub').textContent  =
-    `${latestMonthTxt} (most recent selected month)`;
-  if (prevMAURate !== null && prevMAURate > 0) {
-    const pct = (latestMAURate - prevMAURate) / prevMAURate * 100;
-    const cls = pct >= 0 ? 'exec-badge-up' : 'exec-badge-down';
-    document.getElementById('ex-mau-badge').innerHTML =
-      `<span class="exec-badge ${cls}">${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% MoM</span>`;
-  } else {
-    document.getElementById('ex-mau-badge').innerHTML = '';
+  const mauTipRange = document.getElementById('ex-mau-tip-range');
+  if (mauTipRange) {
+    if (latestMonth) {
+      mauTipRange.textContent = `${latestMonthTxt} — MAU for the most recent month in your selected range.`;
+      mauTipRange.style.display = '';
+    } else {
+      mauTipRange.textContent = '';
+      mauTipRange.style.display = 'none';
+    }
   }
-
-  /* ── 2. MoM User Growth % ── */
-  const growthData = computeMoMUserGrowth(filteredUsers);
-  const rangeGrowth = growthData.filter(g => {
-    const d = ymToDate(g.ym);
-    return d >= start && d < end;
-  });
-  const latestGrowth = rangeGrowth.length ? rangeGrowth[rangeGrowth.length - 1] : null;
+  let reachPart = null;
+  let reachCls = null;
+  if (prevMAURate !== null && prevMAURate > 0 && latestMAURate !== null) {
+    const pct = (latestMAURate - prevMAURate) / prevMAURate * 100;
+    reachCls = pct >= 0 ? 'exec-badge-up' : 'exec-badge-down';
+    reachPart = `${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% reach`;
+  }
+  let signupPart = null;
+  let signupCls = null;
   if (latestGrowth && latestGrowth.growth !== null) {
     const pct = latestGrowth.growth * 100;
-    document.getElementById('ex-growth-hero').textContent = `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
-    const cls = pct >= 0 ? 'exec-badge-up' : 'exec-badge-down';
-    document.getElementById('ex-growth-badge').innerHTML =
-      `<span class="exec-badge ${cls}">${latestGrowth.count} new users</span>`;
-  } else {
-    document.getElementById('ex-growth-hero').textContent = latestGrowth ? latestGrowth.count.toString() : '—';
-    document.getElementById('ex-growth-badge').innerHTML =
-      `<span class="exec-badge exec-badge-flat">First month</span>`;
+    signupCls = pct >= 0 ? 'exec-badge-up' : 'exec-badge-down';
+    signupPart = `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% signups`;
+  } else if (latestGrowth) {
+    signupCls = 'exec-badge-flat';
+    signupPart = 'first comparable month';
   }
+  const compoundParts = [reachPart, signupPart].filter(Boolean);
+  let badgeCls = 'exec-badge-flat';
+  if (compoundParts.length === 1) {
+    badgeCls = reachPart ? reachCls : signupCls;
+  } else if (compoundParts.length === 2 && reachCls === signupCls) {
+    badgeCls = reachCls;
+  }
+  document.getElementById('ex-mau-badge').innerHTML = compoundParts.length
+    ? `<span class="exec-badge exec-mau-compound ${badgeCls}">${compoundParts.join(' · ')}</span>`
+    : '';
 
-  /* ── 3. Churn Rate ── */
+  /* ── 2. Churn Rate ── */
   const allChurnRates = computeMonthlyChurnRates(state.sessions, filteredUserIds);
   const rangeChurnRates = allChurnRates.filter(c => {
     const d = ymToDate(c.ym);
@@ -2451,14 +2554,14 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     document.getElementById('ex-churn-badge').innerHTML = '';
   }
 
-  /* ── 4. NSM ── */
+  /* ── 3. NSM ── */
   const { nsmOverall } = computeNSM(filteredSessions);
   document.getElementById('ex-nsm-hero').textContent = nsmOverall.toFixed(2);
   const nsmCls = nsmOverall < 2 ? 'exec-badge-down' : nsmOverall < 3 ? 'exec-badge-warn' : 'exec-badge-up';
   const nsmLbl = nsmOverall < 2 ? 'Poor' : nsmOverall < 3 ? 'Satisfactory' : 'Good';
   document.getElementById('ex-nsm-badge').innerHTML = `<span class="exec-badge ${nsmCls}">${nsmLbl}</span>`;
 
-  /* ── 5. D30 Retention ── */
+  /* ── 4. D30 Retention ── */
   const d30 = computeD30RetentionBlended(filteredUsers);
   document.getElementById('ex-d30-hero').textContent = d30 !== null ? fmtPct(d30, 1) : '—';
   if (d30 !== null) {
@@ -2470,30 +2573,7 @@ function renderExecStrip(filteredSessions, filteredUsers) {
       `<span class="exec-badge exec-badge-flat">Insufficient data</span>`;
   }
 
-  /* ── 6. NPS ── */
-  const rangeYMs = monthBuckets.map(b => b.ym);
-  const npsInRange = rangeYMs.map(ym => ({ ym, val: NPS_MONTHLY[ym] }))
-                              .filter(x => x.val !== undefined);
-  if (npsInRange.length) {
-    const latest  = npsInRange[npsInRange.length - 1].val;
-    const prevNPS = npsInRange.length > 1 ? npsInRange[npsInRange.length - 2].val : null;
-    document.getElementById('ex-nps-hero').textContent = String(latest);
-    const npsCls = latest >= 50 ? 'exec-badge-up' : latest >= 30 ? 'exec-badge-warn' : 'exec-badge-down';
-    const npsLbl = latest >= 50 ? 'Excellent' : latest >= 30 ? 'Good' : 'Needs work';
-    let trendSpan = '';
-    if (prevNPS !== null) {
-      const diff = latest - prevNPS;
-      const trendCol = diff >= 0 ? 'var(--color-good)' : 'var(--color-bad)';
-      trendSpan = ` <span style="color:${trendCol};font-size:12px;">${diff >= 0 ? '▲' : '▼'}${Math.abs(diff)}</span>`;
-    }
-    document.getElementById('ex-nps-badge').innerHTML =
-      `<span class="exec-badge ${npsCls}">${npsLbl}${trendSpan}</span>`;
-  } else {
-    document.getElementById('ex-nps-hero').textContent = '—';
-    document.getElementById('ex-nps-badge').innerHTML  = '';
-  }
-
-  /* ── 7. Revenue ── */
+  /* ── 5. Revenue ── */
   const totalRevenue = computeRevenue(filteredSessions);
   document.getElementById('ex-revenue-hero').textContent = fmtEurAbbrev(totalRevenue);
   if (monthBuckets.length >= 2) {
@@ -2513,7 +2593,7 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     document.getElementById('ex-revenue-badge').innerHTML = '';
   }
 
-  /* ── 8. LTV : CAC ── */
+  /* ── 6. LTV : CAC ── */
   const sumMAU = monthBuckets.reduce((s, b) => s + b.mau, 0);
   const arpu   = sumMAU > 0 ? totalRevenue / sumMAU : 0;
   const avgChurn = rangeChurnRates.length
