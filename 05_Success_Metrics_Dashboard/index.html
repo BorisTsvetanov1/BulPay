@@ -310,11 +310,34 @@
     /* ─── Zone 4 · Unit Economics Grid ─────────────────────────────── */
     .zone4-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
 
-    /* ─── Zone 5 · Growth & Acquisition Grid ───────────────────────── */
+    /* ─── Zone 5 · Growth & Acquisition Grid (2×2) ─────────────────── */
     .zone5-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px;
     }
-    .zone5-grid > :first-child { grid-column: 1 / -1; }
+
+    /* New User Registrations — compact delta + period context on one row */
+    .reg-delta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 12px;
+      margin-top: 2px;
+    }
+    .reg-delta-row .delta { margin-top: 0; }
+    .reg-mom-note {
+      font-size: 12px;
+      color: var(--color-txt-muted);
+      font-weight: 400;
+      line-height: 1.35;
+      flex: 1 1 120px;
+      min-width: 0;
+    }
+    .reg-chart-wrap {
+      height: 172px;
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px solid var(--color-border-subtle);
+    }
 
     /* ─── Zone 6 · User Behaviour & Card Ecosystem ─────────────────── */
     .zone6-heatmap { margin-bottom: 22px; }
@@ -352,7 +375,6 @@
       .zone3-row-b, .zone4-grid, .zone5-grid,
       .zone6-lower, .zone7-row1,
       .zone8-grid                    { grid-template-columns: 1fr; }
-      .zone5-grid > :first-child     { grid-column: auto; }
       .dashboard-content             { padding: 20px var(--dashboard-inline) 48px; }
       .filter-bar-inner              { gap: 12px; }
     }
@@ -360,7 +382,6 @@
       .zone2-grid, .zone3-row-a, .zone3-row-b,
       .zone4-grid, .zone5-grid, .zone6-lower,
       .zone7-row1, .zone8-grid          { grid-template-columns: 1fr; }
-      .zone5-grid > :first-child         { grid-column: auto; }
       .kpi-hero { font-size: clamp(34px, 9.2vw, 40px); }
       .card { padding: 18px 20px; }
       .card-label { font-size: 14px; }
@@ -841,10 +862,10 @@
     <div class="zone-label">Growth &amp; Acquisition</div>
     <div class="zone5-grid">
 
-      <!-- Registration & Activation Funnel (full width) -->
+      <!-- Row 1: funnel (left) · registrations (right) -->
       <div class="card">
-        <div class="card-label">Registration &amp; Activation Funnel</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Installs → KYC → First Login within 24h of KYC → First Transaction within 7d of Login</div>
+        <div class="card-label">Onboarding &amp; Activation Funnel</div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Activation = registered users with a completed payment within 7 days of KYC verified.</div>
         <svg id="reg-funnel-svg" width="100%" style="display:block;overflow:visible;"></svg>
       </div>
 
@@ -853,8 +874,11 @@
         <div class="card-label">New User Registrations</div>
         <div class="kpi-hero" id="reg-hero">—</div>
         <div class="kpi-sub" id="reg-sub">Selected period total</div>
-        <div id="reg-delta"></div>
-        <div style="height:90px;margin-top:10px;padding-top:10px;border-top:1px solid var(--color-border-subtle);">
+        <div class="reg-delta-row">
+          <div id="reg-delta"></div>
+          <div id="reg-mom-note" class="reg-mom-note"></div>
+        </div>
+        <div class="reg-chart-wrap">
           <canvas id="reg-trend-canvas"></canvas>
         </div>
       </div>
@@ -1348,6 +1372,32 @@ function computeMoMUserGrowth(filteredUsers) {
   return result;
 }
 
+/** Registration counts per period bucket (week / month / quarter — matches filter). */
+function buildBucketedRegistrations(filteredUsers, start, end) {
+  const buckets = buildPeriodBuckets(start, end);
+  return buckets.map(b => {
+    let count = 0;
+    filteredUsers.forEach(u => {
+      const d = parseDate(u.registered_at);
+      if (d && inRange(d, b.start, b.end)) count++;
+    });
+    return { start: b.start, end: b.end, label: b.label, count };
+  });
+}
+
+/** Compact x-axis label for the registrations chart (weeks get year to avoid ambiguity). */
+function regChartAxisLabel(bucket) {
+  const bd = state.periodBreakdown;
+  if (bd === 'week') {
+    const y = bucket.start.getFullYear();
+    const yr = y !== 2026 ? ` '${String(y).slice(-2)}` : '';
+    return `${MONTH_NAMES[bucket.start.getMonth()]} ${bucket.start.getDate()}${yr}`;
+  }
+  return bucket.label;
+}
+
+const PERIOD_DELTA_WORD = { week: 'WoW', month: 'MoM', quarter: 'QoQ' };
+
 /* Revenue = completed sends × fee */
 function computeRevenue(sessions) {
   return completedSends(sessions).length * BULPAY_FEE_EUR;
@@ -1371,16 +1421,16 @@ function computeRevenuePerActiveUser(revenue, mauCount) {
   return computeARPU(revenue, mauCount);
 }
 
-/* Registration & Activation Funnel (5 steps) */
+/* Onboarding & Activation Funnel (4 steps): ops volumes + user-level activation */
 function computeRegistrationFunnel(filteredOps, filteredUsers, allSessions) {
   const { start, end } = getDateRange();
 
-  const installs    = filteredOps.reduce((s, o) => s + (parseInt(o.app_installs) || 0), 0);
-  const kycStarted  = filteredOps.reduce((s, o) => s + (parseInt(o.kyc_started)   || 0), 0);
+  const installs     = filteredOps.reduce((s, o) => s + (parseInt(o.app_installs) || 0), 0);
+  const kycStarted   = filteredOps.reduce((s, o) => s + (parseInt(o.kyc_started)   || 0), 0);
   const kycCompleted = filteredOps.reduce((s, o) => s + (parseInt(o.kyc_approved) || 0), 0);
 
-  /* Restrict steps 4 & 5 to users who registered within the selected date range
-     so they align with the ops-derived counts above. */
+  /* Step 4 cohort: users who registered (KYC completed) in the selected range,
+     aligned with kyc_approved totals in ops for the same months. */
   const periodUsers = filteredUsers.filter(u => {
     const d = parseDate(u.registered_at);
     return d && d >= start && d < end;
@@ -1392,47 +1442,31 @@ function computeRegistrationFunnel(filteredOps, filteredUsers, allSessions) {
     userSessLookup[s.user_id].push(s);
   });
 
-  /* Step 4: first session within 24 hours of KYC completion (= registered_at).
-     We record both the user and their exact first-login timestamp so Step 5
-     can measure from that moment rather than from registration. */
-  const firstLoginUsersWithTime = periodUsers.map(u => {
-    const reg = parseDate(u.registered_at);
-    if (!reg) return null;
-    const cutoff24h = new Date(reg.getTime() + 24 * 60 * 60 * 1000);
-    const uSess = userSessLookup[u.user_id] || [];
-    const loginSess = uSess
-      .map(s => parseDate(s.started_at))
-      .filter(sd => sd && sd >= reg && sd <= cutoff24h)
-      .sort((a, b) => a - b);
-    if (!loginSess.length) return null;
-    return { user: u, firstLoginAt: loginSess[0] };
-  }).filter(Boolean);
+  const ACTIVATION_DAYS = 7;
 
-  /* Step 5: of users who logged in within 24h post-KYC, how many completed
-     a send within 7 days after that first login. */
-  const firstTxnCount = firstLoginUsersWithTime.filter(({ user, firstLoginAt }) => {
-    const d7AfterLogin = addDays(firstLoginAt, 7);
-    const uSess = userSessLookup[user.user_id] || [];
+  const activatedCount = periodUsers.filter(u => {
+    const reg = parseDate(u.registered_at);
+    if (!reg) return false;
+    const windowEnd = addDays(reg, ACTIVATION_DAYS);
+    const uSess = userSessLookup[u.user_id] || [];
     return uSess.some(s => {
+      if (s.core_action_performed !== 'send' || parseInt(s.funnel_step_reached) !== 6) return false;
+      if (state.paymentType !== 'all' && s.payment_type !== state.paymentType) return false;
       const sd = parseDate(s.started_at);
-      return sd && sd >= firstLoginAt && sd <= d7AfterLogin
-        && s.core_action_performed === 'send'
-        && parseInt(s.funnel_step_reached) === 6;
+      return sd && sd >= reg && sd <= windowEnd;
     });
   }).length;
 
-  /* Steps 1-3 capped at the step above (ops data can occasionally be noisy) */
+  /* Steps 1–3 capped monotonically; step 4 cannot exceed KYC completed */
   const cappedKycStarted   = Math.min(kycStarted, installs);
   const cappedKycCompleted = Math.min(kycCompleted, cappedKycStarted);
-  const cappedFirstLogin   = Math.min(firstLoginUsersWithTime.length, cappedKycCompleted);
-  const cappedFirstTxn     = Math.min(firstTxnCount, cappedFirstLogin);
+  const cappedActivated    = Math.min(activatedCount, cappedKycCompleted);
 
   return [
-    { step: 'App Installs',               count: installs },
-    { step: 'KYC Started',                count: cappedKycStarted },
-    { step: 'KYC Completed',              count: cappedKycCompleted },
-    { step: 'First Login (24h post-KYC)', count: cappedFirstLogin },
-    { step: 'First Transaction (7d)',      count: cappedFirstTxn },
+    { step: 'App Installs',                  count: installs },
+    { step: 'KYC Started',                   count: cappedKycStarted },
+    { step: 'KYC Completed',                 count: cappedKycCompleted },
+    { step: 'First payment ≤7d', count: cappedActivated },
   ];
 }
 
@@ -2078,43 +2112,104 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
   });
   document.getElementById('reg-hero').textContent = regsInRange.length.toLocaleString();
   document.getElementById('reg-sub').textContent = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()} – ${MONTH_NAMES[end.getMonth()-1 < 0 ? 11 : end.getMonth()-1]} ${end.getMonth()===0?end.getFullYear()-1:end.getFullYear()}`;
-  {
-    const midDate = new Date((start.getTime() + end.getTime()) / 2);
-    const firstHalfRegs = regsInRange.filter(u => parseDate(u.registered_at) < midDate).length;
-    const secondHalfRegs = regsInRange.filter(u => parseDate(u.registered_at) >= midDate).length;
-    document.getElementById('reg-delta').innerHTML = deltaBadge(secondHalfRegs, firstHalfRegs, true);
-  }
 
-  /* MoM growth data for trend chart */
-  const growthData = computeMoMUserGrowth(filteredUsers);
-  const rangeGrowth = growthData.filter(g => {
-    const d = ymToDate(g.ym);
-    return d >= start && d < end;
-  });
+  const regBuckets = buildBucketedRegistrations(filteredUsers, start, end);
+  const bd = state.periodBreakdown;
+  const deltaWord = PERIOD_DELTA_WORD[bd] || 'MoM';
+  const regDeltaEl = document.getElementById('reg-delta');
+  const regMomNote = document.getElementById('reg-mom-note');
+  if (regBuckets.length >= 2) {
+    const lastB = regBuckets[regBuckets.length - 1];
+    const prevB = regBuckets[regBuckets.length - 2];
+    const lastLbl = regChartAxisLabel(lastB);
+    const prevLbl = regChartAxisLabel(prevB);
+    if (prevB.count > 0) {
+      regDeltaEl.innerHTML = deltaBadge(lastB.count, prevB.count, true);
+    } else if (lastB.count === 0) {
+      regDeltaEl.innerHTML = '<span class="delta delta-flat">— 0%</span>';
+    } else {
+      regDeltaEl.innerHTML = '<span class="delta delta-up">▲ from 0</span>';
+    }
+    regMomNote.textContent = `${deltaWord} · ${lastLbl} vs ${prevLbl} (${lastB.count.toLocaleString()} vs ${prevB.count.toLocaleString()})`;
+  } else {
+    regDeltaEl.innerHTML = '<span class="delta delta-flat">—</span>';
+    regMomNote.textContent = regBuckets.length === 0
+      ? ''
+      : `Select a wider range or switch period breakdown — need at least two ${bd === 'week' ? 'weeks' : bd === 'quarter' ? 'quarters' : 'months'} to show ${deltaWord}.`;
+  }
 
   const trendCtx = document.getElementById('reg-trend-canvas');
   if (trendCtx) {
     if (instRegTrend) instRegTrend.destroy();
+    instRegTrend = null;
+    if (regBuckets.length) {
+    const regCounts = regBuckets.map(g => g.count);
+    const yAxisMax = countBarAxisMax(regCounts, 10, 20);
+    const n = regBuckets.length;
+    const manyWeeks = bd === 'week' && n > 10;
+    const tickCap = bd === 'week' ? 20 : bd === 'quarter' ? 10 : 14;
     instRegTrend = new Chart(trendCtx.getContext('2d'), {
       type: 'bar',
       data: {
-        labels: rangeGrowth.map(g => { const [y,m] = g.ym.split('-'); return MONTH_NAMES[parseInt(m)-1]; }),
+        labels: regBuckets.map(regChartAxisLabel),
         datasets: [{
-          data: rangeGrowth.map(g => g.count),
+          data: regCounts,
           backgroundColor: 'rgba(37,99,235,0.65)',
           borderRadius: 3, borderSkipped: false,
         }],
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: i => ` ${i.raw} users` }, bodyFont: { family: 'Roboto, sans-serif', size: 14 }, padding: 8 } },
+        layout: { padding: { top: 6, left: 0, right: 4, bottom: 2 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: items => {
+                const i = items[0].dataIndex;
+                const b = regBuckets[i];
+                const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const endInclusive = new Date(b.end.getTime() - 86400000);
+                return `${fmt(b.start)} – ${fmt(endInclusive)}`;
+              },
+              label: i => ` ${i.raw} users`,
+            },
+            bodyFont: { family: 'Roboto, sans-serif', size: 14 },
+            padding: 8,
+          },
+        },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 13, family: 'Roboto, sans-serif' }, color: '#374151', maxRotation: 45 } },
-          y: { display: false },
+          x: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: {
+              font: { size: bd === 'quarter' ? 11 : 10, family: 'Roboto, sans-serif' },
+              color: '#374151',
+              maxRotation: manyWeeks ? 50 : bd === 'quarter' ? 0 : 0,
+              minRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: tickCap,
+            },
+          },
+          y: {
+            display: true,
+            beginAtZero: true,
+            max: yAxisMax,
+            grace: '0%',
+            grid: { color: 'rgba(0,0,0,0.06)', drawBorder: false },
+            border: { display: false },
+            ticks: {
+              font: { size: 10, family: 'Roboto, sans-serif' },
+              color: '#6B7280',
+              maxTicksLimit: 5,
+              precision: 0,
+            },
+          },
         },
         animation: { duration: 400, easing: 'easeOutQuart' },
       },
     });
+    }
   }
 
   /* Referral Rate */
