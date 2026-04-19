@@ -2158,43 +2158,54 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
   }
 }
 
-function drawRegistrationFunnel(funnelData) {
-  const svg = document.getElementById('reg-funnel-svg');
+/* Shared funnel geometry (Growth + Send Payment): capped MAX_W, linear mapping of count/max onto a
+   *visual* band so the bottom never collapses to a unreadable sliver. Raw rates in the labels stay exact;
+   width uses span [VISUAL_MIN, 1] × MAX_W (same idea as the old MIN_W offset: 50% count ≈ ~2/3 width,
+   not half). */
+const FUNNEL_VISUAL_WIDTH_MIN = 0.35;
+
+function funnelBandWidth(count, maxCount, maxPx) {
+  const mc = maxCount > 0 ? maxCount : 1;
+  const r = Math.min(1, Math.max(0, count / mc));
+  const span = FUNNEL_VISUAL_WIDTH_MIN + (1 - FUNNEL_VISUAL_WIDTH_MIN) * r;
+  return maxPx * span;
+}
+
+function drawConversionFunnelIntoSvg(svg, rows, getLabel) {
   if (!svg) return;
-  const svgW = svg.parentElement.clientWidth || 500;
-  const STEP_H = 48, GAP = 5;
-  /* MAX_W = full available width. Bars scale 0 → MAX_W purely by proportion. */
-  const MAX_W = svgW - 40;
-  /* TEXT_MIN: minimum bar width needed to render two lines of white text legibly.
-     Only applied per-bar if that bar's proportional width falls below this. */
-  const TEXT_MIN = 200;
+  if (!rows.length) {
+    svg.innerHTML = '';
+    return;
+  }
+  const svgW = svg.parentElement.clientWidth || 380;
+  const STEP_H = 46, GAP = 5;
+  const MAX_W = Math.min(svgW - 40, 380);
   const cx = svgW / 2;
-  const totalH = funnelData.length * (STEP_H + GAP) + 10;
+  const totalH = rows.length * (STEP_H + GAP) + 10;
   svg.setAttribute('viewBox', `0 0 ${svgW} ${totalH}`);
   svg.setAttribute('height', totalH);
-  const maxCount = funnelData[0] ? (funnelData[0].count || 1) : 1;
-
-  /* Pre-compute each bar's display width: proportional, floored only if too narrow for text. */
-  const barW = funnelData.map(item =>
-    Math.max(TEXT_MIN, (item.count / maxCount) * MAX_W)
-  );
-
+  const maxCount = rows[0] ? (rows[0].count || 1) : 1;
   let inner = '';
-  funnelData.forEach((item, i) => {
-    const y1 = i*(STEP_H+GAP), y2 = y1+STEP_H;
-    const topW = barW[i];
-    const botW = barW[i+1] !== undefined ? barW[i+1] : topW * 0.97;
-    const x1=cx-topW/2, x2=cx+topW/2, x3=cx+botW/2, x4=cx-botW/2;
-    /* Same blue gradient as Send Payment Funnel (drawFunnel) — no green “success” bar */
+  rows.forEach((row, i) => {
+    const y1 = i * (STEP_H + GAP), y2 = y1 + STEP_H;
+    const topW = funnelBandWidth(row.count, maxCount, MAX_W);
+    const nxtCnt = rows[i + 1] ? rows[i + 1].count : row.count * 0.97;
+    const botW = funnelBandWidth(nxtCnt, maxCount, MAX_W);
+    const x1 = cx - topW / 2, x2 = cx + topW / 2, x3 = cx + botW / 2, x4 = cx - botW / 2;
     const opacity = 0.52 + i * 0.07;
     const fill = `rgba(37,99,235,${opacity.toFixed(2)})`;
-    const stepPct = i===0?'100.0%':((item.count/funnelData[0].count)*100).toFixed(1)+'%';
-    inner += `
-      <polygon points="${x1},${y1} ${x2},${y1} ${x3},${y2} ${x4},${y2}" fill="${fill}"/>
-      <text x="${cx}" y="${y1+STEP_H/2-7}" text-anchor="middle" font-size="13.5" font-weight="600" fill="rgba(255,255,255,0.97)" font-family="Roboto,sans-serif" style="pointer-events:none;">${item.step}</text>
-      <text x="${cx}" y="${y1+STEP_H/2+9}" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.90)" font-family="Roboto,sans-serif" style="pointer-events:none;">${item.count.toLocaleString()} · ${stepPct}</text>`;
+    const stepPct = i === 0 ? '100.0%' : ((row.count / rows[0].count) * 100).toFixed(1) + '%';
+    const title = getLabel(row, i);
+    inner += `<polygon points="${x1},${y1} ${x2},${y1} ${x3},${y2} ${x4},${y2}" fill="${fill}"/>
+      <text x="${cx}" y="${y1 + STEP_H / 2 - 7}" text-anchor="middle" font-size="13.5" font-weight="500" fill="rgba(255,255,255,0.95)" font-family="Roboto,sans-serif" style="pointer-events:none;">${title}</text>
+      <text x="${cx}" y="${y1 + STEP_H / 2 + 8}" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.88)" font-family="Roboto,sans-serif" style="pointer-events:none;">${row.count.toLocaleString()} · ${stepPct}</text>`;
   });
   svg.innerHTML = inner;
+}
+
+function drawRegistrationFunnel(funnelData) {
+  const svg = document.getElementById('reg-funnel-svg');
+  drawConversionFunnelIntoSvg(svg, funnelData, row => row.step);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -2410,31 +2421,8 @@ function renderPaymentFlow(filteredSessions) {
 
 function drawFunnel(funnelData) {
   const svg = document.getElementById('funnel-svg');
-  if (!svg) return;
-  const svgW = svg.parentElement.clientWidth || 380;
-  const STEP_H = 46, GAP = 5;
-  const MAX_W = Math.min(svgW - 40, 380), MIN_W = MAX_W * 0.22;
-  const cx = svgW / 2;
-  const totalH = funnelData.length * (STEP_H + GAP) + 10;
-  svg.setAttribute('viewBox', `0 0 ${svgW} ${totalH}`);
-  svg.setAttribute('height', totalH);
   const stepNames = ['Initiated','Recipient Selected','Amount Entered','Confirmation Reached','PIN Attempted','Payment Completed'];
-  const maxCount  = funnelData[0] ? (funnelData[0].count || 1) : 1;
-  let inner = '';
-  funnelData.forEach((step, i) => {
-    const y1 = i*(STEP_H+GAP), y2 = y1+STEP_H;
-    const topW = MIN_W + (step.count/maxCount)*(MAX_W-MIN_W);
-    const nxtCnt = funnelData[i+1] ? funnelData[i+1].count : step.count*0.97;
-    const botW = MIN_W + (nxtCnt/maxCount)*(MAX_W-MIN_W);
-    const x1=cx-topW/2,x2=cx+topW/2,x3=cx+botW/2,x4=cx-botW/2;
-    const opacity = 0.52 + i*0.07;
-    const fill = `rgba(37,99,235,${opacity.toFixed(2)})`;
-    const stepPct = i===0?'100.0%':((step.count/funnelData[0].count)*100).toFixed(1)+'%';
-    inner += `<polygon points="${x1},${y1} ${x2},${y1} ${x3},${y2} ${x4},${y2}" fill="${fill}"/>
-      <text x="${cx}" y="${y1+STEP_H/2-7}" text-anchor="middle" font-size="13.5" font-weight="500" fill="rgba(255,255,255,0.95)" font-family="Roboto,sans-serif">${stepNames[i]}</text>
-      <text x="${cx}" y="${y1+STEP_H/2+8}" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.88)" font-family="Roboto,sans-serif">${step.count} · ${stepPct}</text>`;
-  });
-  svg.innerHTML = inner;
+  drawConversionFunnelIntoSvg(svg, funnelData, (_, i) => stepNames[i]);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
