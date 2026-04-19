@@ -28,6 +28,12 @@
       --chart-3:  #9B6BF8;
       --chart-4:  #06B6D4;
       --chart-5:  #93ADFD;
+      /* Content width: tuned for laptop (≈1280–1440), scales up on large desktops */
+      --dashboard-max-w: 1520px;
+      --dashboard-inline: clamp(16px, 2.8vw, 40px);
+    }
+    @media (min-width: 1650px) {
+      :root { --dashboard-max-w: 1680px; }
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,12 +74,18 @@
       z-index: 100;
       background: var(--color-surface);
       border-bottom: 1px solid var(--color-border);
-      padding: 0 32px;
+      padding: 0;
+      height: 58px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    }
+    .dashboard-header-inner {
+      max-width: min(var(--dashboard-max-w), calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 0 var(--dashboard-inline);
       height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
     }
     .header-brand { display: flex; align-items: center; gap: 14px; }
     .header-logo {
@@ -92,12 +104,17 @@
       z-index: 98;
       background: var(--color-surface);
       border-bottom: 1px solid var(--color-border);
-      padding: 8px 32px 10px;
+      padding: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .filter-bar-inner {
+      max-width: min(var(--dashboard-max-w), calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 8px var(--dashboard-inline) 10px;
       display: flex;
       align-items: flex-end;
       gap: 18px;
       flex-wrap: wrap;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }
     .filter-item { display: flex; flex-direction: column; gap: 3px; }
     .filter-label {
@@ -161,7 +178,11 @@
     }
 
     /* ─── Layout ───────────────────────────────────────────────────── */
-    .dashboard-content { padding: 28px 32px 56px; max-width: 1300px; margin: 0 auto; }
+    .dashboard-content {
+      padding: 28px var(--dashboard-inline) 56px;
+      max-width: min(var(--dashboard-max-w), calc(100vw - 24px));
+      margin: 0 auto;
+    }
     .zone { margin-bottom: 36px; }
     .zone-label {
       font-size: 12px; font-weight: 600;
@@ -174,7 +195,7 @@
       background: var(--color-surface);
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      padding: 20px 24px;
+      padding: 22px 26px;
       border: 1px solid var(--color-border);
     }
     .card-label {
@@ -183,7 +204,8 @@
       color: var(--color-txt-muted); margin-bottom: 10px;
     }
     .kpi-hero {
-      font-size: 40px; font-weight: 700;
+      font-size: clamp(36px, 2.4vw + 22px, 44px);
+      font-weight: 700;
       color: var(--color-txt-primary); line-height: 1;
     }
     .kpi-sub {
@@ -215,7 +237,7 @@
     .delta-flat { color: var(--color-txt-muted); background: var(--color-border-subtle); }
 
     /* ─── Zone 2 · Health Pulse Grid ───────────────────────────────── */
-    .zone2-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .zone2-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 
     /* NSM Bullet */
     .nsm-svg-wrap { margin-top: 4px; }
@@ -255,7 +277,7 @@
     }
     .cohort-cell {
       display: flex; align-items: center; justify-content: center;
-      height: 28px; border-radius: 5px;
+      height: 30px; border-radius: 5px;
       font-size: 13px; letter-spacing: 0.2px;
       transition: opacity 0.14s; cursor: default;
     }
@@ -273,10 +295,10 @@
     /* ─── Zone 3 · Financial Performance Grid ──────────────────────── */
     .zone3-row-a {
       display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 20px; margin-bottom: 20px;
+      gap: 22px; margin-bottom: 22px;
     }
-    .zone3-row-b { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .sparkline-wrap { height: 50px; margin-top: 12px; }
+    .zone3-row-b { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+    .sparkline-wrap { height: 56px; margin-top: 12px; }
     .sparkline-axis { position: relative; height: 17px; margin-top: 5px; }
     .sparkline-axis-label {
       position: absolute; font-size: 11px;
@@ -286,24 +308,24 @@
     }
 
     /* ─── Zone 4 · Unit Economics Grid ─────────────────────────────── */
-    .zone4-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .zone4-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
 
     /* ─── Zone 5 · Growth & Acquisition Grid ───────────────────────── */
     .zone5-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
     }
     .zone5-grid > :first-child { grid-column: 1 / -1; }
 
     /* ─── Zone 6 · User Behaviour & Card Ecosystem ─────────────────── */
-    .zone6-heatmap { margin-bottom: 20px; }
-    .zone6-lower { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .zone6-heatmap { margin-bottom: 22px; }
+    .zone6-lower { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
     .heatmap-legend { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
     .heatmap-legend-label { font-size: 12px; color: var(--color-txt-muted); font-weight: 400; }
     .heatmap-legend-scale { display: flex; gap: 3px; }
     .heatmap-legend-cell  { width: 16px; height: 10px; border-radius: 2px; }
 
     /* ─── Zone 7 · Payment Flow & Quality ──────────────────────────── */
-    .zone7-row1 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .zone7-row1 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 22px; }
     .pin-status-badge {
       font-size: 12px; font-weight: 600;
       padding: 2px 9px; border-radius: 20px; letter-spacing: 0.3px;
@@ -312,7 +334,7 @@
     }
 
     /* ─── Zone 8 · Trust, Safety & Compliance ──────────────────────── */
-    .zone8-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .zone8-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
     .ops-tile { text-align: center; padding: 28px 24px; }
     .ops-tile .kpi-hero { font-size: 44px; margin-bottom: 4px; }
     .ops-badge {
@@ -331,18 +353,20 @@
       .zone6-lower, .zone7-row1,
       .zone8-grid                    { grid-template-columns: 1fr; }
       .zone5-grid > :first-child     { grid-column: auto; }
-      .dashboard-content             { padding: 20px 16px 48px; }
-      .dashboard-header              { padding: 0 16px; }
-      .filter-bar                    { padding: 8px 16px 10px; gap: 12px; top: 58px; }
+      .dashboard-content             { padding: 20px var(--dashboard-inline) 48px; }
+      .filter-bar-inner              { gap: 12px; }
     }
     @media (max-width: 600px) {
       .zone2-grid, .zone3-row-a, .zone3-row-b,
       .zone4-grid, .zone5-grid, .zone6-lower,
       .zone7-row1, .zone8-grid          { grid-template-columns: 1fr; }
       .zone5-grid > :first-child         { grid-column: auto; }
-      .kpi-hero { font-size: 33px; }
+      .kpi-hero { font-size: clamp(34px, 9.2vw, 40px); }
+      .card { padding: 18px 20px; }
+      .card-label { font-size: 14px; }
+      .cohort-cell { height: 32px; font-size: 14px; }
       .header-subtitle { display: none; }
-      .filter-bar { gap: 10px; }
+      .filter-bar-inner { gap: 10px; }
     }
 
     /* ─── Executive Summary Strip ──────────────────────────────────────── */
@@ -350,12 +374,15 @@
       background: var(--color-surface);
       border-bottom: 1px solid var(--color-border);
       border-top: 3px solid var(--color-primary);
-      padding: 0 32px;
+      padding: 0;
       box-shadow: 0 3px 12px rgba(0,0,0,0.07);
     }
     .exec-strip-grid {
       display: grid; grid-template-columns: repeat(6, 1fr);
-      gap: 0; padding: 13px 0 17px;
+      gap: 0;
+      padding: 13px var(--dashboard-inline) 17px;
+      max-width: min(var(--dashboard-max-w), calc(100vw - 24px));
+      margin: 0 auto;
     }
     .exec-tile {
       padding: 2px 18px 2px 0;
@@ -462,7 +489,6 @@
     }
     @media (max-width: 700px) {
       .exec-strip-grid { grid-template-columns: repeat(2, 1fr); row-gap: 14px; }
-      .exec-strip { padding: 0 16px; }
       .exec-tile:nth-child(4n) { border-right: 1px solid var(--color-border); }
       .exec-tile:nth-child(2n) { border-right: none; padding-right: 0; }
       .exec-tile:nth-child(odd) { padding-left: 0; }
@@ -480,16 +506,19 @@
 
 <!-- ═══ Zone 0 · Sticky Header ══════════════════════════════════════════ -->
 <header class="dashboard-header">
-  <div class="header-brand">
-    <span class="header-logo">BulPay</span>
-    <span class="header-subtitle" id="header-subtitle">
-      Success Metrics &nbsp;·&nbsp; Simulated data &nbsp;·&nbsp; Loading…
-    </span>
+  <div class="dashboard-header-inner">
+    <div class="header-brand">
+      <span class="header-logo">BulPay</span>
+      <span class="header-subtitle" id="header-subtitle">
+        Success Metrics &nbsp;·&nbsp; Simulated data &nbsp;·&nbsp; Loading…
+      </span>
+    </div>
   </div>
 </header>
 
 <!-- ═══ Filter Bar ══════════════════════════════════════════════════════ -->
 <div class="filter-bar">
+  <div class="filter-bar-inner">
 
   <!-- From month -->
   <div class="filter-item">
@@ -555,6 +584,7 @@
   <div class="filter-divider"></div>
 
   <button class="reset-btn" onclick="resetFilters()">Reset filters</button>
+  </div>
 </div>
 
 <!-- ═══ Executive Summary Strip (6 tiles) ══════════════════════════════ -->
