@@ -212,6 +212,20 @@
       font-size: 14px; color: var(--color-txt-muted);
       font-weight: 400; margin-top: 5px;
     }
+    /* MAU card: fill grid row height so the bar chart uses space under the KPIs */
+    .mau-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .mau-chart-wrap {
+      flex: 1 1 auto;
+      min-height: 168px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+
     .monthly-row {
       display: flex; gap: 18px;
       margin-top: 10px; padding-top: 10px;
@@ -239,11 +253,35 @@
     /* ─── Zone 2 · Health Pulse Grid ───────────────────────────────── */
     .zone2-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 
-    /* NSM Bullet */
-    .nsm-svg-wrap { margin-top: 4px; }
-    .nsm-band-labels {
-      display: flex; justify-content: space-between;
-      font-size: 12px; font-weight: 500; margin-top: 5px;
+    /* NSM (North Star) — minimal on-card copy; detail in header tooltip */
+    .nsm-card-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 10px; margin-bottom: 8px;
+    }
+    .nsm-card-head .card-label { margin-bottom: 0; line-height: 1.35; }
+    .nsm-svg-wrap { margin-top: 12px; }
+    .nsm-band-legend {
+      display: grid;
+      grid-template-columns: 2fr 1fr 2fr;
+      gap: 4px 6px;
+      font-size: 10px; font-weight: 500;
+      margin-top: 6px;
+      text-align: center; line-height: 1.25;
+      letter-spacing: 0.02em;
+    }
+    .nsm-legend-poor  { color: var(--color-bad); }
+    .nsm-legend-warn  { color: var(--color-warn); }
+    .nsm-legend-good  { color: var(--color-good); }
+    .nsm-spark-block {
+      margin-top: 12px; padding-top: 10px;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .nsm-sparkline-wrap {
+      height: 56px; margin-top: 0;
+    }
+    .nsm-card-head .exec-tip-popup {
+      width: 252px;
+      max-width: min(300px, 92vw);
     }
 
     /* ─── Cohort Retention Heatmap ─────────────────────────────────── */
@@ -692,12 +730,12 @@
 
     <div class="exec-tile">
       <div class="exec-tile-label-row">
-        <div class="exec-tile-label">Transactions per user/month</div>
+        <div class="exec-tile-label">Avg. transactions per user/month</div>
         <span class="exec-tip" tabindex="0" aria-label="About Transactions per user per month">
           <span class="exec-tip-icon" aria-hidden="true">i</span>
           <span class="exec-tip-popup" role="tooltip">
-            <span class="exec-tip-line">North Star: average transactions per monthly active user (blended over the selected range).</span>
-            <span class="exec-tip-line exec-tip-muted">Tracks depth of engagement—how often actives transact, not just that they exist.</span>
+            <span class="exec-tip-line">North Star: total completed sends ÷ sum of monthly MAU (MAU-weighted) over the selected range.</span>
+            <span class="exec-tip-line exec-tip-muted">When MAU shifts month to month, this differs from a simple average of the monthly rates—both are valid; the headline matches finance-style “activity per user-month.”</span>
           </span>
         </span>
       </div>
@@ -762,30 +800,43 @@
 
       <!-- North Star Metric Card -->
       <div class="card">
-        <div class="card-label">Average Transactions per Active User per Month</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">Blended average over selected range &nbsp;·&nbsp; monthly basis</div>
-        <div style="display:flex;align-items:baseline;gap:8px;">
-          <span class="kpi-hero" id="nsm-hero">—</span>
+        <div class="nsm-card-head">
+          <div class="card-label">Average transactions per active user per month</div>
+          <span class="exec-tip" tabindex="0" aria-label="How North Star is calculated">
+            <span class="exec-tip-icon" aria-hidden="true">i</span>
+            <span class="exec-tip-popup" role="tooltip">
+              <span class="exec-tip-line"><strong>Headline</strong> = total completed sends ÷ sum of calendar-month MAU (MAU-weighted over your date range).</span>
+              <span class="exec-tip-line exec-tip-muted">If MAU shifts by month, this is not the same as averaging the monthly rates—both are valid; this matches “activity per user-month.”</span>
+              <span class="exec-tip-line"><strong>Active</strong> = ≥1 session in the month. <strong>Send</strong> = completed payment (funnel step 6). Payment-type filter applies.</span>
+              <span class="exec-tip-line exec-tip-muted">Shaded bands: 0–2 · 2–3 · 3–5. Grey dash = good floor (3). Blue dash = stretch goal (4).</span>
+            </span>
+          </span>
         </div>
+        <span class="kpi-hero" id="nsm-hero">—</span>
+        <div id="nsm-mom-delta"></div>
         <div class="nsm-svg-wrap">
-          <svg id="nsm-svg" width="100%" height="44" style="display:block;overflow:visible;"></svg>
-          <div class="nsm-band-labels">
-            <span style="color:var(--color-bad);">Poor (0–2)</span>
-            <span style="color:var(--color-warn);">Satisfactory (2–3)</span>
-            <span style="color:var(--color-good);">Good (3+)</span>
+          <svg id="nsm-svg" width="100%" height="58" style="display:block;overflow:visible;"></svg>
+          <div class="nsm-band-legend" aria-hidden="true">
+            <span class="nsm-legend-poor">0–2</span>
+            <span class="nsm-legend-warn">2–3</span>
+            <span class="nsm-legend-good">3–5</span>
           </div>
         </div>
-        <div class="monthly-row" id="nsm-monthly"></div>
+        <div class="nsm-spark-block">
+          <div class="sparkline-wrap nsm-sparkline-wrap"><canvas id="nsm-spark"></canvas></div>
+          <div class="sparkline-axis" id="nsm-spark-axis"></div>
+        </div>
       </div>
 
       <!-- MAU Card -->
-      <div class="card">
-        <div class="card-label">Monthly Active Users</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">Most recent selected month &nbsp;·&nbsp; filtered view</div>
-        <div class="kpi-hero" id="mau-hero">—</div>
-        <div class="kpi-sub" id="mau-sub">of — registered</div>
+      <div class="card mau-card">
+        <div class="nsm-card-head">
+          <div class="card-label">Monthly Active Users</div>
+        </div>
+        <span class="kpi-hero" id="mau-hero">—</span>
+        <div class="kpi-sub" id="mau-sub">Most recent selected month : —</div>
         <div id="mau-delta"></div>
-        <div style="height:90px;margin-top:10px;padding-top:10px;border-top:1px solid var(--color-border-subtle);">
+        <div class="mau-chart-wrap">
           <canvas id="mau-bar"></canvas>
         </div>
       </div>
@@ -1113,6 +1164,7 @@ const state = {
 /* Chart instances */
 let instMauBar = null, instGmv = null, instAtv = null,
     instBalTotal = null, instRevSpark = null, instArpuSpark = null,
+    instNsmSpark = null,
     instFreqDist = null, instTtfp = null, instTtc = null,
     instCardsPerUser = null, instRegTrend = null,
     instChannelSplit = null;
@@ -1331,12 +1383,19 @@ function computeNSM(filteredSessions) {
     totalTxns += txns;
     sumMAU    += mau;
     const yr = cur.getFullYear() !== 2026 ? ` '${String(cur.getFullYear()).slice(2)}` : '';
-    periods.push({ label: `${MONTH_NAMES[cur.getMonth()]}${yr}`, nsm: mau > 0 ? txns / mau : 0 });
+    periods.push({
+      label: `${MONTH_NAMES[cur.getMonth()]}${yr}`,
+      nsm: mau > 0 ? txns / mau : 0,
+      mau,
+      txns,
+    });
     cur = nm;
   }
 
   return {
     nsmOverall: sumMAU > 0 ? totalTxns / sumMAU : 0,
+    totalTxns,
+    sumMAU,
     periods,
   };
 }
@@ -1873,33 +1932,104 @@ function renderSparklineAxis(containerId, buckets) {
 ═══════════════════════════════════════════════════════════════════════ */
 
 function renderNSM(filteredSessions) {
-  const { nsmOverall, periods } = computeNSM(filteredSessions);
-  document.getElementById('nsm-hero').textContent = nsmOverall.toFixed(2);
+  const { nsmOverall, periods, totalTxns, sumMAU } = computeNSM(filteredSessions);
+  const hero = document.getElementById('nsm-hero');
+  const momEl = document.getElementById('nsm-mom-delta');
+  const axisEl = document.getElementById('nsm-spark-axis');
+
+  if (!periods.length) {
+    hero.textContent = '—';
+    hero.title = '';
+    momEl.innerHTML = '';
+    if (instNsmSpark) { instNsmSpark.destroy(); instNsmSpark = null; }
+    if (axisEl) axisEl.innerHTML = '';
+    drawNSMBullet(0);
+    return;
+  }
+
+  hero.textContent = nsmOverall.toFixed(2);
+  if (sumMAU > 0) {
+    hero.title =
+      `${totalTxns.toLocaleString()} completed sends ÷ ${sumMAU.toLocaleString()} user-months = ${nsmOverall.toFixed(2)} txns/MAU (MAU-weighted). Chart tooltips show per-month breakdown.`;
+  } else {
+    hero.title = '';
+  }
+
+  if (periods.length >= 2) {
+    const last = periods[periods.length - 1].nsm;
+    const prev = periods[periods.length - 2].nsm;
+    momEl.innerHTML = deltaBadge(last, prev, true, false) || '';
+  } else {
+    momEl.innerHTML = '';
+  }
+
   drawNSMBullet(nsmOverall);
 
-  const last3 = periods.slice(-3);
-  document.getElementById('nsm-monthly').innerHTML = monthlyHTML(
-    last3.map(p => [p.label, p.nsm.toFixed(2)])
-  );
+  const canvas = document.getElementById('nsm-spark');
+  if (!canvas) return;
+  if (instNsmSpark) instNsmSpark.destroy();
+  const ctx = canvas.getContext('2d');
+  const nsmSeries = periods.map(p => p.nsm);
+  instNsmSpark = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: periods.map(p => p.label),
+      datasets: [{
+        data: nsmSeries,
+        borderColor: '#2563EB',
+        borderWidth: 2,
+        tension: 0.35,
+        fill: true,
+        backgroundColor: 'rgba(37,99,235,0.11)',
+        pointRadius: periods.length <= 18 ? 2.5 : 0,
+        pointHoverRadius: 5,
+        spanGaps: true,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          padding: 10,
+          bodyFont: { family: 'Roboto, sans-serif', size: 13 },
+          callbacks: {
+            label(ctx) {
+              const p = periods[ctx.dataIndex];
+              if (!p) return '';
+              return ` ${p.nsm.toFixed(2)} txns / active · ${p.mau.toLocaleString()} MAU · ${p.txns.toLocaleString()} sends`;
+            },
+          },
+        },
+      },
+      scales: { x: { display: false }, y: { display: false } },
+      animation: { duration: 400, easing: 'easeOutQuart' },
+    },
+  });
+  renderSparklineAxis('nsm-spark-axis', periods);
 }
 
 function drawNSMBullet(value) {
   const svg = document.getElementById('nsm-svg');
+  if (!svg) return;
   const W   = svg.getBoundingClientRect().width || svg.parentElement.clientWidth || 280;
-  const H   = 54, MAX = 5, BAR_Y = 22, BAR_H = 18;
+  const H   = 58, MAX = 5, BAR_Y = 26, BAR_H = 16;
   const x = v => (v / MAX) * W;
-  const needle = Math.min(Math.max(x(value), 2), W - 2);
+  const needleRaw = x(Math.min(Math.max(value, 0), MAX));
+  const needle = Math.min(Math.max(needleRaw, 6), W - 6);
   const nc = value < 2 ? '#EF4444' : value < 3 ? '#D97706' : '#16A34A';
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = `
-    <rect x="${x(0)}" y="${BAR_Y}" width="${x(2)}"        height="${BAR_H}" fill="rgba(239,68,68,0.12)"  rx="3 0 0 3"/>
-    <rect x="${x(2)}" y="${BAR_Y}" width="${x(1)}"        height="${BAR_H}" fill="rgba(217,119,6,0.12)"/>
-    <rect x="${x(3)}" y="${BAR_Y}" width="${x(MAX)-x(3)}" height="${BAR_H}" fill="rgba(22,163,74,0.12)"  rx="0 3 3 0"/>
+    <rect x="${x(0)}" y="${BAR_Y}" width="${x(2) - x(0)}" height="${BAR_H}" fill="rgba(239,68,68,0.12)"  rx="3 0 0 3"/>
+    <rect x="${x(2)}" y="${BAR_Y}" width="${x(3) - x(2)}" height="${BAR_H}" fill="rgba(217,119,6,0.12)"/>
+    <rect x="${x(3)}" y="${BAR_Y}" width="${x(MAX) - x(3)}" height="${BAR_H}" fill="rgba(22,163,74,0.12)"  rx="0 3 3 0"/>
     <line x1="${x(2)}" y1="${BAR_Y}" x2="${x(2)}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.09)" stroke-width="1"/>
     <line x1="${x(3)}" y1="${BAR_Y}" x2="${x(3)}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.09)" stroke-width="1"/>
-    <line x1="${x(4)}" y1="${BAR_Y-5}" x2="${x(4)}" y2="${BAR_Y+BAR_H+5}" stroke="#2563EB" stroke-width="2" stroke-dasharray="4,3"/>
-    <text x="${x(4)}" y="${BAR_Y-8}" text-anchor="middle" font-size="11" fill="#2563EB" font-family="Roboto,sans-serif" font-weight="500">Target 4.0</text>
-    ${[0,1,2,3,4,5].map(v=>`<text x="${x(v)}" y="${BAR_Y+BAR_H+13}" text-anchor="middle" font-size="11" fill="#4B5563" font-family="Roboto,sans-serif">${v}</text>`).join('')}
+    <line x1="${x(3)}" y1="${BAR_Y-3}" x2="${x(3)}" y2="${BAR_Y+BAR_H+3}" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="${x(4)}" y="13" text-anchor="middle" font-size="9" fill="#2563EB" font-family="Roboto,sans-serif" font-weight="600">Target</text>
+    <line x1="${x(4)}" y1="${BAR_Y-3}" x2="${x(4)}" y2="${BAR_Y+BAR_H+3}" stroke="#2563EB" stroke-width="2" stroke-dasharray="4,3"/>
+    ${[0,1,2,3,4,5].map(v=>`<text x="${x(v)}" y="${BAR_Y+BAR_H+12}" text-anchor="middle" font-size="10" fill="#64748B" font-family="Roboto,sans-serif">${v}</text>`).join('')}
     <polygon points="${needle},${BAR_Y-1} ${needle-5},${BAR_Y-10} ${needle+5},${BAR_Y-10}" fill="${nc}"/>
     <line x1="${needle}" y1="${BAR_Y}" x2="${needle}" y2="${BAR_Y+BAR_H}" stroke="${nc}" stroke-width="2.5"/>
   `;
@@ -1939,20 +2069,29 @@ function renderMAU(filteredSessions, filteredUsers) {
       if (inRange(d, cur, bEnd)) mauSet.add(s.user_id);
     });
     const yr = cur.getFullYear() !== 2026 ? ` '${String(cur.getFullYear()).slice(2)}` : '';
-    monthBuckets.push({ label: `${MONTH_NAMES[cur.getMonth()]}${yr}`, mau: mauSet.size });
+    monthBuckets.push({
+      label: `${MONTH_NAMES[cur.getMonth()]}${yr}`,
+      mau: mauSet.size,
+      month: cur.getMonth(),
+      year: cur.getFullYear(),
+    });
     cur = nm;
   }
   const display = monthBuckets.slice(-12);
   const latestMAU = display.length ? display[display.length - 1].mau : 0;
   const totalRegistered = filteredUsers.length;
-  const latestMonthLabel = display.length ? display[display.length - 1].label : '—';
   const latestRate = totalRegistered > 0 ? latestMAU / totalRegistered : null;
   const prevMAU = display.length > 1 ? display[display.length - 2].mau : null;
   const prevRate = (prevMAU != null && totalRegistered > 0) ? prevMAU / totalRegistered : null;
 
   document.getElementById('mau-hero').textContent = fmtPct(latestRate, 1);
-  document.getElementById('mau-sub').textContent  =
-    `${latestMonthLabel} (most recent selected month)`;
+  let mauSubLine = 'Most recent selected month : —';
+  if (display.length) {
+    const b = display[display.length - 1];
+    const yrSub = b.year !== 2026 ? ` '${String(b.year).slice(2)}` : '';
+    mauSubLine = `Most recent selected month : ${MONTH_NAMES[b.month]}${yrSub}`;
+  }
+  document.getElementById('mau-sub').textContent = mauSubLine;
   document.getElementById('mau-delta').innerHTML = deltaBadge(latestRate, prevRate, true, false);
 
   const ctx = document.getElementById('mau-bar').getContext('2d');
@@ -1973,6 +2112,7 @@ function renderMAU(filteredSessions, filteredUsers) {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 2, right: 0, bottom: 0, left: 0 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1988,12 +2128,12 @@ function renderMAU(filteredSessions, filteredUsers) {
       },
       scales: {
         x: { grid: { display: false }, border: { display: false },
-             ticks: { font: { size: 13, family: 'Roboto, sans-serif' }, color: '#374151',
-                      maxRotation: 45, minRotation: 0 } },
+             ticks: { font: { size: 12, family: 'Roboto, sans-serif' }, color: '#374151',
+                      maxRotation: 40, minRotation: 0, padding: 2 } },
         y: {
           display: false,
           min: 0,
-          max: Math.max(...display.map(d => totalRegistered > 0 ? d.mau / totalRegistered : 0), 0.01) * 1.25,
+          max: Math.max(...display.map(d => totalRegistered > 0 ? d.mau / totalRegistered : 0), 0.01) * 1.08,
         },
       },
       animation: { duration: 400, easing: 'easeOutQuart' },
@@ -2942,7 +3082,8 @@ function renderExecStrip(filteredSessions, filteredUsers) {
   document.getElementById('ex-nsm-hero').textContent = nsmOverall.toFixed(2);
   const nsmCls = nsmOverall < 2 ? 'exec-badge-down' : nsmOverall < 3 ? 'exec-badge-warn' : 'exec-badge-up';
   const nsmLbl = nsmOverall < 2 ? 'Poor' : nsmOverall < 3 ? 'Satisfactory' : 'Good';
-  document.getElementById('ex-nsm-badge').innerHTML = `<span class="exec-badge ${nsmCls}">${nsmLbl}</span>`;
+  const nsmTargetHint = ` <span class="exec-badge exec-badge-flat">Target: 4</span>`;
+  document.getElementById('ex-nsm-badge').innerHTML = `<span class="exec-badge ${nsmCls}">${nsmLbl}</span>${nsmTargetHint}`;
 
   /* ── 4. D30 Retention ── */
   const d30 = computeD30RetentionBlended(filteredUsers);
