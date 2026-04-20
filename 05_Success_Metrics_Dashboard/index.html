@@ -418,6 +418,42 @@
       margin: 0;
     }
 
+    /* Zone 5 — activation rate by channel (horizontal bars) */
+    .activation-channel-head {
+      display: flex;
+      justify-content: flex-end;
+      align-items: baseline;
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+    .activation-channel-cohort {
+      font-size: 14px;
+      color: var(--color-txt-muted);
+      font-weight: 400;
+    }
+    .activation-channel-chart-wrap {
+      position: relative;
+      min-height: 160px;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .activation-channel-chart-wrap.is-empty {
+      height: auto;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .activation-channel-empty {
+      font-size: 14px;
+      color: var(--color-txt-muted);
+      font-weight: 400;
+      text-align: center;
+      padding: 20px 16px;
+      margin: 0;
+    }
+
     /* ─── Zone 6 · User Behaviour & Card Ecosystem ─────────────────── */
     .zone6-heatmap { margin-bottom: 22px; }
     .zone6-lower { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
@@ -975,12 +1011,17 @@
         </div>
       </div>
 
-      <!-- Referral Rate -->
+      <!-- Activation rate by channel (volume split shows counts; this shows quality per source) -->
       <div class="card">
-        <div class="card-label">Referral Rate</div>
-        <div class="kpi-hero" id="referral-hero">—</div>
-        <div class="kpi-sub" id="referral-sub">Of new registrations in the selected range via referral</div>
-        <div id="referral-delta"></div>
+        <div class="card-label">Activation Rate by Channel</div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">First completed send within 7 days of registration · same definition as funnel · new registrations in range</div>
+        <div class="activation-channel-head">
+          <span class="activation-channel-cohort" id="activation-channel-cohort">—</span>
+        </div>
+        <div class="activation-channel-chart-wrap" id="activation-channel-chart-wrap">
+          <canvas id="activation-channel-canvas"></canvas>
+          <p class="activation-channel-empty" id="activation-channel-empty" hidden>No new registrations in the selected range.</p>
+        </div>
       </div>
 
       <!-- Acquisition Channel Split -->
@@ -1159,8 +1200,9 @@ let instMauBar = null, instGmv = null, instAtv = null,
     instBalTotal = null, instRevSpark = null, instArpuSpark = null,
     instNsmSpark = null,
     instFreqDist = null, instTtfp = null, instTtc = null,
-    instCardsPerUser = null, instRegTrend = null,
-    instChannelSplit = null;
+    instCardsPerUser = null,     instRegTrend = null,
+    instChannelSplit = null,
+    instActivationByChannel = null;
 
 /* ═══════════════════════════════════════════════════════════════════════
    CONSTANTS
@@ -1644,10 +1686,48 @@ function computeRegistrationFunnel(filteredOps, filteredUsers, allSessions) {
   ];
 }
 
-/* Referral Rate */
-function computeReferralRate(filteredUsers) {
-  if (!filteredUsers.length) return 0;
-  return filteredUsers.filter(u => u.acquisition_channel === 'referral').length / filteredUsers.length;
+/**
+ * Per acquisition_channel: % of new registrations with a completed send within 7 days of registration
+ * (funnel step 4 definition; payment-type filter applies). Sorted by cohort size (n) descending.
+ */
+function computeActivationRateByChannel(periodUsers, allSessions) {
+  const userSessLookup = {};
+  allSessions.forEach(s => {
+    if (!userSessLookup[s.user_id]) userSessLookup[s.user_id] = [];
+    userSessLookup[s.user_id].push(s);
+  });
+  const ACTIVATION_DAYS = 7;
+  const isActivated7d = u => {
+    const reg = parseDate(u.registered_at);
+    if (!reg) return false;
+    const windowEnd = addDays(reg, ACTIVATION_DAYS);
+    const uSess = userSessLookup[u.user_id] || [];
+    return uSess.some(s => {
+      if (s.core_action_performed !== 'send' || parseInt(s.funnel_step_reached) !== 6) return false;
+      if (state.paymentType !== 'all' && s.payment_type !== state.paymentType) return false;
+      const sd = parseDate(s.started_at);
+      return sd && sd >= reg && sd <= windowEnd;
+    });
+  };
+  const agg = {};
+  periodUsers.forEach(u => {
+    const key = u.acquisition_channel || 'unknown';
+    if (!agg[key]) agg[key] = { n: 0, activated: 0 };
+    agg[key].n += 1;
+    if (isActivated7d(u)) agg[key].activated += 1;
+  });
+  const rows = Object.keys(agg).map(key => {
+    const { n, activated } = agg[key];
+    return {
+      key,
+      label: formatAcquisitionChannelLabel(key),
+      n,
+      activated,
+      rate: n ? activated / n : 0,
+    };
+  });
+  rows.sort((a, b) => b.n - a.n);
+  return rows;
 }
 
 function formatAcquisitionChannelLabel(key) {
@@ -2500,15 +2580,92 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
     }
   }
 
-  /* Referral Rate — cohort = new registrations in selected range (same as channel split) */
-  const refRate = computeReferralRate(periodUsers);
-  document.getElementById('referral-hero').textContent = fmtPct(refRate, 1);
-  const refCount = periodUsers.filter(u => u.acquisition_channel === 'referral').length;
-  document.getElementById('referral-sub').textContent = `${refCount.toLocaleString()} of ${periodUsers.length.toLocaleString()} new registrations via referral`;
-  {
-    const cls = refRate >= 0.40 ? 'delta-up' : refRate >= 0.25 ? 'delta-flat' : 'delta-down';
-    const lbl = refRate >= 0.40 ? 'Strong organic loop' : refRate >= 0.25 ? 'Healthy' : 'Below target';
-    document.getElementById('referral-delta').innerHTML = `<span class="delta ${cls}">${lbl}</span>`;
+  /* Activation rate by channel — horizontal bars (cohort = new registrations in range) */
+  const actByChRows = computeActivationRateByChannel(periodUsers, state.sessions);
+  const activationCohortEl = document.getElementById('activation-channel-cohort');
+  const activationWrap = document.getElementById('activation-channel-chart-wrap');
+  const activationCtx = document.getElementById('activation-channel-canvas');
+  const activationEmptyEl = document.getElementById('activation-channel-empty');
+  if (activationCohortEl) {
+    activationCohortEl.textContent = periodUsers.length
+      ? `${periodUsers.length.toLocaleString()} new registrations in cohort`
+      : '0 new registrations in cohort';
+  }
+  if (activationCtx && activationWrap) {
+    if (instActivationByChannel) instActivationByChannel.destroy();
+    instActivationByChannel = null;
+    const hasData = actByChRows.length > 0 && periodUsers.length > 0;
+    activationWrap.classList.toggle('is-empty', !hasData);
+    if (activationEmptyEl) activationEmptyEl.hidden = hasData;
+    activationCtx.style.display = hasData ? 'block' : 'none';
+    const barPitch = 38;
+    activationWrap.style.height = hasData ? `${Math.max(168, actByChRows.length * barPitch + 28)}px` : '';
+    if (hasData) {
+      const channelColors = {
+        referral: '#1D4ED8',
+        organic: '#059669',
+        paid: '#7C3AED',
+        app_store: '#0891B2',
+        unknown: '#64748B',
+      };
+      instActivationByChannel = new Chart(activationCtx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: actByChRows.map(r => r.label),
+          datasets: [{
+            data: actByChRows.map(r => r.rate * 100),
+            backgroundColor: actByChRows.map(r => channelColors[r.key] || '#6366F1'),
+            borderRadius: 4,
+            borderSkipped: false,
+            barPercentage: 0.72,
+            categoryPercentage: 0.88,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 2, right: 8, bottom: 2, left: 0 } },
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const row = actByChRows[ctx.dataIndex];
+                  return ` ${fmtPct(row.rate, 1)} (${row.activated.toLocaleString()} / ${row.n.toLocaleString()} activated)`;
+                },
+              },
+              bodyFont: { family: 'Roboto, sans-serif', size: 14 },
+              padding: 8,
+            },
+          },
+          scales: {
+            x: {
+              min: 0,
+              max: 100,
+              grid: { color: 'rgba(0,0,0,0.06)', drawBorder: false },
+              border: { display: false },
+              ticks: {
+                font: { size: 10, family: 'Roboto, sans-serif' },
+                color: '#6B7280',
+                callback: v => `${v}%`,
+              },
+            },
+            y: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: {
+                font: { size: 11, family: 'Roboto, sans-serif' },
+                color: '#374151',
+                autoSkip: false,
+              },
+            },
+          },
+          animation: { duration: 400, easing: 'easeOutQuart' },
+        },
+      });
+    }
   }
 
   /* Channel Split — stacked bars by period (week / month / quarter); registrations only */
