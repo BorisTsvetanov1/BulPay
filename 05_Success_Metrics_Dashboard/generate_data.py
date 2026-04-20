@@ -3,7 +3,9 @@ BulPay Dashboard Data Generator v2
 Realistic simulated data for a fintech product showing healthy growth
 over 2 years (Apr 2024 – Mar 2026).
 
-~750 users, ~16k sessions, monthly balances and ops data.
+Users include acquisition_cost_eur (channel-based, improving over time).
+Completed payment sessions include fee_eur and variable_cost_eur by payment type.
+
 Growth narrative: slow early traction → accelerating adoption driven
 by word-of-mouth in the 45-65 primary demographic.
 """
@@ -54,6 +56,23 @@ AMOUNT_RANGES = {
 }
 
 CHANNELS = ['referral', 'organic', 'paid', 'app_store']
+
+# Blended acquisition cost by channel (EUR). Paid is expensive; referral is cheap.
+CHANNEL_CAC_BASE_EUR = {
+    'referral':   2.85,
+    'organic':    4.35,
+    'app_store':  6.20,
+    'paid':      15.80,
+}
+
+# Per completed send: (revenue fee EUR, variable processing cost EUR) by payment type.
+PAYMENT_UNIT_ECONOMICS = {
+    'p2p':                 (2.50, 0.24),
+    'bill_payment':        (1.85, 0.36),
+    'merchant_grocery':    (2.15, 0.27),
+    'merchant_retail':     (2.45, 0.26),
+    'merchant_restaurant': (2.30, 0.28),
+}
 
 # ── Utility functions ─────────────────────────────────────────────────────────
 
@@ -127,6 +146,12 @@ def generate_users():
 
             channel = random.choices(CHANNELS, weights=_channel_weights(cohort, t))[0]
 
+            # Per-user attributed acquisition cost: channel blend + improving efficiency over time.
+            acq_base = CHANNEL_CAC_BASE_EUR[channel]
+            efficiency = lerp(1.05, 0.68, t)
+            noise = random.uniform(0.90, 1.10)
+            acquisition_cost_eur = round(max(0.45, acq_base * efficiency * noise), 2)
+
             tw = list(TIER_WEIGHTS[cohort])
             if t > 0.4 and random.random() < 0.12:
                 tw[3] -= 3; tw[1] += 3
@@ -143,6 +168,7 @@ def generate_users():
                 'num_linked_cards': nc,
                 'default_payment_source': random.choice(sources),
                 'acquisition_channel': channel,
+                'acquisition_cost_eur': acquisition_cost_eur,
                 '_tier': tier,
                 '_mi': mi,
                 '_reg_dt': reg_dt,
@@ -305,6 +331,13 @@ def generate_sessions(users):
                     if eligible:
                         recip = random.choice(eligible)
 
+            fee_eur = ''
+            variable_cost_eur = ''
+            if action == 'send' and str(step) == '6' and pt:
+                bf, bc = PAYMENT_UNIT_ECONOMICS.get(pt, (2.50, 0.25))
+                fee_eur = round(bf * random.uniform(0.96, 1.04), 2)
+                variable_cost_eur = round(bc * random.uniform(0.88, 1.12), 2)
+
             src = random.choice(sources)
             sw_w = {'18-30':[20,80],'30-45':[18,82],
                     '45-65':[12,88],'65+':[8,92]}[cohort]
@@ -328,6 +361,8 @@ def generate_sessions(users):
                 'switched_source':          switched,
                 'technical_success':        tech,
                 'recipient_user_id':        recip,
+                'fee_eur':                  fee_eur,
+                'variable_cost_eur':        variable_cost_eur,
             })
             sid += 1
 
@@ -483,14 +518,15 @@ def write_csv(path, rows, fields):
 
 write_csv('bulpay_users.csv', USERS,
     ['user_id','registered_at','age_cohort','device_os',
-     'num_linked_cards','default_payment_source','acquisition_channel'])
+     'num_linked_cards','default_payment_source','acquisition_channel',
+     'acquisition_cost_eur'])
 
 write_csv('bulpay_sessions.csv', SESSIONS,
     ['session_id','user_id','started_at','hour_of_day','day_of_week',
      'is_first_session','core_action_performed','payment_type',
      'funnel_step_reached','amount_eur','payment_duration_seconds',
      'pin_attempts','payment_source','switched_source','technical_success',
-     'recipient_user_id'])
+     'recipient_user_id','fee_eur','variable_cost_eur'])
 
 write_csv('bulpay_balances.csv', BALANCES,
     ['user_id','year_month','balance_eur'])

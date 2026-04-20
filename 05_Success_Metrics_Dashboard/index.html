@@ -1125,9 +1125,15 @@ const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun',
 const DAYS_ORDER  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 const BULPAY_FEE_EUR   = 2.50;
-const CAC_EUR          = 5.50;
 const PROCESSING_COST  = 0.25;
-const GROSS_MARGIN_PCT = (BULPAY_FEE_EUR - PROCESSING_COST) / BULPAY_FEE_EUR;
+
+/** Matches generate_data.py when CSV omits per-user acquisition_cost_eur. */
+const CHANNEL_FALLBACK_CAC_EUR = {
+  referral:   2.85,
+  organic:    4.35,
+  app_store:  6.20,
+  paid:      15.80,
+};
 
 /* ═══════════════════════════════════════════════════════════════════════
    DATE UTILITIES
@@ -1206,7 +1212,8 @@ function getFilteredUsers() {
 /** Users who completed registration (`registered_at`) inside [start, end). */
 function filterUsersByRegistrationRange(filteredUsers, start, end) {
   return filteredUsers.filter(u => {
-    const d = parseDate(u.registered_at);
+    const raw = u.registered_at;
+    const d = parseDate(typeof raw === 'string' ? raw.trim() : raw);
     return d && inRange(d, start, end);
   });
 }
@@ -1236,6 +1243,56 @@ function completedSends(sessions) {
     && parseInt(s.funnel_step_reached) === 6
     && (state.paymentType === 'all' || s.payment_type === state.paymentType)
   );
+}
+
+/** Fallback when CSV omits per-txn economics (older data). */
+function sessionFeeEur(s) {
+  const v = parseFloat(s.fee_eur);
+  return Number.isFinite(v) && v > 0 ? v : BULPAY_FEE_EUR;
+}
+function sessionVarCostEur(s) {
+  const v = parseFloat(s.variable_cost_eur);
+  return Number.isFinite(v) && v >= 0 ? v : PROCESSING_COST;
+}
+
+/** Per-user acquisition cost from CSV, or channel fallback (same blend as generator). */
+function userAcquisitionCostEur(u) {
+  const raw = u.acquisition_cost_eur;
+  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {
+    const n = parseFloat(String(raw).replace(/^\uFEFF/, '').trim().replace(',', '.'));
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  const ch = String(u.acquisition_channel || 'organic').toLowerCase();
+  return CHANNEL_FALLBACK_CAC_EUR[ch] ?? CHANNEL_FALLBACK_CAC_EUR.organic;
+}
+
+/** Mean attributed acquisition cost for users who registered in [start, end). */
+function computeCohortCAC(filteredUsers, start, end) {
+  const cohort = filterUsersByRegistrationRange(filteredUsers, start, end);
+  if (!cohort.length) return null;
+  const costs = cohort.map(u => userAcquisitionCostEur(u)).filter(n => Number.isFinite(n) && n > 0);
+  if (!costs.length) return null;
+  return costs.reduce((a, b) => a + b, 0) / costs.length;
+}
+
+/** Blended gross margin from per-transaction fee & variable cost in CSV. */
+function computeGrossMarginMetrics(sessions) {
+  const rows = completedSends(sessions);
+  if (!rows.length) {
+    const pct = (BULPAY_FEE_EUR - PROCESSING_COST) / BULPAY_FEE_EUR;
+    return { pct, avgFee: BULPAY_FEE_EUR, avgCost: PROCESSING_COST };
+  }
+  let totalFee = 0;
+  let totalCost = 0;
+  rows.forEach(s => {
+    totalFee += sessionFeeEur(s);
+    totalCost += sessionVarCostEur(s);
+  });
+  return {
+    pct: totalFee > 0 ? (totalFee - totalCost) / totalFee : 0,
+    avgFee: totalFee / rows.length,
+    avgCost: totalCost / rows.length,
+  };
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1386,7 +1443,8 @@ function buildGMVSparklinesFromBuckets(sessions, buckets) {
         && inRange(d, b.start, b.end);
     });
     const gmv = rows.reduce((s, r) => s + (parseFloat(r.amount_eur) || 0), 0);
-    return { gmv, atv: rows.length ? gmv / rows.length : null, rev: rows.length * BULPAY_FEE_EUR };
+    const rev = rows.reduce((s, r) => s + sessionFeeEur(r), 0);
+    return { gmv, atv: rows.length ? gmv / rows.length : null, rev };
   });
 }
 
@@ -1462,9 +1520,9 @@ function regChartAxisLabel(bucket) {
 
 const PERIOD_DELTA_WORD = { week: 'WoW', month: 'MoM', quarter: 'QoQ' };
 
-/* Revenue = completed sends × fee */
+/* Revenue = sum of per-txn fees on completed sends */
 function computeRevenue(sessions) {
-  return completedSends(sessions).length * BULPAY_FEE_EUR;
+  return completedSends(sessions).reduce((sum, s) => sum + sessionFeeEur(s), 0);
 }
 
 /* ARPU = Revenue ÷ MAU */
@@ -1607,8 +1665,6 @@ function computeOpsMetrics(filteredOps) {
   return { crashRate, uptime, kycPassRate, incidents };
 }
 
-/* Gross Margin % — static from constants */
-function computeGrossMargin() { return GROSS_MARGIN_PCT; }
 
 /* ═══════════════════════════════════════════════════════════════════════
    METRIC COMPUTATIONS — User Behaviour / Payment Flow (existing)
@@ -2145,10 +2201,13 @@ function renderUnitEconomics(filteredSessions, filteredUsers) {
     ? inRangeChurn.reduce((s, c) => s + c.rate, 0) / inRangeChurn.length
     : null;
 
+  const cacEur = computeCohortCAC(filteredUsers, start, end);
   const ltv = (arpu > 0 && avgChurn) ? computeLTV(arpu, avgChurn) : 0;
-  const ltvCacRatio = ltv > 0 ? (ltv / CAC_EUR) : 0;
+  const ltvCacRatio = (ltv > 0 && cacEur && cacEur > 0) ? (ltv / cacEur) : 0;
   const rpau = computeRevenuePerActiveUser(totalRev, sumMAU);
-  const gm = computeGrossMargin();
+  const gmM = computeGrossMarginMetrics(filteredSessions);
+  const completedCount = completedSends(filteredSessions).length;
+  const avgFeePerTxn = completedCount > 0 ? totalRev / completedCount : BULPAY_FEE_EUR;
 
   document.getElementById('ltv-hero').textContent = fmtEur(ltv, 2);
   document.getElementById('ltv-sub').textContent = avgChurn
@@ -2162,7 +2221,9 @@ function renderUnitEconomics(filteredSessions, filteredUsers) {
     document.getElementById('ltv-delta').innerHTML = '';
   }
 
-  document.getElementById('cac-hero').textContent = fmtEur(CAC_EUR, 2);
+  document.getElementById('cac-hero').textContent = (cacEur !== null && cacEur > 0)
+    ? fmtEur(cacEur, 2)
+    : '—';
   const ratioEl = document.getElementById('cac-ratio');
   if (ltvCacRatio > 0) {
     const cls = ltvCacRatio >= 3 ? 'delta-up' : ltvCacRatio >= 1.5 ? 'delta-flat' : 'delta-down';
@@ -2172,18 +2233,21 @@ function renderUnitEconomics(filteredSessions, filteredUsers) {
   }
 
   document.getElementById('rpau-hero').textContent = fmtEur(rpau, 2);
-  document.getElementById('rpau-sub').textContent = `Monthly average · ${sumMAU > 0 ? Math.round(totalRev / (sumMAU * BULPAY_FEE_EUR)) : 0} txns avg/user`;
+  document.getElementById('rpau-sub').textContent = `Monthly average · ${sumMAU > 0 ? (completedCount / sumMAU).toFixed(1) : '0'} txns avg/user`;
   if (rpau > 0) {
-    const rpauCls = rpau >= BULPAY_FEE_EUR * 3 ? 'delta-up' : rpau >= BULPAY_FEE_EUR ? 'delta-flat' : 'delta-down';
-    const rpauLbl = rpau >= BULPAY_FEE_EUR * 3 ? 'Strong' : rpau >= BULPAY_FEE_EUR ? 'On track' : 'Low engagement';
+    const rpauCls = rpau >= avgFeePerTxn * 3 ? 'delta-up' : rpau >= avgFeePerTxn ? 'delta-flat' : 'delta-down';
+    const rpauLbl = rpau >= avgFeePerTxn * 3 ? 'Strong' : rpau >= avgFeePerTxn ? 'On track' : 'Low engagement';
     document.getElementById('rpau-delta').innerHTML = `<span class="delta ${rpauCls}">${rpauLbl}</span>`;
   } else {
     document.getElementById('rpau-delta').innerHTML = '';
   }
-  document.getElementById('gm-hero').textContent = fmtPct(gm, 0);
-  document.getElementById('gm-sub').textContent = `€${BULPAY_FEE_EUR.toFixed(2)} fee − €${PROCESSING_COST.toFixed(2)} cost`;
+  document.getElementById('gm-hero').textContent = fmtPct(gmM.pct, 0);
+  document.getElementById('gm-sub').textContent =
+    `€${gmM.avgFee.toFixed(2)} avg fee − €${gmM.avgCost.toFixed(2)} avg cost · txn mix`;
   const gmBadge = document.getElementById('gm-badge');
-  gmBadge.innerHTML = `<span class="delta delta-up">Healthy</span>`;
+  const gmCls = gmM.pct >= 0.82 ? 'delta-up' : gmM.pct >= 0.70 ? 'delta-flat' : 'delta-down';
+  const gmLbl = gmM.pct >= 0.82 ? 'Healthy' : gmM.pct >= 0.70 ? 'Watch mix' : 'Tight';
+  gmBadge.innerHTML = `<span class="delta ${gmCls}">${gmLbl}</span>`;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -2919,9 +2983,10 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     ? rangeChurnRates.reduce((s, c) => s + c.rate, 0) / rangeChurnRates.length
     : null;
 
-  if (arpu > 0 && avgChurn && avgChurn > 0) {
+  const cacExec = computeCohortCAC(filteredUsers, start, end);
+  if (arpu > 0 && avgChurn && avgChurn > 0 && cacExec && cacExec > 0) {
     const ltv   = Math.min(arpu / avgChurn, arpu * 60);
-    const ratio = ltv / CAC_EUR;
+    const ratio = ltv / cacExec;
     document.getElementById('ex-ltvcac-hero').textContent = ratio.toFixed(1) + ' : 1';
     const cls = ratio >= 3 ? 'exec-badge-up' : ratio >= 1.5 ? 'exec-badge-warn' : 'exec-badge-down';
     const lbl = ratio >= 3 ? 'Healthy' : ratio >= 1.5 ? 'Marginal' : 'At risk';
@@ -3047,11 +3112,20 @@ async function loadData() {
   if (!uRes.ok || !sRes.ok || !bRes.ok || !oRes.ok) throw new Error('CSV fetch failed');
 
   const [uText, sText, bText, oText] = await Promise.all([uRes.text(), sRes.text(), bRes.text(), oRes.text()]);
+  const stripBom = t => {
+    if (t == null || t === '') return t;
+    return t.charCodeAt(0) === 0xfeff ? t.slice(1) : t;
+  };
+  const parseOpts = {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: h => String(h).replace(/^\uFEFF/, '').trim(),
+  };
 
-  state.users    = Papa.parse(uText, { header: true, skipEmptyLines: true }).data;
-  state.sessions = Papa.parse(sText, { header: true, skipEmptyLines: true }).data;
-  state.balances = Papa.parse(bText, { header: true, skipEmptyLines: true }).data;
-  state.ops      = Papa.parse(oText, { header: true, skipEmptyLines: true }).data;
+  state.users    = Papa.parse(stripBom(uText), parseOpts).data;
+  state.sessions = Papa.parse(stripBom(sText), parseOpts).data;
+  state.balances = Papa.parse(stripBom(bText), parseOpts).data;
+  state.ops      = Papa.parse(stripBom(oText), parseOpts).data;
 
   populateMonthDropdowns();
   document.getElementById('loading-overlay').style.display = 'none';
