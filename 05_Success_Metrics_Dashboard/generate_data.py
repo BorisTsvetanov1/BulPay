@@ -7,7 +7,8 @@ Users include acquisition_cost_eur (channel-based, improving over time).
 Completed payment sessions include fee_eur and variable_cost_eur by payment type.
 
 Growth narrative: slow early traction → accelerating adoption driven
-by word-of-mouth in the 45-65 primary demographic.
+by word-of-mouth in the 45-65 primary demographic. Engagement (completed
+sends per active user-month) rises on a calendar-time axis so 2024 < 2025 < 2026.
 """
 import csv
 import random
@@ -108,6 +109,18 @@ def next_month(dt):
 
 def lerp(a, b, t):
     return a + (b - a) * min(1, max(0, t))
+
+
+def calendar_t(sdt):
+    """0 in Apr 2024 → 1 in Mar 2026 (product maturity for engagement / success rates)."""
+    months = (sdt.year - START.year) * 12 + (sdt.month - START.month)
+    return min(1.0, max(0.0, months / 23.0))
+
+
+def calendar_t_month_anchor(cur):
+    """Same as calendar_t but for the first day of a billing month."""
+    return calendar_t(datetime(cur.year, cur.month, 1))
+
 
 def rand_dt_in_range(lo, hi):
     delta = (hi - lo).total_seconds()
@@ -239,7 +252,8 @@ SESS_PER_MONTH = {
     'regular': (2, 4),
     'casual':  (0, 2),
     'dormant': (0, 1),
-    'churned': (1, 3),
+    # Behavioral churn: no recurring sessions after first login (see generate_sessions).
+    'churned': (0, 0),
 }
 
 ACTION_W = {
@@ -269,10 +283,6 @@ def generate_sessions(users):
         nc     = int(u['num_linked_cards'])
         sources = ['bulpay_balance'] + [f'card_{k}' for k in range(1, nc+1)]
 
-        churn_after = None
-        if tier == 'churned':
-            churn_after = random.randint(1, 4)
-
         delay_h    = _first_login_hours(tier, t)
         first_dt   = reg + timedelta(hours=delay_h)
         if first_dt > END:
@@ -288,14 +298,16 @@ def generate_sessions(users):
             if ms >= me:
                 cur = next_month(cur); months_active += 1; continue
 
-            if tier == 'churned' and churn_after and months_active > churn_after:
-                cur = next_month(cur); months_active += 1; continue
             if tier == 'dormant' and months_active > 0 and random.random() < 0.45:
                 cur = next_month(cur); months_active += 1; continue
 
             lo, hi = SESS_PER_MONTH[tier]
-            bonus  = int(t * 1.5)
-            n = random.randint(lo, hi) + bonus
+            if tier == 'churned':
+                n = 0
+            else:
+                bonus = int(t * 1.5)
+                month_ct = calendar_t_month_anchor(cur)
+                n = random.randint(lo, hi) + bonus + int(round(month_ct * 3))
 
             if months_active == 0:
                 frac = max(0.15, (me - first_dt).total_seconds() /
@@ -316,25 +328,32 @@ def generate_sessions(users):
         for si, sdt in enumerate(user_sess_dts):
             is_first = (si == 0)
             dow = DAYS_ORDER[sdt.weekday()]
+            ct = calendar_t(sdt)
 
             if is_first:
+                vb, sd, ac = 38 - int(ct * 10), 42 + int(ct * 14), 20 - int(ct * 4)
+                vb, sd, ac = max(22, vb), max(38, sd), max(12, ac)
                 action = random.choices(
-                    ['view_balance', 'send', 'add_card'], weights=[35, 45, 20])[0]
+                    ['view_balance', 'send', 'add_card'], weights=[vb, sd, ac])[0]
             else:
-                action = random.choices(ACTIONS, weights=ACTION_W[tier])[0]
+                aw = list(ACTION_W[tier])
+                boost = int(10 + ct * 28)
+                aw[0] += boost
+                aw[1] = max(8, aw[1] - (boost * 2) // 3)
+                action = random.choices(ACTIONS, weights=aw)[0]
 
             pt = ''; step = ''; amt = ''; dur = ''; pin = ''; recip = ''
 
-            tech = 'true' if random.random() < lerp(0.955, 0.993, t) else 'false'
+            tech = 'true' if random.random() < lerp(0.958, 0.995, ct) else 'false'
             payment_submitted = 'false'
 
             if action == 'send':
                 pt = random.choices(PAYMENT_TYPES, weights=PT_WEIGHTS)[0]
 
-                completion = 0.62 + t * 0.18
+                completion = 0.72 + ct * 0.21
                 if random.random() < completion:
                     # User confirms after PIN; rails may still decline or time out.
-                    rails_ok = random.random() < lerp(0.968, 0.993, t)
+                    rails_ok = random.random() < lerp(0.972, 0.996, ct)
                     payment_submitted = 'true'
                     pin = random.choices(
                         PIN_ATTEMPT_VALUES, weights=PIN_ATTEMPT_WEIGHTS)[0]
@@ -348,7 +367,7 @@ def generate_sessions(users):
                     if rails_ok:
                         step = 6
                         tech = 'true'
-                        base_dur = lerp(48, 20, t)
+                        base_dur = lerp(48, 20, ct)
                         dur = max(4, int(random.gauss(base_dur, base_dur * 0.35)))
                         dur = min(dur, 360)
                     else:
@@ -374,7 +393,7 @@ def generate_sessions(users):
                             amt = round(random.uniform(500, 2500), 2)
 
                     if step == 6:
-                        base_dur = lerp(48, 20, t)
+                        base_dur = lerp(48, 20, ct)
                         dur = max(4, int(random.gauss(base_dur, base_dur * 0.35)))
                         dur = min(dur, 360)
                     if step and int(step) >= 5:

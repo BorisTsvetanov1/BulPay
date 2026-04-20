@@ -3938,7 +3938,7 @@ function renderExecStrip(filteredSessions, filteredUsers) {
   const { nsmOverall } = computeNSM(filteredSessions);
   document.getElementById('ex-nsm-hero').textContent = nsmOverall.toFixed(2);
   const nsmCls = nsmOverall < 2 ? 'exec-badge-down' : nsmOverall < 3 ? 'exec-badge-warn' : 'exec-badge-up';
-  const nsmLbl = nsmOverall < 2 ? 'Poor' : nsmOverall < 3 ? 'Satisfactory' : 'Good';
+  const nsmLbl = nsmOverall < 2 ? 'Poor' : nsmOverall < 3 ? 'Acceptable' : 'Good';
   const nsmTargetHint = ` <span class="exec-badge exec-badge-flat">Target: 4</span>`;
   document.getElementById('ex-nsm-badge').innerHTML = `<span class="exec-badge ${nsmCls}">${nsmLbl}</span>${nsmTargetHint}`;
 
