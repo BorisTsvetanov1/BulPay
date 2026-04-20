@@ -350,7 +350,7 @@
       gap: 22px;
       align-items: stretch;
     }
-    /* Top row: funnel + activation — stretch chart to match row height */
+    /* Row with activation chart — stretch chart to match row height */
     .zone5-grid .zone5-activation-card {
       display: flex;
       flex-direction: column;
@@ -365,6 +365,19 @@
     .zone5-grid .zone5-activation-card .activation-channel-chart-wrap.is-empty {
       flex: 0 0 auto;
       min-height: 72px;
+    }
+
+    /* Registrations + channel split cards: pin chart blocks to card bottom so bar baselines line up across columns */
+    .zone5-grid .zone5-bottom-chart-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+    }
+    .zone5-grid .zone5-bottom-chart-card .reg-chart-wrap,
+    .zone5-grid .zone5-bottom-chart-card .channel-split-chart-wrap {
+      margin-top: auto;
+      flex-shrink: 0;
     }
 
     /* New User Registrations — compact delta + period context on one row */
@@ -399,7 +412,7 @@
       gap: 12px;
       flex-wrap: wrap;
       margin-top: 2px;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
     .channel-split-total {
       font-size: 28px;
@@ -408,11 +421,34 @@
       color: var(--color-txt-primary);
       line-height: 1.15;
     }
+    /* Legend above chart (not in canvas) so plot area matches New User Registrations */
+    .channel-split-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 16px;
+      margin-bottom: 6px;
+    }
+    .channel-split-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-txt-muted);
+      font-family: 'Roboto', sans-serif;
+    }
+    .channel-split-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
     .channel-split-chart-wrap {
       position: relative;
       height: 276px;
-      margin-top: 4px;
-      padding-top: 10px;
+      margin-top: 6px;
+      padding-top: 8px;
       border-top: 1px solid var(--color-border-subtle);
     }
     .channel-split-chart-wrap.is-empty {
@@ -432,22 +468,32 @@
     }
 
     /* Zone 5 — activation rate by channel (horizontal bars) */
-    .activation-channel-head {
+    .activation-card-head {
       display: flex;
-      justify-content: flex-end;
       align-items: baseline;
-      margin-top: 2px;
-      margin-bottom: 6px;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .activation-card-head .card-label {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 0;
+      line-height: 1.35;
     }
     .activation-channel-cohort {
-      font-size: 14px;
+      font-size: 12px;
+      font-weight: 500;
       color: var(--color-txt-muted);
-      font-weight: 400;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex-shrink: 0;
+      letter-spacing: 0.01em;
     }
     .activation-channel-chart-wrap {
       position: relative;
       min-height: 160px;
-      margin-top: 4px;
+      margin-top: 0;
       padding-top: 8px;
       border-top: 1px solid var(--color-border-subtle);
     }
@@ -782,7 +828,7 @@
       margin-bottom: 4px; min-width: 0;
     }
     .exec-tile-label {
-      font-size: 11.5px; font-weight: 600;
+      font-size: 12.5px; font-weight: 600;
       letter-spacing: 0.02em;
       color: var(--color-txt-muted); margin-bottom: 0;
       flex: 1; min-width: 0;
@@ -1239,29 +1285,9 @@
     <div class="zone-label">Growth &amp; Acquisition</div>
     <div class="zone5-grid">
 
-      <!-- Row 1: funnel (left) · activation rate by channel (right) -->
-      <div class="card">
-        <div class="card-label">Onboarding &amp; Activation Funnel</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Activation = registered users with a completed payment within 7 days of KYC verified.</div>
-        <svg id="reg-funnel-svg" width="100%" style="display:block;overflow:visible;"></svg>
-      </div>
-
-      <!-- Activation rate by channel (volume split shows counts; this shows quality per source) -->
-      <div class="card zone5-activation-card">
-        <div class="card-label">Activation Rate by Channel</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">First completed send within 7 days of registration · same definition as funnel · new registrations in range</div>
-        <div class="activation-channel-head">
-          <span class="activation-channel-cohort" id="activation-channel-cohort">—</span>
-        </div>
-        <div class="activation-channel-chart-wrap" id="activation-channel-chart-wrap">
-          <canvas id="activation-channel-canvas"></canvas>
-          <p class="activation-channel-empty" id="activation-channel-empty" hidden>No new registrations in the selected range.</p>
-        </div>
-      </div>
-
-      <!-- Row 2: new user registrations (left) · acquisition channel split (right) -->
+      <!-- Row 1: new user registrations (left) · acquisition channel split (right) -->
       <!-- New User Registrations -->
-      <div class="card">
+      <div class="card zone5-bottom-chart-card">
         <div class="card-label">New User Registrations</div>
         <div class="kpi-hero" id="reg-hero">—</div>
         <div class="kpi-sub" id="reg-sub">Selected period total</div>
@@ -1275,7 +1301,7 @@
       </div>
 
       <!-- Acquisition Channel Split -->
-      <div class="card">
+      <div class="card zone5-bottom-chart-card">
         <div class="card-label">Acquisition Channel Split</div>
         <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">Registrations based on device, age and date range · stacked by period</div>
         <div class="channel-split-head">
@@ -1283,9 +1309,29 @@
             <span class="channel-split-total" id="channel-split-total">—</span>
           </div>
         </div>
+        <div class="channel-split-legend" id="channel-split-legend"></div>
         <div class="channel-split-chart-wrap" id="channel-split-chart-wrap">
           <canvas id="channel-split-canvas"></canvas>
           <p class="channel-split-empty" id="channel-split-empty" hidden>No users match the current filters.</p>
+        </div>
+      </div>
+
+      <!-- Row 2: funnel (left) · activation rate by channel (right) -->
+      <div class="card">
+        <div class="card-label">Onboarding &amp; Activation Funnel</div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Activation = registered users with a completed payment within 7 days of KYC verified.</div>
+        <svg id="reg-funnel-svg" width="100%" style="display:block;overflow:visible;"></svg>
+      </div>
+
+      <!-- Activation rate by channel (volume split shows counts; this shows quality per source) -->
+      <div class="card zone5-activation-card">
+        <div class="activation-card-head">
+          <div class="card-label">Activation Rate by Channel</div>
+          <span class="activation-channel-cohort" id="activation-channel-cohort" title="New registrations in the selected period (activation window matches the funnel card).">—</span>
+        </div>
+        <div class="activation-channel-chart-wrap" id="activation-channel-chart-wrap">
+          <canvas id="activation-channel-canvas"></canvas>
+          <p class="activation-channel-empty" id="activation-channel-empty" hidden>No new registrations in the selected range.</p>
         </div>
       </div>
 
@@ -3012,6 +3058,8 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
       options: {
         responsive: true, maintainAspectRatio: false,
         layout: { padding: { top: 6, left: 0, right: 4, bottom: 2 } },
+        interaction: { mode: 'index', intersect: false },
+        datasets: { bar: { barPercentage: 0.92, categoryPercentage: 0.75 } },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -3071,8 +3119,8 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
   const activationEmptyEl = document.getElementById('activation-channel-empty');
   if (activationCohortEl) {
     activationCohortEl.textContent = periodUsers.length
-      ? `${periodUsers.length.toLocaleString()} new registrations in cohort`
-      : '0 new registrations in cohort';
+      ? `n = ${periodUsers.length.toLocaleString()}`
+      : 'n = 0';
   }
   if (activationCtx && activationWrap) {
     if (instActivationByChannel) instActivationByChannel.destroy();
@@ -3094,22 +3142,43 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
       };
       instActivationByChannel = new Chart(activationCtx.getContext('2d'), {
         type: 'bar',
+        plugins: [{
+          id: 'activationBarEndPct',
+          afterDatasetsDraw(chart) {
+            const meta = chart.getDatasetMeta(0);
+            if (!meta?.data?.length) return;
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = '600 11px Roboto, sans-serif';
+            ctx.fillStyle = '#6B7280';
+            actByChRows.forEach((row, i) => {
+              const el = meta.data[i];
+              if (!el) return;
+              const { x, y, base } = el.getProps(['x', 'y', 'base'], true);
+              const endX = typeof base === 'number' ? Math.max(x, base) : x;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(fmtPct(row.rate, 0), endX + 5, y);
+            });
+            ctx.restore();
+          },
+        }],
         data: {
           labels: actByChRows.map(r => r.label),
           datasets: [{
             data: actByChRows.map(r => r.rate * 100),
             backgroundColor: actByChRows.map(r => channelColors[r.key] || '#6366F1'),
-            borderRadius: 4,
+            borderRadius: 6,
             borderSkipped: false,
-            barPercentage: 0.72,
-            categoryPercentage: 0.88,
+            barPercentage: 0.68,
+            categoryPercentage: 0.9,
           }],
         },
         options: {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: { top: 2, right: 8, bottom: 2, left: 0 } },
+          layout: { padding: { top: 2, right: 44, bottom: 4, left: 0 } },
           interaction: { mode: 'nearest', intersect: false },
           plugins: {
             legend: { display: false },
@@ -3117,7 +3186,7 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
               callbacks: {
                 label: ctx => {
                   const row = actByChRows[ctx.dataIndex];
-                  return ` ${fmtPct(row.rate, 1)} (${row.activated.toLocaleString()} / ${row.n.toLocaleString()} activated)`;
+                  return ` ${fmtPct(row.rate, 1)} (${row.activated.toLocaleString()} / ${row.n.toLocaleString()} in channel)`;
                 },
               },
               bodyFont: { family: 'Roboto, sans-serif', size: 14 },
@@ -3128,11 +3197,13 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
             x: {
               min: 0,
               max: 100,
-              grid: { color: 'rgba(0,0,0,0.06)', drawBorder: false },
+              grid: { color: 'rgba(0,0,0,0.045)', drawBorder: false, tickLength: 0 },
               border: { display: false },
               ticks: {
                 font: { size: 10, family: 'Roboto, sans-serif' },
-                color: '#6B7280',
+                color: '#9CA3AF',
+                stepSize: 50,
+                maxTicksLimit: 5,
                 callback: v => `${v}%`,
               },
             },
@@ -3140,8 +3211,8 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
               grid: { display: false },
               border: { display: false },
               ticks: {
-                font: { size: 11, family: 'Roboto, sans-serif' },
-                color: '#374151',
+                font: { size: 11, family: 'Roboto, sans-serif', weight: '500' },
+                color: '#4B5563',
                 autoSkip: false,
               },
             },
@@ -3162,6 +3233,7 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
   }
   const channelCtx = document.getElementById('channel-split-canvas');
   const channelEmptyEl = document.getElementById('channel-split-empty');
+  const channelLegendEl = document.getElementById('channel-split-legend');
   if (channelCtx && channelWrap) {
     if (instChannelSplit) instChannelSplit.destroy();
     instChannelSplit = null;
@@ -3172,6 +3244,10 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
       channelEmptyEl.hidden = hasRegs;
     }
     channelCtx.style.display = hasRegs ? 'block' : 'none';
+    if (channelLegendEl) {
+      channelLegendEl.innerHTML = '';
+      channelLegendEl.hidden = !hasRegs;
+    }
     if (hasRegs) {
       const channelColors = {
         referral: '#1D4ED8',
@@ -3180,6 +3256,13 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
         app_store: '#0891B2',
         unknown: '#64748B',
       };
+      if (channelLegendEl) {
+        channelLegendEl.innerHTML = channelAgg.channelKeys.map(k => {
+          const c = channelColors[k] || '#6366F1';
+          const lab = formatAcquisitionChannelLabel(k);
+          return `<span class="channel-split-legend-item"><span class="channel-split-legend-dot" style="background:${c}"></span>${lab}</span>`;
+        }).join('');
+      }
       const labels = channelAgg.buckets.map(b => regChartAxisLabel(b));
       const perBarTotals = channelAgg.totals;
       const yAxisMax = countBarAxisMax(perBarTotals, 10, 10);
@@ -3201,21 +3284,11 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: { top: 2, left: 0, right: 4, bottom: 2 } },
+          layout: { padding: { top: 6, left: 0, right: 4, bottom: 2 } },
           interaction: { mode: 'index', intersect: false },
           datasets: { bar: { barPercentage: 0.92, categoryPercentage: 0.75 } },
           plugins: {
-            legend: {
-              display: true,
-              position: 'bottom',
-              labels: {
-                boxWidth: 10,
-                boxHeight: 10,
-                font: { size: 11, family: 'Roboto, sans-serif' },
-                padding: 10,
-                usePointStyle: true,
-              },
-            },
+            legend: { display: false },
             tooltip: {
               callbacks: {
                 title(items) {
@@ -3262,7 +3335,8 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
               border: { display: false },
               ticks: {
                 font: { size: 10, family: 'Roboto, sans-serif' },
-                color: '#9CA3AF',
+                color: '#6B7280',
+                maxTicksLimit: 5,
                 precision: 0,
                 callback: value => Math.round(Number(value)).toLocaleString(),
               },
