@@ -248,6 +248,7 @@
     }
     .delta-up   { color: var(--color-good); background: rgba(22,163,74,0.09); }
     .delta-down { color: var(--color-bad);  background: rgba(239,68,68,0.09); }
+    .delta-warn { color: var(--color-warn); background: rgba(217,119,6,0.10); }
     .delta-flat { color: var(--color-txt-muted); background: var(--color-border-subtle); }
 
     /* ─── Zone 2 · Health Pulse Grid ───────────────────────────────── */
@@ -394,16 +395,9 @@
       color: var(--color-txt-primary);
       line-height: 1.15;
     }
-    .channel-split-total-caption {
-      display: block;
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--color-txt-muted);
-      margin-top: 2px;
-    }
     .channel-split-chart-wrap {
       position: relative;
-      height: 248px;
+      height: 276px;
       margin-top: 4px;
       padding-top: 10px;
       border-top: 1px solid var(--color-border-subtle);
@@ -932,7 +926,7 @@
       <div class="card">
         <div class="card-label">Customer Acquisition Cost</div>
         <div class="kpi-hero" id="cac-hero">—</div>
-        <div class="kpi-sub" id="cac-sub">LTV : CAC ratio below</div>
+        <div class="kpi-sub" id="cac-sub">LTV:CAC ratio: —</div>
         <div id="cac-ratio"></div>
       </div>
 
@@ -992,11 +986,10 @@
       <!-- Acquisition Channel Split -->
       <div class="card">
         <div class="card-label">Acquisition Channel Split</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">New registrations in the selected date range · stacked by period (Week / Month / Quarter)</div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">Registrations based on device, age and date range · stacked by period</div>
         <div class="channel-split-head">
           <div>
             <span class="channel-split-total" id="channel-split-total">—</span>
-            <span class="channel-split-total-caption">registrations in range · device &amp; cohort filters</span>
           </div>
         </div>
         <div class="channel-split-chart-wrap" id="channel-split-chart-wrap">
@@ -2354,8 +2347,8 @@ function renderUnitEconomics(filteredSessions, filteredUsers) {
     ? `Avg lifespan: ${Math.min(1/avgChurn, 60).toFixed(1)} months`
     : 'Insufficient churn data';
   if (ltv > 0 && ltvCacRatio > 0) {
-    const ltvCls = ltvCacRatio >= 3 ? 'delta-up' : ltvCacRatio >= 1.5 ? 'delta-flat' : 'delta-down';
-    const ltvLbl = ltvCacRatio >= 3 ? 'Healthy payback' : ltvCacRatio >= 1.5 ? 'Marginal' : 'Below target';
+    const ltvCls = ltvCacRatio >= 3 ? 'delta-up' : ltvCacRatio >= 1.5 ? 'delta-warn' : 'delta-down';
+    const ltvLbl = ltvCacRatio >= 3 ? 'Healthy payback' : ltvCacRatio >= 1.5 ? 'Below benchmark' : 'At risk';
     document.getElementById('ltv-delta').innerHTML = `<span class="delta ${ltvCls}">${ltvLbl}</span>`;
   } else {
     document.getElementById('ltv-delta').innerHTML = '';
@@ -2364,11 +2357,15 @@ function renderUnitEconomics(filteredSessions, filteredUsers) {
   document.getElementById('cac-hero').textContent = (cacEur !== null && cacEur > 0)
     ? fmtEur(cacEur, 2)
     : '—';
+  const cacSubEl = document.getElementById('cac-sub');
   const ratioEl = document.getElementById('cac-ratio');
   if (ltvCacRatio > 0) {
-    const cls = ltvCacRatio >= 3 ? 'delta-up' : ltvCacRatio >= 1.5 ? 'delta-flat' : 'delta-down';
-    ratioEl.innerHTML = `<span class="delta ${cls}">LTV:CAC = ${ltvCacRatio.toFixed(1)} : 1</span>`;
+    cacSubEl.textContent = `LTV:CAC ratio: ${ltvCacRatio.toFixed(1)}:1`;
+    const cls = ltvCacRatio >= 3 ? 'delta-up' : ltvCacRatio >= 1.5 ? 'delta-warn' : 'delta-down';
+    const badgeLbl = ltvCacRatio >= 3 ? 'Healthy payback' : ltvCacRatio >= 1.5 ? 'Below benchmark' : 'At risk';
+    ratioEl.innerHTML = `<span class="delta ${cls}">${badgeLbl}</span>`;
   } else {
+    cacSubEl.textContent = 'LTV:CAC ratio: —';
     ratioEl.innerHTML = '';
   }
 
@@ -3130,7 +3127,7 @@ function renderExecStrip(filteredSessions, filteredUsers) {
     const ratio = ltv / cacExec;
     document.getElementById('ex-ltvcac-hero').textContent = ratio.toFixed(1) + ' : 1';
     const cls = ratio >= 3 ? 'exec-badge-up' : ratio >= 1.5 ? 'exec-badge-warn' : 'exec-badge-down';
-    const lbl = ratio >= 3 ? 'Healthy' : ratio >= 1.5 ? 'Marginal' : 'At risk';
+    const lbl = ratio >= 3 ? 'Healthy payback' : ratio >= 1.5 ? 'Below benchmark' : 'At risk';
     document.getElementById('ex-ltvcac-badge').innerHTML = `<span class="exec-badge ${cls}">${lbl}</span>`;
   } else {
     document.getElementById('ex-ltvcac-hero').textContent = '—';
