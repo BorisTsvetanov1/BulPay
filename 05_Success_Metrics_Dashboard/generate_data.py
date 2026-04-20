@@ -55,6 +55,10 @@ AMOUNT_RANGES = {
     'merchant_restaurant': (10, 60),
 }
 
+# Integer PIN attempts per session path; dashboard bands: 1–3 good, >3–5 caution, >5–8 poor
+PIN_ATTEMPT_VALUES = [1, 2, 3, 4, 5, 6, 7, 8]
+PIN_ATTEMPT_WEIGHTS = [52, 20, 11, 8, 4, 3, 2, 1]
+
 CHANNELS = ['referral', 'organic', 'paid', 'app_store']
 
 # Blended acquisition cost by channel (EUR). Paid is expensive; referral is cheap.
@@ -321,37 +325,67 @@ def generate_sessions(users):
 
             pt = ''; step = ''; amt = ''; dur = ''; pin = ''; recip = ''
 
+            tech = 'true' if random.random() < lerp(0.955, 0.993, t) else 'false'
+            payment_submitted = 'false'
+
             if action == 'send':
                 pt = random.choices(PAYMENT_TYPES, weights=PT_WEIGHTS)[0]
 
                 completion = 0.62 + t * 0.18
                 if random.random() < completion:
-                    step = 6
-                else:
-                    step = random.choices([1,2,3,4,5],
-                                          weights=[6,8,25,32,29])[0]
-
-                if step >= 3:
+                    # User confirms after PIN; rails may still decline or time out.
+                    rails_ok = random.random() < lerp(0.968, 0.993, t)
+                    payment_submitted = 'true'
+                    pin = random.choices(
+                        PIN_ATTEMPT_VALUES, weights=PIN_ATTEMPT_WEIGHTS)[0]
                     lo_a, hi_a = AMOUNT_RANGES[pt]
                     if cohort in ('45-65', '65+'):
-                        lo_a *= 1.3; hi_a *= 1.4
+                        lo_a *= 1.3
+                        hi_a *= 1.4
                     amt = round(random.uniform(lo_a, hi_a), 2)
                     if random.random() < 0.018:
                         amt = round(random.uniform(500, 2500), 2)
+                    if rails_ok:
+                        step = 6
+                        tech = 'true'
+                        base_dur = lerp(48, 20, t)
+                        dur = max(4, int(random.gauss(base_dur, base_dur * 0.35)))
+                        dur = min(dur, 360)
+                    else:
+                        step = 5
+                        tech = 'false'
+                        dur = ''
+                    if step == 6 and pt == 'p2p':
+                        eligible = [x for x in all_uids
+                                    if x != uid and reg_dates[x] < sdt]
+                        if eligible:
+                            recip = random.choice(eligible)
+                else:
+                    step = random.choices([1, 2, 3, 4, 5],
+                                          weights=[6, 8, 25, 32, 29])[0]
+                    tech = 'true'
+                    if step >= 3:
+                        lo_a, hi_a = AMOUNT_RANGES[pt]
+                        if cohort in ('45-65', '65+'):
+                            lo_a *= 1.3
+                            hi_a *= 1.4
+                        amt = round(random.uniform(lo_a, hi_a), 2)
+                        if random.random() < 0.018:
+                            amt = round(random.uniform(500, 2500), 2)
 
-                if step == 6:
-                    base_dur = lerp(48, 20, t)
-                    dur = max(4, int(random.gauss(base_dur, base_dur * 0.35)))
-                    dur = min(dur, 360)
+                    if step == 6:
+                        base_dur = lerp(48, 20, t)
+                        dur = max(4, int(random.gauss(base_dur, base_dur * 0.35)))
+                        dur = min(dur, 360)
+                    if step and int(step) >= 5:
+                        pin = random.choices(
+                            PIN_ATTEMPT_VALUES, weights=PIN_ATTEMPT_WEIGHTS)[0]
 
-                if step and int(step) >= 5:
-                    pin = random.choices([1,2,3], weights=[83,13,4])[0]
-
-                if step == 6 and pt == 'p2p':
-                    eligible = [x for x in all_uids
-                                if x != uid and reg_dates[x] < sdt]
-                    if eligible:
-                        recip = random.choice(eligible)
+                    if step == 6 and pt == 'p2p':
+                        eligible = [x for x in all_uids
+                                    if x != uid and reg_dates[x] < sdt]
+                        if eligible:
+                            recip = random.choice(eligible)
 
             fee_eur = ''
             variable_cost_eur = ''
@@ -360,7 +394,6 @@ def generate_sessions(users):
             sw_w = {'18-30':[20,80],'30-45':[18,82],
                     '45-65':[12,88],'65+':[8,92]}[cohort]
             switched = random.choices(['true','false'], weights=sw_w)[0]
-            tech = 'true' if random.random() < lerp(0.955, 0.993, t) else 'false'
 
             sessions.append({
                 'session_id': f's{sid:05d}',
@@ -377,6 +410,7 @@ def generate_sessions(users):
                 'pin_attempts':             pin,
                 'payment_source':           src,
                 'switched_source':          switched,
+                'payment_submitted':        payment_submitted,
                 'technical_success':        tech,
                 'recipient_user_id':        recip,
                 'fee_eur':                  fee_eur,
@@ -553,8 +587,8 @@ if __name__ == '__main__':
         ['session_id','user_id','started_at','hour_of_day','day_of_week',
          'is_first_session','core_action_performed','payment_type',
          'funnel_step_reached','amount_eur','payment_duration_seconds',
-         'pin_attempts','payment_source','switched_source','technical_success',
-         'recipient_user_id','fee_eur','variable_cost_eur'])
+         'pin_attempts','payment_source','switched_source','payment_submitted',
+         'technical_success','recipient_user_id','fee_eur','variable_cost_eur'])
 
     write_csv('bulpay_balances.csv', BALANCES,
         ['user_id','year_month','balance_eur'])

@@ -226,12 +226,6 @@
       border-top: 1px solid var(--color-border-subtle);
     }
 
-    .monthly-row {
-      display: flex; gap: 18px;
-      margin-top: 10px; padding-top: 10px;
-      border-top: 1px solid var(--color-border-subtle);
-      flex-wrap: wrap;
-    }
     .monthly-item { display: flex; flex-direction: column; gap: 3px; }
     .monthly-lbl {
       font-size: 12px; font-weight: 500;
@@ -351,7 +345,26 @@
 
     /* ─── Zone 5 · Growth & Acquisition Grid (2×2) ─────────────────── */
     .zone5-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+    /* Top row: funnel + activation — stretch chart to match row height */
+    .zone5-grid .zone5-activation-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+    }
+    .zone5-grid .zone5-activation-card .activation-channel-chart-wrap {
+      flex: 1 1 auto;
+      min-height: 160px;
+      height: auto !important;
+    }
+    .zone5-grid .zone5-activation-card .activation-channel-chart-wrap.is-empty {
+      flex: 0 0 auto;
+      min-height: 72px;
     }
 
     /* New User Registrations — compact delta + period context on one row */
@@ -372,7 +385,7 @@
       min-width: 0;
     }
     .reg-chart-wrap {
-      height: 172px;
+      height: 276px;
       margin-top: 6px;
       padding-top: 8px;
       border-top: 1px solid var(--color-border-subtle);
@@ -456,21 +469,257 @@
 
     /* ─── Zone 6 · User Behaviour & Card Ecosystem ─────────────────── */
     .zone6-heatmap { margin-bottom: 22px; }
-    .zone6-lower { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .zone6-lower {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+    .zone6-lower > .card { height: 100%; }
     .heatmap-legend { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
     .heatmap-legend-label { font-size: 12px; color: var(--color-txt-muted); font-weight: 400; }
     .heatmap-legend-scale { display: flex; gap: 3px; }
     .heatmap-legend-cell  { width: 16px; height: 10px; border-radius: 2px; }
 
+    /* Bilateral: fills grid row height; growth strip uses bottom band (no dead whitespace) */
+    .bilateral-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+    .bilateral-card-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .bilateral-card-main {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      flex: 1 1 auto;
+      gap: 0;
+      min-height: 212px;
+    }
+    .bilateral-card-left {
+      flex: 1 1 46%;
+      min-width: 198px;
+      padding: 0 18px 0 0;
+      border-right: 1px solid var(--color-border-subtle);
+      display: flex;
+      flex-direction: column;
+    }
+    .bilateral-card-left .kpi-hero {
+      font-size: clamp(32px, 2vw + 20px, 40px);
+      letter-spacing: -0.02em;
+      margin-top: 2px;
+    }
+    .bilateral-card-left #bilateral-delta {
+      margin-top: 10px;
+    }
+    .bilateral-card-left #bilateral-delta .delta {
+      font-size: 12px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .bilateral-card-viz {
+      flex: 1 1 46%;
+      min-width: 172px;
+      display: flex;
+      flex-direction: column;
+      padding: 0 0 0 18px;
+      min-height: 0;
+    }
+    .bilateral-viz-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .bilateral-viz-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-txt-muted);
+    }
+    .bilateral-viz-legend {
+      font-size: 11px;
+      color: var(--color-txt-muted);
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .bilateral-viz-legend-line {
+      width: 18px;
+      border-top: 2px dashed rgba(22,163,74,0.55);
+    }
+    .bilateral-spark-wrap {
+      flex: 1 1 auto;
+      min-height: 148px;
+      margin-top: 0;
+    }
+    .bilateral-card .sparkline-axis {
+      margin-top: 6px;
+    }
+    .bilateral-card-footer {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--color-border-subtle);
+      flex-shrink: 0;
+    }
+    .bilateral-footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 12px 20px;
+    }
+    .bilateral-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .bilateral-stat-h {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6B7280;
+    }
+    .bilateral-stat .delta {
+      margin-top: 0;
+      align-self: flex-start;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      letter-spacing: 0.01em;
+    }
+    .bilateral-stat .delta-up {
+      background: rgba(22,163,74,0.08);
+      color: #15803D;
+    }
+    .bilateral-stat .delta-down {
+      background: rgba(239,68,68,0.07);
+      color: #B91C1C;
+    }
+    .bilateral-stat .delta-flat {
+      background: var(--color-border-subtle);
+      color: var(--color-txt-muted);
+    }
+    .bilateral-stat-sep {
+      width: 1px;
+      align-self: stretch;
+      min-height: 36px;
+      background: var(--color-border-subtle);
+    }
+    .bilateral-footer-empty {
+      font-size: 13px;
+      color: var(--color-txt-muted);
+      font-weight: 400;
+      line-height: 1.45;
+      max-width: 52ch;
+    }
+    @media (max-width: 640px) {
+      .bilateral-card-main { min-height: 0; }
+      .bilateral-card-left {
+        padding: 0 0 14px 0;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border-subtle);
+      }
+      .bilateral-card-viz { padding: 14px 0 0 0; }
+      .bilateral-stat-sep { display: none; }
+    }
+
     /* ─── Zone 7 · Payment Flow & Quality ──────────────────────────── */
     .zone7-row1 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 22px; }
+    .zone7-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .zone7-card-head .card-label { margin-bottom: 0; line-height: 1.35; flex: 1; min-width: 0; }
+    .zone7-metric-tip .exec-tip-popup {
+      width: 268px;
+      max-width: min(320px, 92vw);
+    }
     .pin-status-badge {
       font-size: 12px; font-weight: 600;
       padding: 2px 9px; border-radius: 20px; letter-spacing: 0.3px;
       margin-left: 10px; vertical-align: middle;
       position: relative; top: -3px;
     }
-
+    /* Zone 7 gauge: equal thirds under bullet bars (bars use 3 equal-width bands via piecewise scale) */
+    .zone7-gauge-legend {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: clamp(8px, 2vw, 16px);
+      row-gap: 0;
+      margin-top: 14px;
+      padding: 12px 2px 2px;
+      border-top: 1px solid var(--color-border-subtle);
+      font-family: 'Roboto', sans-serif;
+    }
+    .zone7-legend-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 5px;
+      min-width: 0;
+    }
+    .zone7-legend-heading {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 20px;
+    }
+    .zone7-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+    }
+    .zone7-legend-dot--good {
+      background: var(--color-good);
+      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.22);
+    }
+    .zone7-legend-dot--warn {
+      background: var(--color-warn);
+      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.22);
+    }
+    .zone7-legend-dot--bad {
+      background: var(--color-bad);
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    }
+    .zone7-legend-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-txt-secondary);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .zone7-legend-threshold {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-txt-muted);
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+      max-width: 100%;
+    }
+    @media (max-width: 600px) {
+      .zone7-legend-name { font-size: 12px; }
+      .zone7-legend-threshold { font-size: 12px; }
+    }
     /* ─── Zone 8 · Trust, Safety & Compliance ──────────────────────── */
     .zone8-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
     .ops-tile { text-align: center; padding: 28px 24px; }
@@ -951,7 +1200,7 @@
     <div class="zone4-grid">
 
       <!-- LTV -->
-      <div class="card">
+      <div class="card ops-tile">
         <div class="card-label">Lifetime Value</div>
         <div class="kpi-hero" id="ltv-hero">—</div>
         <div class="kpi-sub" id="ltv-sub">ARPU ÷ churn rate</div>
@@ -959,7 +1208,7 @@
       </div>
 
       <!-- CAC -->
-      <div class="card">
+      <div class="card ops-tile">
         <div class="card-label">Customer Acquisition Cost</div>
         <div class="kpi-hero" id="cac-hero">—</div>
         <div class="kpi-sub" id="cac-sub">LTV:CAC ratio: —</div>
@@ -967,7 +1216,7 @@
       </div>
 
       <!-- Revenue per Active User -->
-      <div class="card">
+      <div class="card ops-tile">
         <div class="card-label">Revenue / Active User</div>
         <div class="kpi-hero" id="rpau-hero">—</div>
         <div class="kpi-sub" id="rpau-sub">Monthly average over period</div>
@@ -975,7 +1224,7 @@
       </div>
 
       <!-- Gross Margin % -->
-      <div class="card">
+      <div class="card ops-tile">
         <div class="card-label">Gross Margin</div>
         <div class="kpi-hero" id="gm-hero">—</div>
         <div class="kpi-sub" id="gm-sub">Fee minus processing cost</div>
@@ -990,13 +1239,27 @@
     <div class="zone-label">Growth &amp; Acquisition</div>
     <div class="zone5-grid">
 
-      <!-- Row 1: funnel (left) · registrations (right) -->
+      <!-- Row 1: funnel (left) · activation rate by channel (right) -->
       <div class="card">
         <div class="card-label">Onboarding &amp; Activation Funnel</div>
         <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Activation = registered users with a completed payment within 7 days of KYC verified.</div>
         <svg id="reg-funnel-svg" width="100%" style="display:block;overflow:visible;"></svg>
       </div>
 
+      <!-- Activation rate by channel (volume split shows counts; this shows quality per source) -->
+      <div class="card zone5-activation-card">
+        <div class="card-label">Activation Rate by Channel</div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">First completed send within 7 days of registration · same definition as funnel · new registrations in range</div>
+        <div class="activation-channel-head">
+          <span class="activation-channel-cohort" id="activation-channel-cohort">—</span>
+        </div>
+        <div class="activation-channel-chart-wrap" id="activation-channel-chart-wrap">
+          <canvas id="activation-channel-canvas"></canvas>
+          <p class="activation-channel-empty" id="activation-channel-empty" hidden>No new registrations in the selected range.</p>
+        </div>
+      </div>
+
+      <!-- Row 2: new user registrations (left) · acquisition channel split (right) -->
       <!-- New User Registrations -->
       <div class="card">
         <div class="card-label">New User Registrations</div>
@@ -1008,19 +1271,6 @@
         </div>
         <div class="reg-chart-wrap">
           <canvas id="reg-trend-canvas"></canvas>
-        </div>
-      </div>
-
-      <!-- Activation rate by channel (volume split shows counts; this shows quality per source) -->
-      <div class="card">
-        <div class="card-label">Activation Rate by Channel</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">First completed send within 7 days of registration · same definition as funnel · new registrations in range</div>
-        <div class="activation-channel-head">
-          <span class="activation-channel-cohort" id="activation-channel-cohort">—</span>
-        </div>
-        <div class="activation-channel-chart-wrap" id="activation-channel-chart-wrap">
-          <canvas id="activation-channel-canvas"></canvas>
-          <p class="activation-channel-empty" id="activation-channel-empty" hidden>No new registrations in the selected range.</p>
         </div>
       </div>
 
@@ -1082,12 +1332,30 @@
         <div style="height:170px;"><canvas id="cards-per-user-bar"></canvas></div>
       </div>
 
-      <div class="card">
-        <div class="card-label">Bilateral Transaction Rate</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">P2P users who both send and receive</div>
-        <div class="kpi-hero" id="bilateral-hero">—</div>
-        <div class="kpi-sub" id="bilateral-sub">Of P2P senders</div>
-        <div id="bilateral-delta"></div>
+      <div class="card bilateral-card">
+        <div class="bilateral-card-inner">
+          <div class="bilateral-card-main">
+            <div class="bilateral-card-left">
+              <div class="card-label">Bilateral Transaction Rate</div>
+              <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:6px;">P2P users who both send and receive</div>
+              <div class="kpi-hero" id="bilateral-hero">—</div>
+              <div class="kpi-sub" id="bilateral-sub">Of P2P senders</div>
+              <div id="bilateral-delta"></div>
+            </div>
+            <div class="bilateral-card-viz">
+              <div class="bilateral-viz-head">
+                <span class="bilateral-viz-label">Trend · filtered range</span>
+                <span class="bilateral-viz-legend" id="bilateral-benchmark-legend" title="Shown when the 30% line is visible on the chart">
+                  <span class="bilateral-viz-legend-line" aria-hidden="true"></span>
+                  <span>30% benchmark</span>
+                </span>
+              </div>
+              <div class="sparkline-wrap bilateral-spark-wrap"><canvas id="bilateral-spark"></canvas></div>
+              <div class="sparkline-axis" id="bilateral-spark-axis"></div>
+            </div>
+          </div>
+          <div class="bilateral-card-footer" id="bilateral-growth-row"></div>
+        </div>
       </div>
 
     </div>
@@ -1115,23 +1383,87 @@
 
     </div>
 
-    <!-- PIN Attempts KPI (full width) -->
-    <div class="card">
-      <div class="card-label">Average PIN Attempts / Payment</div>
-      <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:10px;">Send sessions reaching PIN step (≥ 5) &nbsp;·&nbsp; Target: 1.0</div>
-      <div style="display:flex;align-items:center;margin-bottom:16px;">
-        <span class="kpi-hero" id="pin-hero">—</span>
-        <span class="pin-status-badge" id="pin-status-badge">—</span>
-      </div>
-      <div class="nsm-svg-wrap">
-        <svg id="pin-svg" width="100%" height="54" style="display:block;overflow:visible;"></svg>
-        <div class="nsm-band-labels">
-          <span style="color:var(--color-good);">Good (≤1.3)</span>
-          <span style="color:var(--color-warn);">Caution (≤1.8)</span>
-          <span style="color:var(--color-bad);">Poor (>1.8)</span>
+    <!-- PIN + post-commit success KPIs -->
+    <div class="zone7-row1">
+      <div class="card">
+        <div class="card-label">Average PIN Attempts / Payment</div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:10px;">Send sessions reaching PIN step (≥ 5) &nbsp;·&nbsp; Target: 1.0</div>
+        <div style="display:flex;align-items:center;margin-bottom:16px;">
+          <span class="kpi-hero" id="pin-hero">—</span>
+          <span class="pin-status-badge" id="pin-status-badge">—</span>
+        </div>
+        <div class="nsm-svg-wrap">
+          <svg id="pin-svg" width="100%" height="54" style="display:block;overflow:visible;"></svg>
+          <div class="zone7-gauge-legend">
+            <div class="zone7-legend-item">
+              <div class="zone7-legend-heading">
+                <span class="zone7-legend-dot zone7-legend-dot--good"></span>
+                <span class="zone7-legend-name">Good</span>
+              </div>
+              <span class="zone7-legend-threshold">1 – 3</span>
+            </div>
+            <div class="zone7-legend-item">
+              <div class="zone7-legend-heading">
+                <span class="zone7-legend-dot zone7-legend-dot--warn"></span>
+                <span class="zone7-legend-name">Caution</span>
+              </div>
+              <span class="zone7-legend-threshold">3 – 5</span>
+            </div>
+            <div class="zone7-legend-item">
+              <div class="zone7-legend-heading">
+                <span class="zone7-legend-dot zone7-legend-dot--bad"></span>
+                <span class="zone7-legend-name">Poor</span>
+              </div>
+              <span class="zone7-legend-threshold">5 – 7</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="monthly-row" id="pin-monthly"></div>
+      <div class="card">
+        <div class="zone7-card-head">
+          <div class="card-label">Post-commit Payment Success Rate</div>
+          <span class="exec-tip zone7-metric-tip" tabindex="0" aria-label="About post-commit payment success rate">
+            <span class="exec-tip-icon" aria-hidden="true">i</span>
+            <span class="exec-tip-popup" role="tooltip">
+              <span class="exec-tip-line">Share of <strong>submitted</strong> sends (after PIN) where the payment <strong>completed successfully</strong>. Early drop-offs before confirm are excluded.</span>
+              <span class="exec-tip-line exec-tip-muted">A low rate means something failed <strong>after</strong> the user committed—not only banks or processors (declines, outages), but also connectivity, timeouts, or issues in BulPay (bugs, configuration, retries, reconciliation).</span>
+              <span class="exec-tip-line exec-tip-muted"><strong>Error handling</strong> is how reliably you detect, recover, and explain those failures; use decline codes and internal error classes to see <em>where</em> losses come from.</span>
+              <span class="exec-tip-line exec-tip-muted">Bands: ≥98.5% good · 97–98.5% caution · 95.5–97% poor.</span>
+            </span>
+          </span>
+        </div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:10px;">Submitted sends (after PIN) &nbsp;·&nbsp; Successful settlement ÷ submitted &nbsp;·&nbsp; Headline % = full selected From–To range</div>
+        <div style="display:flex;align-items:center;margin-bottom:16px;">
+          <span class="kpi-hero" id="post-commit-hero">—</span>
+          <span class="pin-status-badge" id="post-commit-status-badge">—</span>
+        </div>
+        <div class="nsm-svg-wrap">
+          <svg id="post-commit-svg" width="100%" height="54" style="display:block;overflow:visible;"></svg>
+          <div class="zone7-gauge-legend">
+            <div class="zone7-legend-item">
+              <div class="zone7-legend-heading">
+                <span class="zone7-legend-dot zone7-legend-dot--bad"></span>
+                <span class="zone7-legend-name">Poor</span>
+              </div>
+              <span class="zone7-legend-threshold">95.5% – 97%</span>
+            </div>
+            <div class="zone7-legend-item">
+              <div class="zone7-legend-heading">
+                <span class="zone7-legend-dot zone7-legend-dot--warn"></span>
+                <span class="zone7-legend-name">Caution</span>
+              </div>
+              <span class="zone7-legend-threshold">97% – 98.5%</span>
+            </div>
+            <div class="zone7-legend-item">
+              <div class="zone7-legend-heading">
+                <span class="zone7-legend-dot zone7-legend-dot--good"></span>
+                <span class="zone7-legend-name">Good</span>
+              </div>
+              <span class="zone7-legend-threshold">98.5% – 100%</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </section>
@@ -1202,7 +1534,8 @@ let instMauBar = null, instGmv = null, instAtv = null,
     instFreqDist = null, instTtfp = null, instTtc = null,
     instCardsPerUser = null,     instRegTrend = null,
     instChannelSplit = null,
-    instActivationByChannel = null;
+    instActivationByChannel = null,
+    instBilateralSpark = null;
 
 /* ═══════════════════════════════════════════════════════════════════════
    CONSTANTS
@@ -1767,7 +2100,7 @@ function buildBucketedChannelSplit(filteredUsers, start, end) {
 }
 
 /* Bilateral Transaction Rate */
-function computeBilateralTransactionRate(sessions) {
+function computeBilateralMetrics(sessions) {
   const p2pCompleted = sessions.filter(s =>
     s.core_action_performed === 'send'
     && parseInt(s.funnel_step_reached) === 6
@@ -1779,10 +2112,29 @@ function computeBilateralTransactionRate(sessions) {
     senders.add(s.user_id);
     if (s.recipient_user_id) receivers.add(s.recipient_user_id);
   });
-  if (!senders.size) return 0;
+  const senderCount = senders.size;
+  if (!senderCount) return { rate: null, senderCount: 0 };
   let bilateralCount = 0;
   senders.forEach(uid => { if (receivers.has(uid)) bilateralCount++; });
-  return bilateralCount / senders.size;
+  return { rate: bilateralCount / senderCount, senderCount };
+}
+
+function computeBilateralTransactionRate(sessions) {
+  const m = computeBilateralMetrics(sessions);
+  return m.rate == null ? 0 : m.rate;
+}
+
+/** Per period: rate null when no P2P senders in bucket (chart gap). */
+function computeBilateralSeriesByBuckets(sessions, buckets) {
+  return buckets.map(b => {
+    const inBucket = sessions.filter(s => inRange(parseDate(s.started_at), b.start, b.end));
+    const m = computeBilateralMetrics(inBucket);
+    return {
+      label: b.label,
+      rate: m.rate,
+      senderCount: m.senderCount,
+    };
+  });
 }
 
 /* Ops Metrics (from bulpay_ops.csv) */
@@ -1883,6 +2235,25 @@ function computePinAttempts(sessions) {
   );
   if (!relevant.length) return 0;
   return relevant.reduce((sum,s) => sum + (parseFloat(s.pin_attempts)||0), 0) / relevant.length;
+}
+
+/** User tapped confirm after PIN (or legacy CSV: completed funnel step 6). */
+function sessionPaymentSubmitted(s) {
+  if (s.payment_submitted === 'true') return true;
+  if (s.payment_submitted === 'false') return false;
+  return parseInt(s.funnel_step_reached, 10) === 6;
+}
+
+/** Successful settlement ÷ submitted sends; excludes abandons before commit. */
+function computePostCommitSuccessRate(sessions) {
+  const pool = sessions.filter(s =>
+    s.core_action_performed === 'send'
+    && (state.paymentType === 'all' || s.payment_type === state.paymentType)
+    && sessionPaymentSubmitted(s)
+  );
+  if (!pool.length) return null;
+  const ok = pool.filter(s => s.technical_success === 'true').length;
+  return ok / pool.length;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -2108,22 +2479,134 @@ function drawNSMBullet(value) {
   `;
 }
 
+/** PIN gauge band edges (attempts): Good 1–3, Caution 3–5, Poor 5–7. Equal thirds on screen. */
+const PIN_G_MIN = 1;
+const PIN_G_GOOD = 3;
+const PIN_G_WARN = 5;
+const PIN_G_MAX = 7;
+
+/** Map PIN attempts to x so each band (Good / Caution / Poor) spans exactly W/3 — linear within band. */
+function xPinPiecewise(v, W) {
+  const w3 = W / 3;
+  const clamped = Math.min(PIN_G_MAX, Math.max(PIN_G_MIN, v));
+  if (clamped <= PIN_G_GOOD) {
+    const t = (clamped - PIN_G_MIN) / (PIN_G_GOOD - PIN_G_MIN);
+    return t * w3;
+  }
+  if (clamped <= PIN_G_WARN) {
+    const t = (clamped - PIN_G_GOOD) / (PIN_G_WARN - PIN_G_GOOD);
+    return w3 + t * w3;
+  }
+  const t = (clamped - PIN_G_WARN) / (PIN_G_MAX - PIN_G_WARN);
+  return 2 * w3 + t * w3;
+}
+
+/** Post-commit gauge domain: Poor 95.5–97 · Caution 97–98.5 · Good 98.5–100 (equal thirds on screen, linear within band). */
+const PC_G_MIN = 95.5;
+const PC_G_P2C = 97;
+const PC_G_C2G = 98.5;
+const PC_G_MAX = 100;
+
+function xPostPiecewise(pct, W) {
+  const w3 = W / 3;
+  const clamped = Math.min(PC_G_MAX, Math.max(PC_G_MIN, pct));
+  if (clamped <= PC_G_P2C) {
+    const t = (clamped - PC_G_MIN) / (PC_G_P2C - PC_G_MIN);
+    return t * w3;
+  }
+  if (clamped <= PC_G_C2G) {
+    const t = (clamped - PC_G_P2C) / (PC_G_C2G - PC_G_P2C);
+    return w3 + t * w3;
+  }
+  const t = (clamped - PC_G_C2G) / (PC_G_MAX - PC_G_C2G);
+  return 2 * w3 + t * w3;
+}
+
 function drawPINBullet(value) {
   const svg = document.getElementById('pin-svg');
   if (!svg) return;
   const W = svg.getBoundingClientRect().width || svg.parentElement.clientWidth || 280;
-  const H = 54, MIN = 1.0, MAX = 3.0, BAR_Y = 22, BAR_H = 18;
-  const x = v => ((v - MIN) / (MAX - MIN)) * W;
-  const needle = Math.min(Math.max(x(value), 2), W - 2);
-  const nc = value <= 1.3 ? '#16A34A' : value <= 1.8 ? '#D97706' : '#EF4444';
+  const H = 54, BAR_Y = 22, BAR_H = 18;
+  const w3 = W / 3;
+  const xP = (v) => xPinPiecewise(v, W);
+  const needleRaw = xP(value);
+  const needle = Math.min(Math.max(needleRaw, 2), W - 2);
+  const nc = value <= PIN_G_GOOD ? '#16A34A' : value <= PIN_G_WARN ? '#D97706' : '#EF4444';
+  const pinTickStyle = (v) => {
+    const fill = v <= PIN_G_GOOD ? '#15803d' : v <= PIN_G_WARN ? '#b45309' : '#b91c1c';
+    const boundary = v === PIN_G_GOOD || v === PIN_G_WARN;
+    const fs = '12';
+    const fw = boundary ? '600' : '500';
+    return { fill, fs, fw };
+  };
+  const pinTicks = [1, 2, 3, 4, 5, 6, 7];
+  const pinLabels = ['1', '2', '3', '4', '5', '6', '7'];
+  const ty = BAR_Y + BAR_H + 13;
+  const inset = Math.min(6, w3 * 0.08);
+  const pinAxis = pinTicks.map((v, i) => {
+    const { fill, fs, fw } = pinTickStyle(v);
+    let ax = xP(v);
+    let anchor = 'middle';
+    if (v === PIN_G_MIN) { anchor = 'start'; ax = inset; }
+    if (v === PIN_G_MAX) { anchor = 'end'; ax = W - inset; }
+    return `<text x="${ax}" y="${ty}" text-anchor="${anchor}" font-size="${fs}" font-weight="${fw}" fill="${fill}" font-family="Roboto,sans-serif">${pinLabels[i]}</text>`;
+  }).join('');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = `
-    <rect x="0"         y="${BAR_Y}" width="${x(1.3)}"           height="${BAR_H}" fill="rgba(22,163,74,0.14)"  rx="3"/>
-    <rect x="${x(1.3)}" y="${BAR_Y}" width="${x(1.8)-x(1.3)}"   height="${BAR_H}" fill="rgba(217,119,6,0.13)"/>
-    <rect x="${x(1.8)}" y="${BAR_Y}" width="${W-x(1.8)}"         height="${BAR_H}" fill="rgba(239,68,68,0.11)" rx="0 3 3 0"/>
-    <line x1="${x(1.3)}" y1="${BAR_Y}" x2="${x(1.3)}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.09)" stroke-width="1"/>
-    <line x1="${x(1.8)}" y1="${BAR_Y}" x2="${x(1.8)}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.09)" stroke-width="1"/>
-    ${[1.0,1.5,2.0,2.5,3.0].map(v=>`<text x="${x(v)}" y="${BAR_Y+BAR_H+13}" text-anchor="middle" font-size="11" fill="#4B5563" font-family="Roboto,sans-serif">${v.toFixed(1)}</text>`).join('')}
+    <rect x="0"       y="${BAR_Y}" width="${w3}" height="${BAR_H}" fill="rgba(22,163,74,0.18)"  rx="3"/>
+    <rect x="${w3}"   y="${BAR_Y}" width="${w3}" height="${BAR_H}" fill="rgba(217,119,6,0.16)"/>
+    <rect x="${2*w3}" y="${BAR_Y}" width="${w3}" height="${BAR_H}" fill="rgba(239,68,68,0.14)" rx="0 3 3 0"/>
+    <line x1="${w3}" y1="${BAR_Y}" x2="${w3}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.14)" stroke-width="1.15"/>
+    <line x1="${2*w3}" y1="${BAR_Y}" x2="${2*w3}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.14)" stroke-width="1.15"/>
+    ${pinAxis}
+    <polygon points="${needle},${BAR_Y-1} ${needle-5},${BAR_Y-10} ${needle+5},${BAR_Y-10}" fill="${nc}"/>
+    <line x1="${needle}" y1="${BAR_Y}" x2="${needle}" y2="${BAR_Y+BAR_H}" stroke="${nc}" stroke-width="2.5"/>
+  `;
+}
+
+/** Rate is 0–1; gauge 95.5–100% for post-commit success (three equal-width bands on screen). */
+function drawPostCommitBullet(rate) {
+  const svg = document.getElementById('post-commit-svg');
+  if (!svg) return;
+  if (rate == null || isNaN(rate)) {
+    svg.setAttribute('viewBox', '0 0 280 54');
+    svg.innerHTML = '';
+    return;
+  }
+  const pct = rate * 100;
+  const W = svg.getBoundingClientRect().width || svg.parentElement.clientWidth || 280;
+  const H = 54, BAR_Y = 22, BAR_H = 18;
+  const w3 = W / 3;
+  const xPo = (v) => xPostPiecewise(v, W);
+  const needle = Math.min(Math.max(xPo(pct), 2), W - 2);
+  const nc = pct >= PC_G_C2G ? '#16A34A' : pct >= PC_G_P2C ? '#D97706' : '#EF4444';
+  const pcTickStyle = (v) => {
+    const fill = v < PC_G_P2C ? '#b91c1c' : v < PC_G_C2G ? '#b45309' : '#15803d';
+    const boundary = v === PC_G_P2C || v === PC_G_C2G;
+    const fs = '12';
+    const fw = boundary ? '600' : '500';
+    return { fill, fs, fw };
+  };
+  const pcTicks = [95.5, 96, 96.5, 97, 97.5, 98, 98.5, 99, 99.5, 100];
+  const pcLabels = ['95.5', '96', '96.5', '97', '97.5', '98', '98.5', '99', '99.5', '100'];
+  const ty = BAR_Y + BAR_H + 13;
+  const inset = Math.min(6, w3 * 0.08);
+  const pcAxis = pcTicks.map((v, i) => {
+    const { fill, fs, fw } = pcTickStyle(v);
+    let ax = xPo(v);
+    let anchor = 'middle';
+    if (v === PC_G_MIN) { anchor = 'start'; ax = inset; }
+    if (v === PC_G_MAX) { anchor = 'end'; ax = W - inset; }
+    return `<text x="${ax}" y="${ty}" text-anchor="${anchor}" font-size="${fs}" font-weight="${fw}" fill="${fill}" font-family="Roboto,sans-serif">${pcLabels[i]}</text>`;
+  }).join('');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = `
+    <rect x="0"       y="${BAR_Y}" width="${w3}" height="${BAR_H}" fill="rgba(239,68,68,0.15)"  rx="3"/>
+    <rect x="${w3}"   y="${BAR_Y}" width="${w3}" height="${BAR_H}" fill="rgba(217,119,6,0.16)"/>
+    <rect x="${2*w3}" y="${BAR_Y}" width="${w3}" height="${BAR_H}" fill="rgba(22,163,74,0.18)" rx="0 3 3 0"/>
+    <line x1="${w3}" y1="${BAR_Y}" x2="${w3}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.14)" stroke-width="1.15"/>
+    <line x1="${2*w3}" y1="${BAR_Y}" x2="${2*w3}" y2="${BAR_Y+BAR_H}" stroke="rgba(0,0,0,0.14)" stroke-width="1.15"/>
+    ${pcAxis}
     <polygon points="${needle},${BAR_Y-1} ${needle-5},${BAR_Y-10} ${needle+5},${BAR_Y-10}" fill="${nc}"/>
     <line x1="${needle}" y1="${BAR_Y}" x2="${needle}" y2="${BAR_Y+BAR_H}" stroke="${nc}" stroke-width="2.5"/>
   `;
@@ -2599,7 +3082,8 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
     if (activationEmptyEl) activationEmptyEl.hidden = hasData;
     activationCtx.style.display = hasData ? 'block' : 'none';
     const barPitch = 38;
-    activationWrap.style.height = hasData ? `${Math.max(168, actByChRows.length * barPitch + 28)}px` : '';
+    activationWrap.style.height = '';
+    activationWrap.style.minHeight = hasData ? `${Math.max(168, actByChRows.length * barPitch + 28)}px` : '';
     if (hasData) {
       const channelColors = {
         referral: '#1D4ED8',
@@ -2973,7 +3457,11 @@ function renderCardEcosystem(filteredSessions, filteredUsers) {
     },
   });
 
-  /* Bilateral Transaction Rate */
+  /* Bilateral Transaction Rate — headline + trend + growth vs prior period */
+  const bilateralRange = getDateRange();
+  const bilateralBuckets = buildPeriodBuckets(bilateralRange.start, bilateralRange.end);
+  const bilateralSeries = computeBilateralSeriesByBuckets(filteredSessions, bilateralBuckets);
+
   const bilateralRate = computeBilateralTransactionRate(filteredSessions);
   document.getElementById('bilateral-hero').textContent = fmtPct(bilateralRate, 1);
   const p2pSends = filteredSessions.filter(s =>
@@ -2987,6 +3475,138 @@ function renderCardEcosystem(filteredSessions, filteredUsers) {
     const cls = bilateralRate >= 0.30 ? 'delta-up' : bilateralRate >= 0.15 ? 'delta-flat' : 'delta-down';
     const lbl = bilateralRate >= 0.30 ? 'Strong network effect' : bilateralRate >= 0.15 ? 'Building' : 'Early stage';
     document.getElementById('bilateral-delta').innerHTML = `<span class="delta ${cls}">${lbl}</span>`;
+  }
+
+  const bilateralGrowthEl = document.getElementById('bilateral-growth-row');
+  if (bilateralGrowthEl) {
+    const validIdx = bilateralSeries.map((p, i) => (p.rate != null && p.senderCount > 0 ? i : -1)).filter(i => i >= 0);
+    if (validIdx.length < 2) {
+      bilateralGrowthEl.innerHTML =
+        '<p class="bilateral-footer-empty">Widen the date range so at least two periods include P2P senders to see period-over-period change.</p>';
+    } else {
+      const i2 = validIdx[validIdx.length - 1], i1 = validIdx[validIdx.length - 2];
+      const cur = bilateralSeries[i2], prev = bilateralSeries[i1];
+      const dpp = (cur.rate - prev.rate) * 100;
+      let rateInner;
+      if (Math.abs(dpp) < 0.05) {
+        rateInner = '<span class="delta delta-flat">Same as prior period</span>';
+      } else {
+        const rateGood = dpp >= 0, cls = rateGood ? 'delta-up' : 'delta-down', arrow = dpp >= 0 ? '▲' : '▼';
+        rateInner = `<span class="delta ${cls}">${arrow} ${dpp >= 0 ? '+' : ''}${dpp.toFixed(1)} pp</span>`;
+      }
+      let senderBlock = '';
+      if (prev.senderCount > 0) {
+        const sb = deltaBadge(cur.senderCount, prev.senderCount, true, false);
+        if (sb) {
+          senderBlock = `<div class="bilateral-stat"><span class="bilateral-stat-h">P2P senders</span>${sb}</div>`;
+        }
+      } else if (cur.senderCount > 0) {
+        senderBlock =
+          '<div class="bilateral-stat"><span class="bilateral-stat-h">P2P senders</span><span class="bilateral-footer-empty" style="margin:0;padding:0;font-size:13px;">Prior period had no senders</span></div>';
+      }
+      const sep = senderBlock ? '<div class="bilateral-stat-sep" aria-hidden="true"></div>' : '';
+      bilateralGrowthEl.innerHTML = `
+        <div class="bilateral-footer-inner">
+          <div class="bilateral-stat">
+            <span class="bilateral-stat-h">vs prior period</span>
+            ${rateInner}
+          </div>
+          ${sep}
+          ${senderBlock}
+        </div>`;
+    }
+  }
+
+  const benchLegendEl = document.getElementById('bilateral-benchmark-legend');
+  const bilateralCanvas = document.getElementById('bilateral-spark');
+  if (bilateralCanvas) {
+    if (instBilateralSpark) { instBilateralSpark.destroy(); instBilateralSpark = null; }
+    const pctData = bilateralSeries.map(p => (p.rate == null ? null : p.rate * 100));
+    const hasAny = pctData.some(v => v != null);
+    const axisEl = document.getElementById('bilateral-spark-axis');
+    if (!hasAny || bilateralBuckets.length === 0) {
+      if (axisEl) axisEl.innerHTML = '';
+      if (benchLegendEl) benchLegendEl.style.display = 'none';
+    } else {
+      const validPct = pctData.filter(v => v != null);
+      let yFloor = 0;
+      let yCeil = 100;
+      if (validPct.length) {
+        const vmin = Math.min(...validPct);
+        const vmax = Math.max(...validPct);
+        const span = Math.max(vmax - vmin, 1);
+        const pad = Math.max(1.5, span * 0.18);
+        yFloor = Math.max(0, vmin - pad);
+        yCeil = Math.min(100, vmax + pad);
+      }
+      const showBenchmark = yFloor < 30 && yCeil > 30;
+      const datasets = [
+        {
+          data: pctData,
+          borderColor: '#2563EB',
+          borderWidth: 2.25,
+          tension: 0.35,
+          fill: true,
+          backgroundColor: 'rgba(37,99,235,0.09)',
+          pointRadius: bilateralBuckets.length <= 16 ? 2.5 : 0,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#2563EB',
+          pointBorderWidth: 1.5,
+          spanGaps: true,
+        },
+      ];
+      if (showBenchmark) {
+        datasets.push({
+          data: bilateralBuckets.map(() => 30),
+          borderColor: 'rgba(22,163,74,0.5)',
+          borderWidth: 1.5,
+          borderDash: [6, 5],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+        });
+      }
+      if (benchLegendEl) benchLegendEl.style.display = showBenchmark ? '' : 'none';
+      const ctx = bilateralCanvas.getContext('2d');
+      instBilateralSpark = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: bilateralBuckets.map(b => b.label),
+          datasets,
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              filter: ti => ti.datasetIndex === 0,
+              callbacks: {
+                label(ctx) {
+                  const p = bilateralSeries[ctx.dataIndex];
+                  if (!p || p.rate == null) return '';
+                  return ` ${(p.rate * 100).toFixed(1)}% bilateral · ${p.senderCount.toLocaleString()} P2P senders`;
+                },
+              },
+              bodyFont: { family: 'Roboto, sans-serif', size: 13 },
+              padding: 10,
+            },
+          },
+          scales: {
+            x: { display: false },
+            y: {
+              display: false,
+              min: yFloor,
+              max: yCeil,
+            },
+          },
+          animation: { duration: 400, easing: 'easeOutQuart' },
+        },
+      });
+      renderSparklineAxis('bilateral-spark-axis', bilateralBuckets);
+    }
   }
 }
 
@@ -3059,23 +3679,32 @@ function renderPaymentFlow(filteredSessions) {
 
   const pinVal = computePinAttempts(filteredSessions);
   document.getElementById('pin-hero').textContent = pinVal.toFixed(2);
-  const pinColor = pinVal <= 1.3 ? '#16A34A' : pinVal <= 1.8 ? '#D97706' : '#EF4444';
-  const pinZone  = pinVal <= 1.3 ? 'Within tolerance' : pinVal <= 1.8 ? 'Needs attention' : 'Critical';
+  const pinColor = pinVal <= PIN_G_GOOD ? '#16A34A' : pinVal <= PIN_G_WARN ? '#D97706' : '#EF4444';
+  const pinZone  = pinVal <= PIN_G_GOOD ? 'Good' : pinVal <= PIN_G_WARN ? 'Caution' : 'Poor';
   drawPINBullet(pinVal);
   const pb = document.getElementById('pin-status-badge');
   if (pb) { pb.textContent=pinZone; pb.style.background=pinColor+'22'; pb.style.color=pinColor; pb.style.border=`1px solid ${pinColor}66`; }
 
-  const last3 = getLastNPeriods(3);
-  let prevPinVal = null;
-  document.getElementById('pin-monthly').innerHTML = last3.map((b, i) => {
-    const sessions = filteredSessions.filter(s => inRange(parseDate(s.started_at), b.start, b.end));
-    const pv = computePinAttempts(sessions);
-    const arrow = i > 0 && prevPinVal !== null
-      ? `<span style="font-size:12px;margin-left:3px;color:${pv<=prevPinVal?'#16A34A':'#EF4444'}">${pv<=prevPinVal?'↓':'↑'}</span>`
-      : '';
-    prevPinVal = pv;
-    return `<div class="monthly-item"><div class="monthly-lbl">${b.label}</div><div class="monthly-val">${pv.toFixed(2)}${arrow}</div></div>`;
-  }).join('');
+  const pcRate = computePostCommitSuccessRate(filteredSessions);
+  const pcHero = document.getElementById('post-commit-hero');
+  const pcBadge = document.getElementById('post-commit-status-badge');
+  if (pcRate == null) {
+    pcHero.textContent = '—';
+    if (pcBadge) { pcBadge.textContent = ''; pcBadge.style.cssText = ''; }
+    drawPostCommitBullet(null);
+  } else {
+    pcHero.textContent = fmtPct(pcRate, 2);
+    const pcp = pcRate * 100;
+    const pcColor = pcp >= PC_G_C2G ? '#16A34A' : pcp >= PC_G_P2C ? '#D97706' : '#EF4444';
+    const pcZone  = pcp >= PC_G_C2G ? 'Good' : pcp >= PC_G_P2C ? 'Caution' : 'Poor';
+    drawPostCommitBullet(pcRate);
+    if (pcBadge) {
+      pcBadge.textContent = pcZone;
+      pcBadge.style.background = pcColor + '22';
+      pcBadge.style.color = pcColor;
+      pcBadge.style.border = `1px solid ${pcColor}66`;
+    }
+  }
 }
 
 function drawFunnel(funnelData) {
@@ -3432,6 +4061,7 @@ async function loadData() {
     const { nsmOverall } = computeNSM(fs);
     drawNSMBullet(nsmOverall);
     drawPINBullet(computePinAttempts(fs));
+    drawPostCommitBullet(computePostCommitSuccessRate(fs));
     drawHeatmap(computeHeatmap(fs));
     drawFunnel(computeFunnel(fs));
     drawRegistrationFunnel(computeRegistrationFunnel(getFilteredOps(), getFilteredUsers(), state.sessions));
@@ -3444,6 +4074,7 @@ window.addEventListener('resize', () => {
   const { nsmOverall } = computeNSM(fs);
   drawNSMBullet(nsmOverall);
   drawPINBullet(computePinAttempts(fs));
+  drawPostCommitBullet(computePostCommitSuccessRate(fs));
   drawHeatmap(computeHeatmap(fs));
   drawFunnel(computeFunnel(fs));
   drawRegistrationFunnel(computeRegistrationFunnel(getFilteredOps(), getFilteredUsers(), state.sessions));
