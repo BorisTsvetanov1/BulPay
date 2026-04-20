@@ -2241,7 +2241,7 @@ function renderUnitEconomics(filteredSessions, filteredUsers) {
   } else {
     document.getElementById('rpau-delta').innerHTML = '';
   }
-  document.getElementById('gm-hero').textContent = fmtPct(gmM.pct, 0);
+  document.getElementById('gm-hero').textContent = fmtPct(gmM.pct, 1);
   document.getElementById('gm-sub').textContent =
     `€${gmM.avgFee.toFixed(2)} avg fee − €${gmM.avgCost.toFixed(2)} avg cost · txn mix`;
   const gmBadge = document.getElementById('gm-badge');

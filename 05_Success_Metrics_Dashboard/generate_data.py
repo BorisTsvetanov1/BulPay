@@ -66,13 +66,35 @@ CHANNEL_CAC_BASE_EUR = {
 }
 
 # Per completed send: (revenue fee EUR, variable processing cost EUR) by payment type.
+# Wider spread so blended gross margin moves with payment mix, ticket size, and time filters.
 PAYMENT_UNIT_ECONOMICS = {
-    'p2p':                 (2.50, 0.24),
-    'bill_payment':        (1.85, 0.36),
-    'merchant_grocery':    (2.15, 0.27),
-    'merchant_retail':     (2.45, 0.26),
-    'merchant_restaurant': (2.30, 0.28),
+    'p2p':                 (2.52, 0.21),
+    'bill_payment':        (1.68, 0.44),
+    'merchant_grocery':    (2.08, 0.29),
+    'merchant_retail':     (2.48, 0.25),
+    'merchant_restaurant': (2.28, 0.32),
 }
+
+
+def completed_send_economics(sdt, payment_type, amount_eur, sid_nonce):
+    """Fee and variable cost for a completed send: drifts with calendar time + ticket size."""
+    months = (sdt.year - START.year) * 12 + (sdt.month - START.month) + sdt.day / 30.0
+    # Processor / scheme pricing pressure (wave over the series); fee pressure slightly offset.
+    cost_mult = 1.0 + 0.16 * math.sin((months - 8) * 0.17)
+    fee_mult = 1.0 - 0.07 * math.sin((months - 3) * 0.14)
+    interchange = min(0.72, max(0.0, float(amount_eur or 0)) * 0.00016)
+
+    bf, bc = PAYMENT_UNIT_ECONOMICS.get(payment_type, (2.50, 0.25))
+    r1 = 0.962 + (sid_nonce % 73) / 1000.0
+    r2 = 0.88 + (sid_nonce % 97) / 1000.0
+    fee = round(max(0.35, bf * fee_mult * r1), 2)
+    base_cost = bc * cost_mult + interchange
+    var_cost = round(base_cost * r2, 2)
+    var_cost = min(var_cost, round(fee * 0.485, 2))
+    var_cost = max(0.06, var_cost)
+    if var_cost >= fee:
+        var_cost = round(fee * 0.33, 2)
+    return fee, var_cost
 
 # ── Utility functions ─────────────────────────────────────────────────────────
 
@@ -333,10 +355,6 @@ def generate_sessions(users):
 
             fee_eur = ''
             variable_cost_eur = ''
-            if action == 'send' and str(step) == '6' and pt:
-                bf, bc = PAYMENT_UNIT_ECONOMICS.get(pt, (2.50, 0.25))
-                fee_eur = round(bf * random.uniform(0.96, 1.04), 2)
-                variable_cost_eur = round(bc * random.uniform(0.88, 1.12), 2)
 
             src = random.choice(sources)
             sw_w = {'18-30':[20,80],'30-45':[18,82],
@@ -368,7 +386,17 @@ def generate_sessions(users):
 
     sessions.sort(key=lambda s: s['started_at'])
     for i, s in enumerate(sessions):
-        s['session_id'] = f's{i+1:05d}'
+        sid_final = i + 1
+        s['session_id'] = f's{sid_final:05d}'
+        if (s['core_action_performed'] == 'send'
+                and str(s['funnel_step_reached']) == '6'
+                and s.get('payment_type')):
+            sdt = datetime.strptime(s['started_at'], '%Y-%m-%dT%H:%M:%S')
+            ar = s.get('amount_eur')
+            amt_val = float(ar) if ar not in ('', None) and str(ar).strip() != '' else 0.0
+            f_e, v_e = completed_send_economics(sdt, s['payment_type'], amt_val, sid_final)
+            s['fee_eur'] = f_e
+            s['variable_cost_eur'] = v_e
     return sessions
 
 
@@ -492,78 +520,76 @@ def generate_ops(users):
 #  MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 
-print("Generating users …")
-USERS = generate_users()
-print(f"  Users: {len(USERS)}")
-
-print("Generating sessions …")
-SESSIONS = generate_sessions(USERS)
-print(f"  Sessions: {len(SESSIONS)}")
-
-print("Generating balances …")
-BALANCES = generate_balances(USERS, SESSIONS)
-print(f"  Balance records: {len(BALANCES)}")
-
-print("Generating ops …")
-OPS = generate_ops(USERS)
-print(f"  Ops records: {len(OPS)}")
-
-# ── Write CSV ─────────────────────────────────────────────────────────────────
-
 def write_csv(path, rows, fields):
     with open(path, 'w', newline='', encoding='utf-8') as f:
         w = csv.DictWriter(f, fieldnames=fields, extrasaction='ignore')
         w.writeheader()
         w.writerows(rows)
 
-write_csv('bulpay_users.csv', USERS,
-    ['user_id','registered_at','age_cohort','device_os',
-     'num_linked_cards','default_payment_source','acquisition_channel',
-     'acquisition_cost_eur'])
 
-write_csv('bulpay_sessions.csv', SESSIONS,
-    ['session_id','user_id','started_at','hour_of_day','day_of_week',
-     'is_first_session','core_action_performed','payment_type',
-     'funnel_step_reached','amount_eur','payment_duration_seconds',
-     'pin_attempts','payment_source','switched_source','technical_success',
-     'recipient_user_id','fee_eur','variable_cost_eur'])
+if __name__ == '__main__':
+    print("Generating users …")
+    USERS = generate_users()
+    print(f"  Users: {len(USERS)}")
 
-write_csv('bulpay_balances.csv', BALANCES,
-    ['user_id','year_month','balance_eur'])
+    print("Generating sessions …")
+    SESSIONS = generate_sessions(USERS)
+    print(f"  Sessions: {len(SESSIONS)}")
 
-write_csv('bulpay_ops.csv', OPS,
-    ['year_month','app_installs','kyc_started','kyc_approved',
-     'crash_rate_per_1000','uptime_pct','regulatory_incidents'])
+    print("Generating balances …")
+    BALANCES = generate_balances(USERS, SESSIONS)
+    print(f"  Balance records: {len(BALANCES)}")
 
-print("\n✓ All CSV files written.")
+    print("Generating ops …")
+    OPS = generate_ops(USERS)
+    print(f"  Ops records: {len(OPS)}")
 
-# ── Diagnostics ───────────────────────────────────────────────────────────────
+    write_csv('bulpay_users.csv', USERS,
+        ['user_id','registered_at','age_cohort','device_os',
+         'num_linked_cards','default_payment_source','acquisition_channel',
+         'acquisition_cost_eur'])
 
-print(f"\nAge cohorts:   {dict(Counter(u['age_cohort'] for u in USERS))}")
-print(f"Device OS:     {dict(Counter(u['device_os'] for u in USERS))}")
-print(f"Tiers:         {dict(Counter(u['_tier'] for u in USERS))}")
-print(f"Channels:      {dict(Counter(u['acquisition_channel'] for u in USERS))}")
+    write_csv('bulpay_sessions.csv', SESSIONS,
+        ['session_id','user_id','started_at','hour_of_day','day_of_week',
+         'is_first_session','core_action_performed','payment_type',
+         'funnel_step_reached','amount_eur','payment_duration_seconds',
+         'pin_attempts','payment_source','switched_source','technical_success',
+         'recipient_user_id','fee_eur','variable_cost_eur'])
 
-first_by_user = {}
-for s in SESSIONS:
-    if s['user_id'] not in first_by_user:
-        first_by_user[s['user_id']] = datetime.strptime(s['started_at'],
-                                                         '%Y-%m-%dT%H:%M:%S')
-n = len(USERS)
-w24 = sum(1 for u in USERS
-          if u['user_id'] in first_by_user
-          and (first_by_user[u['user_id']] - u['_reg_dt'])
-              .total_seconds() <= 86400)
-w72 = sum(1 for u in USERS
-          if u['user_id'] in first_by_user
-          and (first_by_user[u['user_id']] - u['_reg_dt'])
-              .total_seconds() <= 259200)
-w7d = sum(1 for u in USERS
-          if u['user_id'] in first_by_user
-          and (first_by_user[u['user_id']] - u['_reg_dt'])
-              .total_seconds() <= 604800)
+    write_csv('bulpay_balances.csv', BALANCES,
+        ['user_id','year_month','balance_eur'])
 
-print(f"\nActivation:")
-print(f"  Login ≤24 h: {w24}/{n} ({w24/n*100:.1f}%)")
-print(f"  Login ≤72 h: {w72}/{n} ({w72/n*100:.1f}%)")
-print(f"  Login ≤ 7 d: {w7d}/{n} ({w7d/n*100:.1f}%)")
+    write_csv('bulpay_ops.csv', OPS,
+        ['year_month','app_installs','kyc_started','kyc_approved',
+         'crash_rate_per_1000','uptime_pct','regulatory_incidents'])
+
+    print("\n✓ All CSV files written.")
+
+    print(f"\nAge cohorts:   {dict(Counter(u['age_cohort'] for u in USERS))}")
+    print(f"Device OS:     {dict(Counter(u['device_os'] for u in USERS))}")
+    print(f"Tiers:         {dict(Counter(u['_tier'] for u in USERS))}")
+    print(f"Channels:      {dict(Counter(u['acquisition_channel'] for u in USERS))}")
+
+    first_by_user = {}
+    for s in SESSIONS:
+        if s['user_id'] not in first_by_user:
+            first_by_user[s['user_id']] = datetime.strptime(s['started_at'],
+                                                             '%Y-%m-%dT%H:%M:%S')
+    n = len(USERS)
+    w24 = sum(1 for u in USERS
+              if u['user_id'] in first_by_user
+              and (first_by_user[u['user_id']] - u['_reg_dt'])
+                  .total_seconds() <= 86400)
+    w72 = sum(1 for u in USERS
+              if u['user_id'] in first_by_user
+              and (first_by_user[u['user_id']] - u['_reg_dt'])
+                  .total_seconds() <= 259200)
+    w7d = sum(1 for u in USERS
+              if u['user_id'] in first_by_user
+              and (first_by_user[u['user_id']] - u['_reg_dt'])
+                  .total_seconds() <= 604800)
+
+    print(f"\nActivation:")
+    print(f"  Login ≤24 h: {w24}/{n} ({w24/n*100:.1f}%)")
+    print(f"  Login ≤72 h: {w72}/{n} ({w72/n*100:.1f}%)")
+    print(f"  Login ≤ 7 d: {w7d}/{n} ({w7d/n*100:.1f}%)")
