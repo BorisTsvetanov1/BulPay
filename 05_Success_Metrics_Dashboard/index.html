@@ -339,6 +339,53 @@
       border-top: 1px solid var(--color-border-subtle);
     }
 
+    /* Acquisition Channel Split — stacked bars by period */
+    .channel-split-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+      margin-bottom: 10px;
+    }
+    .channel-split-total {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--color-txt-primary);
+      line-height: 1.15;
+    }
+    .channel-split-total-caption {
+      display: block;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--color-txt-muted);
+      margin-top: 2px;
+    }
+    .channel-split-chart-wrap {
+      position: relative;
+      height: 248px;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .channel-split-chart-wrap.is-empty {
+      height: auto;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .channel-split-empty {
+      font-size: 14px;
+      color: var(--color-txt-muted);
+      font-weight: 400;
+      text-align: center;
+      padding: 20px 16px;
+      margin: 0;
+    }
+
     /* ─── Zone 6 · User Behaviour & Card Ecosystem ─────────────────── */
     .zone6-heatmap { margin-bottom: 22px; }
     .zone6-lower { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
@@ -887,15 +934,24 @@
       <div class="card">
         <div class="card-label">Referral Rate</div>
         <div class="kpi-hero" id="referral-hero">—</div>
-        <div class="kpi-sub" id="referral-sub">Of filtered users acquired via referral</div>
+        <div class="kpi-sub" id="referral-sub">Of new registrations in the selected range via referral</div>
         <div id="referral-delta"></div>
       </div>
 
       <!-- Acquisition Channel Split -->
       <div class="card">
         <div class="card-label">Acquisition Channel Split</div>
-        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:14px;">Filtered registered users</div>
-        <div style="height:150px;"><canvas id="channel-split-canvas"></canvas></div>
+        <div style="font-size:13px;color:var(--color-txt-muted);font-weight:300;margin-top:-6px;margin-bottom:4px;">New registrations in the selected date range · stacked by period (Week / Month / Quarter)</div>
+        <div class="channel-split-head">
+          <div>
+            <span class="channel-split-total" id="channel-split-total">—</span>
+            <span class="channel-split-total-caption">registrations in range · device &amp; cohort filters</span>
+          </div>
+        </div>
+        <div class="channel-split-chart-wrap" id="channel-split-chart-wrap">
+          <canvas id="channel-split-canvas"></canvas>
+          <p class="channel-split-empty" id="channel-split-empty" hidden>No users match the current filters.</p>
+        </div>
       </div>
 
     </div>
@@ -1144,6 +1200,14 @@ function getFilteredUsers() {
     if (state.deviceOS  !== 'all' && u.device_os  !== state.deviceOS)  return false;
     if (state.ageCohort !== 'all' && u.age_cohort !== state.ageCohort) return false;
     return true;
+  });
+}
+
+/** Users who completed registration (`registered_at`) inside [start, end). */
+function filterUsersByRegistrationRange(filteredUsers, start, end) {
+  return filteredUsers.filter(u => {
+    const d = parseDate(u.registered_at);
+    return d && inRange(d, start, end);
   });
 }
 
@@ -1476,14 +1540,40 @@ function computeReferralRate(filteredUsers) {
   return filteredUsers.filter(u => u.acquisition_channel === 'referral').length / filteredUsers.length;
 }
 
-/* Acquisition Channel Split */
-function computeChannelSplit(filteredUsers) {
-  const counts = {};
+function formatAcquisitionChannelLabel(key) {
+  if (key === 'app_store') return 'App Store';
+  if (key === 'unknown') return 'Unknown';
+  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/**
+ * Acquisition channel counts per calendar bucket (week / month / quarter — matches period breakdown).
+ * Only users with registered_at in [start, end) are considered (same buckets as New User Registrations).
+ */
+function buildBucketedChannelSplit(filteredUsers, start, end) {
+  const buckets = buildPeriodBuckets(start, end);
+  const splits = buckets.map(() => ({}));
   filteredUsers.forEach(u => {
-    const ch = u.acquisition_channel || 'unknown';
-    counts[ch] = (counts[ch] || 0) + 1;
+    const d = parseDate(u.registered_at);
+    if (!d || !inRange(d, start, end)) return;
+    for (let i = 0; i < buckets.length; i++) {
+      const b = buckets[i];
+      if (inRange(d, b.start, b.end)) {
+        const ch = u.acquisition_channel || 'unknown';
+        splits[i][ch] = (splits[i][ch] || 0) + 1;
+        break;
+      }
+    }
   });
-  return counts;
+  const totals = splits.map(s => Object.values(s).reduce((a, v) => a + v, 0));
+  const keySet = new Set();
+  splits.forEach(s => Object.keys(s).forEach(k => keySet.add(k)));
+  const channelKeys = Array.from(keySet).sort((a, b) => {
+    const sa = splits.reduce((n, s) => n + (s[a] || 0), 0);
+    const sb = splits.reduce((n, s) => n + (s[b] || 0), 0);
+    return sb - sa;
+  });
+  return { buckets, splits, channelKeys, totals };
 }
 
 /* Bilateral Transaction Rate */
@@ -2106,11 +2196,8 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
 
   /* New User Registrations */
   const { start, end } = getDateRange();
-  const regsInRange = filteredUsers.filter(u => {
-    const d = parseDate(u.registered_at);
-    return d && d >= start && d < end;
-  });
-  document.getElementById('reg-hero').textContent = regsInRange.length.toLocaleString();
+  const periodUsers = filterUsersByRegistrationRange(filteredUsers, start, end);
+  document.getElementById('reg-hero').textContent = periodUsers.length.toLocaleString();
   document.getElementById('reg-sub').textContent = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()} – ${MONTH_NAMES[end.getMonth()-1 < 0 ? 11 : end.getMonth()-1]} ${end.getMonth()===0?end.getFullYear()-1:end.getFullYear()}`;
 
   const regBuckets = buildBucketedRegistrations(filteredUsers, start, end);
@@ -2212,44 +2299,137 @@ function renderGrowthAcquisition(filteredSessions, filteredUsers, filteredOps) {
     }
   }
 
-  /* Referral Rate */
-  const refRate = computeReferralRate(filteredUsers);
+  /* Referral Rate — cohort = new registrations in selected range (same as channel split) */
+  const refRate = computeReferralRate(periodUsers);
   document.getElementById('referral-hero').textContent = fmtPct(refRate, 1);
-  const refCount = filteredUsers.filter(u => u.acquisition_channel === 'referral').length;
-  document.getElementById('referral-sub').textContent = `${refCount} of ${filteredUsers.length} users via referral`;
+  const refCount = periodUsers.filter(u => u.acquisition_channel === 'referral').length;
+  document.getElementById('referral-sub').textContent = `${refCount.toLocaleString()} of ${periodUsers.length.toLocaleString()} new registrations via referral`;
   {
     const cls = refRate >= 0.40 ? 'delta-up' : refRate >= 0.25 ? 'delta-flat' : 'delta-down';
     const lbl = refRate >= 0.40 ? 'Strong organic loop' : refRate >= 0.25 ? 'Healthy' : 'Below target';
     document.getElementById('referral-delta').innerHTML = `<span class="delta ${cls}">${lbl}</span>`;
   }
 
-  /* Channel Split */
-  const channels = computeChannelSplit(filteredUsers);
-  const channelLabels = Object.keys(channels).sort();
-  const channelColors = { referral: '#2563EB', organic: '#6878F5', paid: '#9B6BF8', app_store: '#06B6D4', unknown: '#93ADFD' };
+  /* Channel Split — stacked bars by period (week / month / quarter); registrations only */
+  const channelAgg = buildBucketedChannelSplit(filteredUsers, start, end);
+  const totalRegsInRange = channelAgg.totals.reduce((a, t) => a + t, 0);
+  const channelWrap = document.getElementById('channel-split-chart-wrap');
+  const channelTotalEl = document.getElementById('channel-split-total');
+  if (channelTotalEl) {
+    channelTotalEl.textContent = totalRegsInRange ? totalRegsInRange.toLocaleString() : '0';
+  }
   const channelCtx = document.getElementById('channel-split-canvas');
-  if (channelCtx) {
+  const channelEmptyEl = document.getElementById('channel-split-empty');
+  if (channelCtx && channelWrap) {
     if (instChannelSplit) instChannelSplit.destroy();
-    instChannelSplit = new Chart(channelCtx.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: channelLabels.map(c => c.replace('_', ' ')),
-        datasets: [{
-          data: channelLabels.map(c => channels[c]),
-          backgroundColor: channelLabels.map(c => channelColors[c] || '#93ADFD'),
-          borderWidth: 2, borderColor: '#fff',
-        }],
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'right', labels: { font: { size: 13, family: 'Roboto, sans-serif' }, padding: 10, usePointStyle: true, pointStyleWidth: 10 } },
-          tooltip: { callbacks: { label: i => ` ${i.raw} users (${((i.raw/filteredUsers.length)*100).toFixed(1)}%)` }, bodyFont: { family: 'Roboto, sans-serif', size: 14 }, padding: 8 },
+    instChannelSplit = null;
+    const hasRegs = totalRegsInRange > 0 && channelAgg.channelKeys.length > 0 && channelAgg.buckets.length > 0;
+    channelWrap.classList.toggle('is-empty', !hasRegs);
+    if (channelEmptyEl) {
+      channelEmptyEl.textContent = 'No registrations in the selected range for the current filters.';
+      channelEmptyEl.hidden = hasRegs;
+    }
+    channelCtx.style.display = hasRegs ? 'block' : 'none';
+    if (hasRegs) {
+      const channelColors = {
+        referral: '#1D4ED8',
+        organic: '#059669',
+        paid: '#7C3AED',
+        app_store: '#0891B2',
+        unknown: '#64748B',
+      };
+      const labels = channelAgg.buckets.map(b => regChartAxisLabel(b));
+      const perBarTotals = channelAgg.totals;
+      const yAxisMax = countBarAxisMax(perBarTotals, 10, 10);
+      const n = channelAgg.buckets.length;
+      const manyWeeks = bd === 'week' && n > 10;
+      const tickCap = bd === 'week' ? 20 : bd === 'quarter' ? 10 : 14;
+      instChannelSplit = new Chart(channelCtx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: channelAgg.channelKeys.map(k => ({
+            label: formatAcquisitionChannelLabel(k),
+            data: channelAgg.splits.map(s => s[k] || 0),
+            backgroundColor: channelColors[k] || '#6366F1',
+            borderRadius: 0,
+            borderSkipped: false,
+          })),
         },
-        cutout: '55%',
-        animation: { duration: 400, easing: 'easeOutQuart' },
-      },
-    });
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 2, left: 0, right: 4, bottom: 2 } },
+          interaction: { mode: 'index', intersect: false },
+          datasets: { bar: { barPercentage: 0.92, categoryPercentage: 0.75 } },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                boxWidth: 10,
+                boxHeight: 10,
+                font: { size: 11, family: 'Roboto, sans-serif' },
+                padding: 10,
+                usePointStyle: true,
+              },
+            },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const i = items[0].dataIndex;
+                  const b = channelAgg.buckets[i];
+                  const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  const endInclusive = new Date(b.end.getTime() - 86400000);
+                  return `${fmt(b.start)} – ${fmt(endInclusive)}`;
+                },
+                label(ctx) {
+                  const val = ctx.raw;
+                  const i = ctx.dataIndex;
+                  const tot = perBarTotals[i] || 0;
+                  const pct = tot > 0 ? ((val / tot) * 100).toFixed(1) : '0.0';
+                  return ` ${ctx.dataset.label}: ${Number(val).toLocaleString()} (${pct}% of this period)`;
+                },
+              },
+              bodyFont: { family: 'Roboto, sans-serif', size: 14 },
+              padding: 10,
+              backgroundColor: 'rgba(17,24,39,0.92)',
+              cornerRadius: 8,
+            },
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false },
+              border: { display: false },
+              ticks: {
+                font: { size: bd === 'quarter' ? 11 : 10, family: 'Roboto, sans-serif' },
+                color: '#374151',
+                maxRotation: manyWeeks ? 50 : 0,
+                minRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: tickCap,
+              },
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              max: yAxisMax,
+              grace: '0%',
+              grid: { color: 'rgba(0,0,0,0.06)', drawBorder: false },
+              border: { display: false },
+              ticks: {
+                font: { size: 10, family: 'Roboto, sans-serif' },
+                color: '#9CA3AF',
+                precision: 0,
+                callback: value => Math.round(Number(value)).toLocaleString(),
+              },
+            },
+          },
+          animation: { duration: 480, easing: 'easeOutQuart' },
+        },
+      });
+    }
   }
 }
 
@@ -2371,8 +2551,19 @@ function renderUserBehaviour(filteredSessions, filteredUsers) {
 function renderCardEcosystem(filteredSessions, filteredUsers) {
   const cardDist = computeCardsPerUser(filteredUsers);
   const cpuCtx   = document.getElementById('cards-per-user-bar').getContext('2d');
+  const totalCpu = filteredUsers.length;
+  const c1 = cardDist[0], c2 = cardDist[1], c3 = cardDist[2], c4 = cardDist[3];
+  const sum234 = c2 + c3 + c4;
+  /* Share of the filter: 1-card = c1/total. Users with 2–4 cards split (sum234/total) of the
+     filter proportionally → (ci/sum234)*(sum234/total) = ci/total for each 2–4 bucket. */
+  function cpuPctOfFilter(i) {
+    if (totalCpu <= 0) return null;
+    if (i === 0) return c1 / totalCpu;
+    if (sum234 <= 0) return 0;
+    return (cardDist[i] / sum234) * (sum234 / totalCpu);
+  }
   document.getElementById('cards-per-user-sub').textContent =
-    `Distribution across ${filteredUsers.length} filtered registered users`;
+    `Distribution across ${totalCpu} filtered registered users`;
   if (instCardsPerUser) instCardsPerUser.destroy();
   instCardsPerUser = new Chart(cpuCtx, {
     type: 'bar',
@@ -2392,14 +2583,29 @@ function renderCardEcosystem(filteredSessions, filteredUsers) {
           c.save();
           c.font = '500 14px Roboto, sans-serif'; c.fillStyle = '#374151';
           c.textAlign = 'left'; c.textBaseline = 'middle';
-          c.fillText(data.datasets[0].data[i]+' users', bar.x+6, bar.y);
+          const ratio = cpuPctOfFilter(i);
+          const label = ratio == null ? '—' : fmtPct(ratio, 1);
+          c.fillText(label, bar.x+6, bar.y);
           c.restore();
         });
       },
     }],
     options: {
       indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{display:false}, tooltip:{callbacks:{label:i=>` ${i.raw} users`}, bodyFont:{family:'Roboto, sans-serif',size:14}, padding:8} },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const n = ctx.raw;
+              const k = typeof n === 'number' ? n : parseInt(n, 10);
+              return ` ${k} user${k === 1 ? '' : 's'}`;
+            },
+          },
+          bodyFont: { family: 'Roboto, sans-serif', size: 14 },
+          padding: 8,
+        },
+      },
       layout: { padding: { right: 78 } },
       scales: {
         x: { display: false, min: 0, max: Math.max(...cardDist)+4 },
