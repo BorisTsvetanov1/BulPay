@@ -3,6 +3,21 @@
     <clipPath id="bgClip">
       <circle cx="200" cy="200" r="190"/>
     </clipPath>
+    <!--
+      diagonalClip: keeps everything to the LEFT of the same angled line that
+      defines the right edges of the three flag stripes.
+      Line passes through (272,156) with slope dx/dy = -14/34 ≈ -0.412.
+      At y=0  → x≈336 ;  at y=400 → x≈172
+    -->
+    <!--
+      Only clips the top arm of the C (above y≈153 where the white stripe
+      takes over). Below that, full width is permitted so the bottom arm
+      of the C is completely unaffected.
+      Diagonal hits y=153 at x≈273; below that the polygon opens to full width.
+    -->
+    <clipPath id="diagonalClip">
+      <polygon points="0,0 336,0 273,153 400,153 400,400 0,400"/>
+    </clipPath>
     <radialGradient id="bgGrad" cx="42%" cy="38%" r="62%">
       <stop offset="0%"   stop-color="#243263"/>
       <stop offset="100%" stop-color="#111e42"/>
@@ -16,16 +31,19 @@
 
   <!--
     Euro C-arc (white) — drawn FIRST so the flag stripes paint over it.
-    Center (200,200), radius 140, gap 90° on the right (45° to 315°).
+    The diagonalClip trims the top tip of the C along the same angled line
+    that defines the staggered right edges of the flag stripes.
   -->
-  <path
-    d="M 299,299 A 140,140 0 1,1 299,101"
-    fill="none"
-    stroke="#FFFFFF"
-    stroke-width="30"
-    stroke-linecap="butt"
-    clip-path="url(#bgClip)"
-  />
+  <g clip-path="url(#diagonalClip)">
+    <path
+      d="M 299,299 A 140,140 0 1,1 307,110"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="30"
+      stroke-linecap="butt"
+      clip-path="url(#bgClip)"
+    />
+  </g>
 
   <!--
     Bulgarian tricolor — wind-blown wave effect, drawn ON TOP of the C arc.
