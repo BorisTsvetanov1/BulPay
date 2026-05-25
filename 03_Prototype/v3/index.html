@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>BulPay — Digital Wallet</title>
+  <link rel="icon" href="bulpay-logo.svg" type="image/svg+xml" />
   <!-- VERSION 2 of PROTOTYPE -->
   <!-- Microsoft Clarity snippet -->
   <script type="text/javascript">
@@ -1018,19 +1019,15 @@
 
             {/* Logo tile */}
             <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginBottom:40}}>
-              <div style={{
-                width:76, height:76, borderRadius:20,
-                background: GRAD.g2,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow:'0 8px 28px rgba(107,120,245,.42)',
-                marginBottom:14,
-              }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{width:34,height:34}} fill="none"
-                     viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
-                  <rect x="2" y="5" width="20" height="14" rx="2"/>
-                  <path d="M2 10h20"/>
-                </svg>
-              </div>
+              <img
+                src="bulpay-logo.svg"
+                alt="BulPay"
+                style={{
+                  width:80, height:80, borderRadius:20,
+                  boxShadow:'0 8px 28px rgba(17,30,66,.35)',
+                  marginBottom:14, display:'block',
+                }}
+              />
               <div style={{fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary}}>BulPay</div>
               <div style={{fontSize:T.bodySmall, color:C.txtMuted, marginTop:4}}>Digital Wallet</div>
             </div>
@@ -1180,6 +1177,15 @@
           <AppHeader onBack={()=>nav('lang')}/>
           <div style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', padding:'36px 24px 28px'}}>
 
+            <img
+              src="bulpay-logo.svg"
+              alt="BulPay"
+              style={{
+                width:48, height:48, borderRadius:12,
+                boxShadow:'0 4px 16px rgba(17,30,66,.25)',
+                marginBottom:20, display:'block',
+              }}
+            />
             <div style={{fontSize:T.body, color:C.txtSecond, marginBottom:8, fontWeight:W.medium}}>{t(greetingKey)}</div>
             <div style={{fontSize:T.h1, fontWeight:W.bold, color:C.txtPrimary, marginBottom:20}}>{t('enterYourPin')}</div>
 

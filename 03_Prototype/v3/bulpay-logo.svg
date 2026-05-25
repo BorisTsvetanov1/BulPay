@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="BulPay logo">
+  <defs>
+    <clipPath id="bgClip">
+      <circle cx="200" cy="200" r="190"/>
+    </clipPath>
+    <radialGradient id="bgGrad" cx="42%" cy="38%" r="62%">
+      <stop offset="0%"   stop-color="#243263"/>
+      <stop offset="100%" stop-color="#111e42"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Dark navy blue circle background -->
+  <circle cx="200" cy="200" r="192" fill="url(#bgGrad)"/>
+  <circle cx="200" cy="200" r="190" fill="none"
+          stroke="rgba(255,255,255,0.10)" stroke-width="2"/>
+
+  <!--
+    Euro C-arc (white) — drawn FIRST so the flag stripes paint over it.
+    Center (200,200), radius 140, gap 90° on the right (45° to 315°).
+  -->
+  <path
+    d="M 299,299 A 140,140 0 1,1 299,101"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="30"
+    stroke-linecap="butt"
+    clip-path="url(#bgClip)"
+  />
+
+  <!--
+    Bulgarian tricolor — wind-blown wave effect, drawn ON TOP of the C arc.
+    Stripe height: ~28 px, gaps: ~7 px.
+    Vertical band:  white top crest y≈152  →  red bottom trough y≈262
+  -->
+
+  <!-- White stripe -->
+  <path d="M -4,162 C 21,157 58,152 82,152
+           C 108,152 138,165 170,165
+           C 200,165 235,156 272,156
+           L 261,183
+           C 235,182 200,193 170,193
+           C 138,193 108,180 82,180
+           C 58,180 21,184 -4,189 Z"
+        fill="#FFFFFF" clip-path="url(#bgClip)"/>
+
+  <!-- Green stripe — right end 14 px shorter than white -->
+  <path d="M -4,196 C 21,192 58,187 82,187
+           C 108,187 138,200 170,200
+           C 200,200 225,190 258,190
+           L 247,218
+           C 225,217 200,228 170,228
+           C 138,228 108,214 82,214
+           C 58,214 21,219 -4,224 Z"
+        fill="#009B48" clip-path="url(#bgClip)"/>
+
+  <!-- Red stripe — right end 14 px shorter than green (28 px shorter than white) -->
+  <path d="M -4,230 C 21,226 58,220 82,220
+           C 108,220 138,235 170,235
+           C 200,235 215,225 244,225
+           L 233,253
+           C 215,252 200,262 170,262
+           C 138,262 108,248 82,248
+           C 58,248 21,254 -4,258 Z"
+        fill="#D01F26" clip-path="url(#bgClip)"/>
+</svg>
