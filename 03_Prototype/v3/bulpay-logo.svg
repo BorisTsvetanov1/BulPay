@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="BulPay logo">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="BulPay logo" style="background-color:transparent">
   <defs>
     <clipPath id="bgClip">
-      <circle cx="200" cy="200" r="190"/>
+      <circle cx="200" cy="200" r="192"/>
     </clipPath>
     <!--
       diagonalClip: keeps everything to the LEFT of the same angled line that
@@ -26,8 +26,6 @@
 
   <!-- Dark navy blue circle background -->
   <circle cx="200" cy="200" r="192" fill="url(#bgGrad)"/>
-  <circle cx="200" cy="200" r="190" fill="none"
-          stroke="rgba(255,255,255,0.10)" stroke-width="2"/>
 
   <!--
     Euro C-arc (white) — drawn FIRST so the flag stripes paint over it.

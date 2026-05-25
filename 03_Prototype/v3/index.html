@@ -292,10 +292,11 @@
     ];
 
     const RECIPIENTS = [
-      { id:'r1', name:'Andrea Lopez',    phone:'+34 892619737', ini:'AL' },
-      { id:'r2', name:'Benjamin Parker',    phone:'+44 852688846', ini:'BP' },
-      { id:'r3', name:'Boris Tsvetanov',       phone:'+359 882345678', ini:'BT' },
+      { id:'r1', name:'Andrea Lopez',    phone:'+34 892619737', ini:'AL', photo:'avatars/andrea-lopez.png' },
+      { id:'r2', name:'Benjamin Parker',    phone:'+44 852688846', ini:'BP', photo:'avatars/benjamin-parker.png' },
+      { id:'r3', name:'Boris Tsvetanov',       phone:'+359 882345678', ini:'BT', photo:'avatars/boris-tsvetanov.png' },
     ];
+    const PHOTO_BY_NAME = Object.fromEntries(RECIPIENTS.map(r => [r.name, r.photo]));
 
     /* ════════════════════════════════════════
        STORE
@@ -329,7 +330,6 @@
       return d && m && y ? `${d}.${m}.${y}` : part;
     };
     const genRef  = ()  => 'BUL-' + Math.random().toString(36).slice(2,8).toUpperCase();
-    const greet   = (t) => { const h=new Date().getHours(); return h<12?t('goodMorning'):h<17?t('goodAfternoon'):t('goodEvening'); };
     const fmtPan  = (pan) => {
       const d = String(pan || '').replace(/\D/g, '');
       return d.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
@@ -373,14 +373,7 @@
       en: {
         appName:'BulPay', help:'Help',
         goodMorning:'Good morning', goodAfternoon:'Good afternoon', goodEvening:'Good evening',
-        digitalWallet:'Digital Wallet',
-        useBiometric:'Use face / fingerprint',
-        notAvailableProto:'Not available in this web prototype',
-        or:'OR',
-        continueWithPin:'Continue with PIN',
-        pinSecureWallet:'Your 4-digit PIN keeps your wallet secure',
         enterYourPin:'Enter your PIN',
-        enter4DigitPin:'Enter your 4-digit PIN to continue',
         incorrectPin:'Incorrect PIN. Please try again.',
         demoPin:'Demo PIN:',
         selectPayment:'Select a card to pay.',
@@ -402,7 +395,6 @@
         txReference:'Reference',
         moneyReceived:'Money received', moneySent:'Money sent',
         close:'Close',
-        viewBalance:'View Balance',
         availableBalance:'Available balance',
         cardSecuredByBulPay:'Your DSK Bank card, secured by BulPay',
         sendingFrom:'Sending from',
@@ -418,7 +410,6 @@
         fromCard:'From card',
         amount:'Amount',
         total:'Total',
-        useBiometricConfirm:'Use face / fingerprint to confirm',
         confirmWithPin:'Confirm with PIN',
         confirmPaymentPin:'Confirm this payment with your PIN',
         paymentSent:'Payment Sent!',
@@ -472,14 +463,7 @@
       bg: {
         appName:'BulPay', help:'Помощ',
         goodMorning:'Добро утро', goodAfternoon:'Добър ден', goodEvening:'Добър вечер',
-        digitalWallet:'Дигитален портфейл',
-        useBiometric:'Лице / пръстов отпечатък',
-        notAvailableProto:'Неналично в тази уеб версия',
-        or:'ИЛИ',
-        continueWithPin:'Продължи с PIN',
-        pinSecureWallet:'4-цифреният ви PIN пази портфейла ви',
         enterYourPin:'Въведете вашия PIN',
-        enter4DigitPin:'Въведете 4-цифрения си PIN за да продължите',
         incorrectPin:'Грешен PIN. Моля, опитайте отново.',
         demoPin:'Демо PIN:',
         selectPayment:'Изберете карта за плащане.',
@@ -501,7 +485,6 @@
         txReference:'Референция',
         moneyReceived:'Получени пари', moneySent:'Изпратени пари',
         close:'Затвори',
-        viewBalance:'Виж баланс',
         availableBalance:'Наличен баланс',
         cardSecuredByBulPay:'Вашата ДСК карта, защитена от BulPay',
         sendingFrom:'Изпращане от',
@@ -517,7 +500,6 @@
         fromCard:'От карта',
         amount:'Сума',
         total:'Общо',
-        useBiometricConfirm:'Лице / пръстов отпечатък за потвърждение',
         confirmWithPin:'Потвърди с PIN',
         confirmPaymentPin:'Потвърдете плащането с вашия PIN',
         paymentSent:'Плащането е изпратено!',
@@ -656,10 +638,8 @@
       {l:'28%',t:'60%'}, {l:'68%',t:'65%'}, {l:'44%',t:'40%'},
     ];
 
-    function CardVisual({ card, onCardClick, showBal, onToggleBal, isFrozen=false, style: extraStyle={} }) {
+    function CardVisual({ card, onCardClick, isFrozen=false, style: extraStyle={} }) {
       const t = useLang();
-      /* View Balance toggle (kept for possible reuse):
-      const stopProp = (e) => { e.stopPropagation(); onToggleBal && onToggleBal(); }; */
       const clickable = !!onCardClick;
       const visa = isVisa(card.name);
       const holderName = (card.holder || 'CARDHOLDER NAME').toUpperCase();
@@ -750,31 +730,6 @@
               <div style={{ fontSize: T.overline, color: '#e4dcdc', letterSpacing: '.12em', marginBottom: 2 }}>EXPIRY</div>
               <div style={{ fontFamily: 'monospace', fontSize: T.caption, fontWeight: W.bold, color: '#fff' }}>{expiry}</div>
             </div>
-            {/* Balance / View Balance - was shown on card; kept for possible reuse elsewhere:
-            <div style={{ flexBasis: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: 32, perspective: 400 }}>
-              <button onClick={stopProp} style={{
-                position:'absolute', right:0,
-                top:'50%', transform: showBal ? 'translateY(-50%) rotateX(90deg)' : 'translateY(-50%) rotateX(0deg)',
-                background:'rgba(255,255,255,.22)', border:'1px solid rgba(255,255,255,.42)',
-                color:'#fff', borderRadius:20, padding:'5px 14px', fontSize:T.caption, fontWeight:W.medium, cursor:'pointer',
-                backdropFilter:'blur(4px)', fontFamily:'Roboto,sans-serif', transformOrigin:'center center',
-                opacity: showBal ? 0 : 1, transition: 'transform .22s ease-in, opacity .15s ease-in',
-                pointerEvents: showBal ? 'none' : 'auto', backfaceVisibility:'hidden', whiteSpace:'nowrap',
-              }}>
-                {t('viewBalance')}
-              </button>
-              <div onClick={stopProp} style={{
-                position:'absolute', right:0, top:'50%',
-                transform: showBal ? 'translateY(-50%) rotateX(0deg)' : 'translateY(-50%) rotateX(-90deg)',
-                textAlign:'right', cursor:'pointer', transformOrigin:'center center',
-                opacity: showBal ? 1 : 0,
-                transition: showBal ? 'transform .22s ease-out .18s, opacity .15s ease-out .18s' : 'transform .22s ease-in, opacity .15s ease-in',
-                pointerEvents: showBal ? 'auto' : 'none', backfaceVisibility:'hidden', whiteSpace:'nowrap',
-              }}>
-                <div style={{ fontWeight: W.bold, fontSize: T.h2, color: '#fff', letterSpacing: '.02em' }}>{fmtEur(card.bal)}</div>
-              </div>
-            </div>
-            */}
           </div>
 
           {/* Frozen overlay */}
@@ -857,42 +812,33 @@
       );
     }
 
-    /* ── Disabled Biometric Button ── */
-    function BiometricBtn({ labelKey='useBiometric' }) {
-      const t = useLang();
-      const [toast,setToast] = useState(false);
-      const tap = () => { setToast(true); setTimeout(()=>setToast(false),2400); };
+    /* ── Person Avatar ── */
+    function PersonAvatar({ name, ini, photo, size, fontSize, style, boxShadow }) {
+      const resolvedPhoto = photo || PHOTO_BY_NAME[name];
+      const initials = ini || (name ? name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?');
+      const baseStyle = {
+        width:size, height:size, borderRadius:'50%', flexShrink:0,
+        display:'flex', alignItems:'center', justifyContent:'center',
+        overflow:'hidden',
+        ...(boxShadow ? { boxShadow } : {}),
+        ...style,
+      };
+      if (resolvedPhoto) {
+        return (
+          <div style={baseStyle}>
+            <img src={resolvedPhoto} alt={name || initials} style={{
+              width:'100%', height:'100%', objectFit:'cover', display:'block',
+            }}/>
+          </div>
+        );
+      }
       return (
-        <div style={{position:'relative'}}>
-          <button onClick={tap} style={{
-            width:'100%', display:'flex', flexDirection:'column', alignItems:'center',
-            gap:8, padding:'20px 16px', borderRadius:16,
-            border:'2px solid #E5E7EB', background:'#F9FAFB',
-            opacity:.38, cursor:'pointer', fontFamily:'Roboto,sans-serif',
-          }}>
-            {/* Fingerprint SVG */}
-            <svg xmlns="http://www.w3.org/2000/svg" style={{width:44,height:44,color:'#9CA3AF'}} fill="none"
-                 viewBox="0 0 50 50" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round">
-              <path d="M25 40 C25 40 14 36 14 24 C14 17.4 18.9 12 25 12 C31.1 12 36 17.4 36 24 C36 30 34 35 32 38"/>
-              <path d="M20 39 C18 35 17 30 17 24 C17 19 20.6 15 25 15 C29.4 15 33 19 33 24 C33 28 31.5 32 30 35"/>
-              <path d="M25 18 C22 18 20 21 20 24 C20 28 21 32 22 35"/>
-              <path d="M25 21 C23.3 21 22 22.4 22 24 C22 26.5 22.5 29 23 31"/>
-              <path d="M11 18 C9 20.5 8 22.2 8 25 C8 32 11 38 16 42"/>
-              <path d="M39 18 C41 20.5 42 22.2 42 25 C42 33 38 39 33 43"/>
-              <path d="M18 11 C20.2 9.7 22.5 9 25 9 C32.7 9 39 15.3 39 24"/>
-              <path d="M11 11 C8 14 6 18.5 6 23"/>
-            </svg>
-            <span style={{fontSize:T.h3, fontWeight:W.medium, color:C.txtSecond}}>{t(labelKey)}</span>
-          </button>
-          {toast && (
-            <div style={{
-              position:'absolute', bottom:-36, left:'50%', transform:'translateX(-50%)',
-              background:'#111827', color:'#fff', fontSize:T.caption, padding:'7px 14px',
-              borderRadius:8, whiteSpace:'nowrap', zIndex:20, pointerEvents:'none',
-            }}>
-              {t('notAvailableProto')}
-            </div>
-          )}
+        <div style={{
+          ...baseStyle,
+          background:C.avatarBg, color:C.avatarTxt,
+          fontSize, fontWeight:W.medium,
+        }}>
+          {initials}
         </div>
       );
     }
@@ -900,7 +846,6 @@
     /* ── Transaction Row ── */
     function TxRow({ tx, onClick }) {
       const isIn = tx.dir === 'in';
-      const ini  = tx.ini || tx.who.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       return (
         <div onClick={onClick} style={{
           display:'flex', alignItems:'center', padding:'12px 16px',
@@ -909,15 +854,7 @@
         }}
         onMouseEnter={e=>{ e.currentTarget.style.background='#DCE4F7'; e.currentTarget.style.borderBottomColor='#B8C5E8'; }}
         onMouseLeave={e=>{ e.currentTarget.style.background=C.white; e.currentTarget.style.borderBottomColor=C.rowBorder; }}>
-          {/* Avatar */}
-          <div style={{
-            width:40, height:40, borderRadius:'50%', flexShrink:0,
-            background:C.avatarBg, color:C.avatarTxt,
-            display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:T.bodySmall, fontWeight:W.medium, marginRight:12,
-          }}>
-            {ini}
-          </div>
+          <PersonAvatar name={tx.who} ini={tx.ini} photo={tx.photo} size={40} fontSize={T.bodySmall} style={{marginRight:12}}/>
           {/* Name + date */}
           <div style={{flex:1, minWidth:0}}>
             <div style={{fontSize:T.h3, fontWeight:W.medium, color:C.txtPrimary,
@@ -1108,8 +1045,7 @@
                 src="bulpay-logo.svg"
                 alt="BulPay"
                 style={{
-                  width:80, height:80, borderRadius:20,
-                  boxShadow:'0 8px 28px rgba(17,30,66,.35)',
+                  width:80, height:80, borderRadius:'50%',
                   marginBottom:14, display:'block',
                 }}
               />
@@ -1175,60 +1111,6 @@
     }
 
     /* ════════════════════════════════════════
-       SCREEN — LOGIN  [DEACTIVATED]
-    ════════════════════════════════════════ */
-    /*
-    function LoginScreen({ nav }) {
-      const t = useLang();
-      return (
-        <div className="fade-in" style={{display:'flex',flexDirection:'column',minHeight:'100%',background:C.pageBg}}>
-          <AppHeader/>
-          <div style={{flex:1, display:'flex', flexDirection:'column', padding:'32px 20px 32px'}}>
-
-            // Logo tile
-            <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginBottom:36}}>
-              <div style={{
-                width:76, height:76, borderRadius:20,
-                background: GRAD.g2,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow:'0 8px 28px rgba(107,120,245,.42)',
-                marginBottom:14,
-              }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{width:34,height:34}} fill="none"
-                     viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
-                  <rect x="2" y="5" width="20" height="14" rx="2"/>
-                  <path d="M2 10h20"/>
-                </svg>
-              </div>
-              <div style={{fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary}}>BulPay</div>
-              <div style={{fontSize:T.bodySmall, color:C.txtMuted, marginTop:4}}>{t('digitalWallet')}</div>
-              <div style={{fontSize:T.h3, fontWeight:W.medium, color:'#374151', marginTop:14}}>
-                {greet(t)}
-              </div>
-            </div>
-
-            <BiometricBtn labelKey="useBiometric"/>
-            <div style={{textAlign:'center', fontSize:T.caption, color:C.txtMuted, marginTop:8, marginBottom:24}}>
-              {t('notAvailableProto')}
-            </div>
-
-            <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:20}}>
-              <div style={{flex:1, height:1, background:C.border}}/>
-              <span style={{fontSize:T.h3, color:C.txtMuted, fontWeight:W.medium}}>{t('or')}</span>
-              <div style={{flex:1, height:1, background:C.border}}/>
-            </div>
-
-            <PrimaryBtn onClick={()=>nav('pin')}>{t('continueWithPin')}</PrimaryBtn>
-            <div style={{textAlign:'center', fontSize:T.caption, color:C.txtMuted, marginTop:10}}>
-              {t('pinSecureWallet')}
-            </div>
-          </div>
-        </div>
-      );
-    }
-    */
-
-    /* ════════════════════════════════════════
        SCREEN — PIN ENTRY
     ════════════════════════════════════════ */
     function PinScreen({ nav }) {
@@ -1266,8 +1148,7 @@
               src="bulpay-logo.svg"
               alt="BulPay"
               style={{
-                width:48, height:48, borderRadius:12,
-                boxShadow:'0 4px 16px rgba(17,30,66,.25)',
+                width:48, height:48, borderRadius:'50%',
                 marginBottom:20, display:'block',
               }}
             />
@@ -1325,8 +1206,6 @@
     function HomeScreen({ nav }) {
       const t = useLang();
       const [cards]  = useState(Store.cards());
-      const [shown, setShown] = useState({});
-      const toggle = (id) => setShown(s=>({...s,[id]:!s[id]}));
 
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,minHeight:0,background:C.pageBg}}>
@@ -1343,8 +1222,6 @@
                 <CardVisual
                   key={c.id}
                   card={c}
-                  showBal={!!shown[c.id]}
-                  onToggleBal={()=>toggle(c.id)}
                   onCardClick={()=>nav('card',{cid:c.id})}
                 />
               ))}
@@ -1581,7 +1458,6 @@
 
       if (!tx) return null;
       const isIn = tx.dir === 'in';
-      const ini  = tx.ini || tx.who.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       const ref  = tx.ref || ('BUL-' + tx.id.slice(-6).toUpperCase());
 
       const rows = [
@@ -1627,14 +1503,7 @@
               borderBottom:'1px solid '+C.rowBorder,
             }}>
               <div style={{display:'flex', alignItems:'center', gap:12}}>
-                <div style={{
-                  width:44, height:44, borderRadius:'50%',
-                  background: C.avatarBg, color: C.avatarTxt,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  fontSize:T.h3, fontWeight:W.medium, flexShrink:0,
-                }}>
-                  {ini}
-                </div>
+                <PersonAvatar name={tx.who} ini={tx.ini} photo={tx.photo} size={44} fontSize={T.h3}/>
                 <div>
                   <div style={{fontSize:T.h3, fontWeight:W.medium, color:C.txtPrimary}}>{tx.who}</div>
                   <div style={{fontSize:T.body, color:C.txtMuted, marginTop:2}}>{fmtDate(tx.date)}</div>
@@ -2717,12 +2586,7 @@
                           cursor:'pointer', fontFamily:'Roboto,sans-serif',
                           outline:'none',
                         }}>
-                  <div style={{
-                    width:42,height:42,borderRadius:'50%',flexShrink:0,
-                    background:C.avatarBg, color:C.avatarTxt,
-                    display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:T.bodySmall, fontWeight:W.medium,
-                  }}>{r.ini}</div>
+                  <PersonAvatar name={r.name} ini={r.ini} photo={r.photo} size={42} fontSize={T.bodySmall}/>
                   <div style={{flex:1, minWidth:0}}>
                     <div style={{fontSize:T.h3,fontWeight:W.medium,color:C.txtPrimary}}>{r.name}</div>
                     <div style={{fontSize:T.body,color:C.txtMuted,marginTop:3}}>{r.phone}</div>
@@ -2833,7 +2697,7 @@
           ));
           Store.addTx({
             id:'tx-'+Date.now(), cid:draft.card.id,
-            who:draft.recip.name, ini:draft.recip.ini,
+            who:draft.recip.name, ini:draft.recip.ini, photo:draft.recip.photo,
             amt:draft.amt, dir:'out',
             date:new Date().toISOString().split('T')[0], st:'Completed'
           });
@@ -2858,16 +2722,11 @@
             <WhiteBox style={{marginBottom:16, padding:'24px 20px 20px'}}>
               {/* Avatar + identity */}
               <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
-                <div style={{
-                  width:72, height:72, borderRadius:'50%', flexShrink:0,
-                  background:C.avatarBg, color:C.avatarTxt,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  fontSize:T.h1, fontWeight:W.medium,
-                  marginBottom:14,
-                  boxShadow:'0 2px 10px rgba(91,107,138,.15)',
-                }}>
-                  {draft.recip.ini}
-                </div>
+                <PersonAvatar
+                  name={draft.recip.name} ini={draft.recip.ini} photo={draft.recip.photo}
+                  size={72} fontSize={T.h1} style={{marginBottom:14}}
+                  boxShadow="0 2px 10px rgba(91,107,138,.15)"
+                />
 
                 <div style={{
                   fontSize:14, fontWeight:W.semibold, color:C.txtMuted,
@@ -3066,14 +2925,7 @@
                 display:'flex', alignItems:'center', justifyContent:'space-between',
               }}>
                 <div style={{display:'flex', alignItems:'center', gap:10}}>
-                  <div style={{
-                    width:36,height:36,borderRadius:'50%',flexShrink:0,
-                    background:C.avatarBg, color:C.avatarTxt,
-                    display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:T.h3, fontWeight:W.medium,
-                  }}>
-                    {draft.recip.ini}
-                  </div>
+                  <PersonAvatar name={draft.recip.name} ini={draft.recip.ini} photo={draft.recip.photo} size={36} fontSize={T.h3}/>
                   <div>
                     <div style={{fontSize:T.caption,color:C.txtMuted}}>{t('paying')}</div>
                     <div style={{fontSize:T.bodySmall,fontWeight:W.medium,color:C.txtPrimary}}>{draft.recip.name}</div>
@@ -3689,7 +3541,6 @@
       const screen = (()=>{
         switch(route.page){
           case 'lang':     return <LanguageScreen nav={nav} onLangSelect={setLang}/>;
-          /* case 'login': — LoginScreen deactivated (lines 1055–1107) */
           case 'pin':      return <PinScreen      nav={nav}/>;
           case 'home':     return <HomeCarouselScreen nav={nav}/>;
           case 'cards':       return <MyCardsScreen    nav={nav}/>;
