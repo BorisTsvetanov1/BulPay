@@ -276,7 +276,12 @@
     const USER = { first:'Maria', last:'Ivanova' };
 
     const SEED_CARDS = [
-      { id:'c1', name:'DSK VISA',     last4:'5384', holder:'Maria Ivanova', bal:5200.00, grad:'g2' },
+      {
+        id:'c1', name:'DSK VISA', last4:'5384', pan:'4532123456785384',
+        holder:'Maria Ivanova', exp:'12/28', cvv:'742',
+        billing:'ul. Vitosha 12, Sofia 1000, Bulgaria',
+        bal:5200.00, grad:'g2',
+      },
     ];
 
     const SEED_TX = [
@@ -325,6 +330,41 @@
     };
     const genRef  = ()  => 'BUL-' + Math.random().toString(36).slice(2,8).toUpperCase();
     const greet   = (t) => { const h=new Date().getHours(); return h<12?t('goodMorning'):h<17?t('goodAfternoon'):t('goodEvening'); };
+    const fmtPan  = (pan) => {
+      const d = String(pan || '').replace(/\D/g, '');
+      return d.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    };
+    const cardSensitive = (card) => {
+      const last4 = card.last4 || '0000';
+      const panDigits = (card.pan || '').replace(/\D/g, '');
+      return {
+        pan: panDigits.length >= 16 ? panDigits : ('453212345678' + last4).slice(-16),
+        exp: card.exp || '12/28',
+        cvv: card.cvv || '123',
+        holder: card.holder || `${USER.first} ${USER.last}`,
+        billing: card.billing || 'ul. Vitosha 12, Sofia 1000, Bulgaria',
+      };
+    };
+    const copyText = async (text) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+    };
 
     /* ════════════════════════════════════════
        TRANSLATIONS
@@ -409,6 +449,25 @@
         showCardDetails:'See Details',
         cardFrozenBanner:'Transactions are paused.',
         manageCard:'Manage Card',
+        viewCardDetailsPin:'Enter your PIN to view card details',
+        billingAddress:'Billing address',
+        copy:'Copy',
+        copied:'Copied!',
+        sensitiveInfoWarning:'Keep these details private.',
+        detailsAutoHide:'Auto-hides in {n}s',
+        viewCardDetailsTitle:'Card details',
+        topUpTitle:'Top Up Card',
+        topUpToCard:'Topping up',
+        topUpFromAccount:'From account',
+        topUpSelectAmount:'Quick amounts',
+        topUpCustomLabel:'Or enter a custom amount',
+        topUpInstantFee:'Instant credit · €0 fee ⚡',
+        topUpBtn:'Top Up',
+        topUpSuccess:'added to your card!',
+        topUpSuccessSubtitle:'Your balance has been updated.',
+        topUpMaxError:'Maximum top-up is €10,000 per transaction.',
+        topUpMinError:'Please enter an amount greater than €0.',
+        topUpPinTitle:'Confirm Top Up with PIN',
       },
       bg: {
         appName:'BulPay', help:'Помощ',
@@ -489,6 +548,25 @@
         showCardDetails:'Виж детайли на картата',
         cardFrozenBanner:'Картата е замразена — транзакциите са спрени.',
         manageCard:'Управление на карта',
+        viewCardDetailsPin:'Въведете PIN, за да видите детайлите на картата',
+        billingAddress:'Адрес за фактуриране',
+        copy:'Копирай',
+        copied:'Копирано!',
+        sensitiveInfoWarning:'Пазете тези данни в тайна.',
+        detailsAutoHide:'Скрива се след {n} сек',
+        viewCardDetailsTitle:'Детайли на картата',
+        topUpTitle:'Зареди карта',
+        topUpToCard:'Зарежда се',
+        topUpFromAccount:'От сметка',
+        topUpSelectAmount:'Бърза сума',
+        topUpCustomLabel:'Или въведете сума',
+        topUpInstantFee:'Моментално кредитиране · €0 такса ⚡',
+        topUpBtn:'Зареди',
+        topUpSuccess:'добавени към картата!',
+        topUpSuccessSubtitle:'Балансът е актуализиран.',
+        topUpMaxError:'Максималното зареждане е €10,000.',
+        topUpMinError:'Моля, въведете сума над €0.',
+        topUpPinTitle:'Потвърдете зареждането с PIN',
       },
     };
 
@@ -1764,6 +1842,490 @@
       );
     }
 
+    /* ── Card Details bottom sheet (after PIN) ── */
+    const DETAILS_HIDE_SEC = 60;
+
+    function CardDetailsSheet({ card, visible, onClose }) {
+      const t = useLang();
+      const [copiedKey, setCopiedKey] = useState('');
+      const [secondsLeft, setSecondsLeft] = useState(DETAILS_HIDE_SEC);
+      const onCloseRef = useRef(onClose);
+      onCloseRef.current = onClose;
+      const details = cardSensitive(card);
+
+      useEffect(() => {
+        if (!visible) {
+          setCopiedKey('');
+          setSecondsLeft(DETAILS_HIDE_SEC);
+          return;
+        }
+        setSecondsLeft(DETAILS_HIDE_SEC);
+        const hideTimer = setTimeout(() => onCloseRef.current(), DETAILS_HIDE_SEC * 1000);
+        const tick = setInterval(() => {
+          setSecondsLeft(s => (s > 0 ? s - 1 : 0));
+        }, 1000);
+        return () => {
+          clearTimeout(hideTimer);
+          clearInterval(tick);
+        };
+      }, [visible]);
+
+      const handleCopy = async (key, value) => {
+        const ok = await copyText(value);
+        if (ok) {
+          setCopiedKey(key);
+          setTimeout(() => setCopiedKey(k => (k === key ? '' : k)), 1800);
+        }
+      };
+
+      const CopyBtn = ({ fieldKey, value }) => (
+        <button
+          onClick={() => handleCopy(fieldKey, value)}
+          style={{
+            background: copiedKey === fieldKey ? '#DCFCE7' : '#F3F4F6',
+            border: 'none', borderRadius: 8,
+            padding: '6px 10px', cursor: 'pointer',
+            fontSize: T.caption, fontWeight: W.semibold,
+            color: copiedKey === fieldKey ? '#16A34A' : C.txtSecond,
+            fontFamily: 'Roboto,sans-serif', flexShrink: 0,
+            minWidth: 56,
+          }}
+        >
+          {copiedKey === fieldKey ? t('copied') : t('copy')}
+        </button>
+      );
+
+      const rows = [
+        { key: 'pan', label: t('cardNumber'), value: fmtPan(details.pan), copy: details.pan, mono: true },
+        { key: 'exp', label: t('expiry'), value: details.exp, copy: details.exp },
+        { key: 'cvv', label: t('cvv'), value: details.cvv, copy: details.cvv, mono: true },
+        { key: 'holder', label: t('cardholderName'), value: details.holder, copy: details.holder },
+        { key: 'billing', label: t('billingAddress'), value: details.billing, copy: details.billing },
+      ];
+
+      return (
+        <>
+          <div onClick={onClose} style={{
+            position:'absolute', inset:0, zIndex:40,
+            background: visible ? 'rgba(0,0,0,.45)' : 'rgba(0,0,0,0)',
+            transition:'background .3s ease',
+          }}/>
+
+          <div style={{
+            position:'absolute', bottom:0, left:0, right:0, zIndex:50,
+            background: C.white,
+            borderRadius:'24px 24px 0 0',
+            boxShadow:'0 -4px 32px rgba(0,0,0,.16)',
+            transform: visible ? 'translateY(0)' : 'translateY(100%)',
+            transition:'transform .3s cubic-bezier(.32,1,.55,1)',
+            maxHeight:'88%',
+            display:'flex', flexDirection:'column',
+          }}>
+            <div style={{display:'flex', justifyContent:'center', padding:'12px 0 4px'}}>
+              <div style={{width:40, height:4, borderRadius:2, background:'#E5E7EB'}}/>
+            </div>
+
+            <div style={{
+              display:'flex', alignItems:'center', justifyContent:'space-between',
+              padding:'8px 20px 12px', borderBottom:'1px solid '+C.rowBorder,
+            }}>
+              <div>
+                <div style={{fontSize:T.h2, fontWeight:W.bold, color:C.txtPrimary}}>{t('viewCardDetailsTitle')}</div>
+                <div style={{fontSize:T.caption, color:C.txtMuted, marginTop:4}}>
+                  {t('detailsAutoHide').replace('{n}', String(secondsLeft))}
+                </div>
+              </div>
+              <button onClick={onClose} style={{
+                width:32, height:32, borderRadius:'50%', border:'none',
+                background:'#F3F4F6', cursor:'pointer', display:'flex',
+                alignItems:'center', justifyContent:'center',
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:16,height:16}} fill="none"
+                     viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <div style={{
+              margin:'12px 16px 0', padding:'12px 14px',
+              background:'#FEF3C7', border:'1px solid #FCD34D', borderRadius:12,
+              fontSize:T.bodySmall, color:'#92400E', lineHeight:1.45,
+            }}>
+              {t('sensitiveInfoWarning')}
+            </div>
+
+            <div style={{overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'12px 0 8px'}}>
+              {rows.map(({ key, label, value, copy, mono }, i) => (
+                <div key={key} style={{
+                  display:'flex', alignItems:'center', justifyContent:'space-between', gap:12,
+                  padding:'13px 20px',
+                  borderBottom: i < rows.length - 1 ? '1px solid '+C.rowBorder : 'none',
+                }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{fontSize:T.caption, color:C.txtMuted, marginBottom:4}}>{label}</div>
+                    <div style={{
+                      fontSize:T.bodySmall, fontWeight:W.medium, color:C.txtPrimary,
+                      fontFamily: mono ? 'monospace' : 'Roboto,sans-serif',
+                      wordBreak: 'break-word',
+                    }}>
+                      {value}
+                    </div>
+                  </div>
+                  <CopyBtn fieldKey={key} value={copy} />
+                </div>
+              ))}
+
+              <div style={{padding:'12px 20px 24px'}}>
+                <button onClick={onClose} style={{
+                  width:'100%', padding:'13px',
+                  background:C.btnPrimary, color:'#fff',
+                  border:'none', borderRadius:14,
+                  fontSize:T.h3, fontWeight:W.semibold, cursor:'pointer',
+                  fontFamily:'Roboto,sans-serif',
+                  boxShadow: C.btnShadow,
+                }}>
+                  {t('close')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    /* ════════════════════════════════════════
+       SHEET — TOP UP
+    ════════════════════════════════════════ */
+    const TOP_UP_PRESETS = [50, 100, 200, 500];
+    /* Mock source accounts — realistic but fictional */
+    const TOP_UP_SOURCES = [
+      { id: 's1', bank: 'DSK Bank',  last4: '3821', iban: 'BG29STSA93001234563821' },
+      { id: 's2', bank: 'UniCredit', last4: '0047', iban: 'BG71UNCR70001523220047' },
+    ];
+
+    function TopUpSheet({ card, visible, onClose, onSuccess }) {
+      const t = useLang();
+      const [amt, setAmt]                   = useState('');
+      const [selectedPreset, setSelectedPreset] = useState(null);
+      const [sourceIdx, setSourceIdx]        = useState(0);
+      const [busy, setBusy]                  = useState(false);
+      const [done, setDone]                  = useState(false);
+      const [amtErr, setAmtErr]              = useState('');
+      const [showPin, setShowPin]            = useState(false);
+      const [pinVisible, setPinVisible]      = useState(false);
+      const [lockedAmt, setLockedAmt]        = useState(0);
+      const inputRef = useRef(null);
+
+      /* Reset when sheet opens */
+      useEffect(() => {
+        if (visible) {
+          setAmt(''); setSelectedPreset(null);
+          setBusy(false); setDone(false); setAmtErr('');
+          setShowPin(false); setPinVisible(false); setLockedAmt(0);
+        }
+      }, [visible]);
+
+      const pickPreset = (v) => {
+        setSelectedPreset(v);
+        setAmt(String(v));
+        setAmtErr('');
+      };
+
+      const handleInput = (e) => {
+        const raw = e.target.value.replace(/[^0-9.]/g, '');
+        setAmt(raw);
+        setSelectedPreset(null);
+        setAmtErr('');
+      };
+
+      const parsedAmt = parseFloat(amt) || 0;
+      const canGo = parsedAmt > 0 && parsedAmt <= 10000 && !busy && !done;
+      const source = TOP_UP_SOURCES[sourceIdx];
+
+      /* Step 1 — validate then open PIN sheet */
+      const requestPin = () => {
+        if (busy || done) return;
+        if (parsedAmt <= 0)    { setAmtErr(t('topUpMinError')); return; }
+        if (parsedAmt > 10000) { setAmtErr(t('topUpMaxError')); return; }
+        setLockedAmt(parsedAmt);
+        setShowPin(true);
+        requestAnimationFrame(() => setPinVisible(true));
+      };
+
+      const closePin = () => {
+        setPinVisible(false);
+        setTimeout(() => setShowPin(false), 320);
+      };
+
+      /* Step 2 — PIN verified: process top-up then show success */
+      const onPinSuccess = () => {
+        setPinVisible(false);
+        setTimeout(() => {
+          setShowPin(false);
+          setBusy(true);
+          setTimeout(() => {
+            onSuccess(lockedAmt, TOP_UP_SOURCES[sourceIdx]);
+            setBusy(false);
+            setDone(true);
+            setTimeout(() => onClose(), 1800);
+          }, 900);
+        }, 280);
+      };
+
+      return (
+        <>
+          {/* Backdrop */}
+          <div onClick={!busy ? onClose : undefined} style={{
+            position:'absolute', inset:0, zIndex:40,
+            background: visible ? 'rgba(0,0,0,.45)' : 'rgba(0,0,0,0)',
+            transition:'background .3s ease',
+          }}/>
+
+          {/* Sheet */}
+          <div style={{
+            position:'absolute', bottom:0, left:0, right:0, zIndex:50,
+            background: C.white,
+            borderRadius:'24px 24px 0 0',
+            boxShadow:'0 -4px 32px rgba(0,0,0,.16)',
+            transform: visible ? 'translateY(0)' : 'translateY(100%)',
+            transition:'transform .3s cubic-bezier(.32,1,.55,1)',
+            maxHeight:'92%',
+            display:'flex', flexDirection:'column',
+          }}>
+
+            {/* Handle */}
+            <div style={{display:'flex', justifyContent:'center', padding:'12px 0 4px', flexShrink:0}}>
+              <div style={{width:40, height:4, borderRadius:2, background:'#E5E7EB'}}/>
+            </div>
+
+            {/* Header */}
+            <div style={{
+              display:'flex', alignItems:'center', justifyContent:'space-between',
+              padding:'6px 20px 14px', borderBottom:'1px solid '+C.rowBorder, flexShrink:0,
+            }}>
+              <div style={{fontSize:T.h2, fontWeight:W.bold, color:C.txtPrimary}}>{t('topUpTitle')}</div>
+              <button onClick={!busy ? onClose : undefined} style={{
+                width:32, height:32, borderRadius:'50%', border:'none',
+                background:'#F3F4F6', cursor: busy ? 'default' : 'pointer',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                opacity: busy ? 0.4 : 1,
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{width:16,height:16}} fill="none"
+                     viewBox="0 0 24 24" stroke="#6B7280" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* ── Success state ── */}
+            {done ? (
+              <div style={{
+                flex:1, display:'flex', flexDirection:'column', alignItems:'center',
+                justifyContent:'center', padding:'36px 24px 48px',
+              }}>
+                <div style={{
+                  width:80, height:80, borderRadius:'50%', background:'#DCFCE7',
+                  display:'flex', alignItems:'center', justifyContent:'center', marginBottom:20,
+                  boxShadow:'0 8px 28px rgba(22,163,74,.18)',
+                }}>
+                  <div style={{
+                    width:56, height:56, borderRadius:'50%', background:'#16A34A',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:30,height:30}} fill="none"
+                         viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                </div>
+                <div style={{
+                  fontSize:T.h1, fontWeight:W.bold, color:C.txtPrimary,
+                  textAlign:'center', marginBottom:8,
+                }}>
+                  {fmtEur(parsedAmt)} {t('topUpSuccess')}
+                </div>
+                <div style={{fontSize:T.body, color:C.txtMuted, textAlign:'center'}}>
+                  {t('topUpSuccessSubtitle')}
+                </div>
+              </div>
+            ) : (
+
+              /* ── Normal state ── */
+              <div style={{overflowY:'auto', WebkitOverflowScrolling:'touch', flex:1}}>
+                <div style={{padding:'16px 20px 28px', display:'flex', flexDirection:'column', gap:20}}>
+
+                  {/* Card being topped up */}
+                  <div style={{
+                    background: C.pageBg, borderRadius:14,
+                    padding:'12px 16px',
+                    display:'flex', alignItems:'center', gap:14,
+                    border:'1px solid '+C.border,
+                  }}>
+                    <div style={{
+                      width:42, height:42, borderRadius:10,
+                      background:'linear-gradient(135deg,#1e3a8a,#3b82f6)',
+                      display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+                    }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" style={{width:20,height:20}} fill="none"
+                           viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
+                        <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+                      </svg>
+                    </div>
+                    <div style={{flex:1, minWidth:0}}>
+                      <div style={{fontSize:T.caption, color:C.txtMuted, marginBottom:2}}>{t('topUpToCard')}</div>
+                      <div style={{fontSize:T.h3, fontWeight:W.semibold, color:C.txtPrimary}}>
+                        {card.name} •••• {card.last4}
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize:T.h3, fontWeight:W.bold,
+                      color:'#16A34A',
+                    }}>
+                      {fmtEur(card.bal ?? 0)}
+                    </div>
+                  </div>
+
+                  {/* Source account */}
+                  <div>
+                    <div style={{fontSize:T.caption, fontWeight:W.semibold, color:C.txtMuted,
+                                 textTransform:'uppercase', letterSpacing:'.07em', marginBottom:10}}>
+                      {t('topUpFromAccount')}
+                    </div>
+                    <div style={{display:'flex', flexDirection:'column', gap:8}}>
+                      {TOP_UP_SOURCES.map((src, i) => (
+                        <button key={src.id} onClick={() => setSourceIdx(i)} style={{
+                          display:'flex', alignItems:'center', gap:12,
+                          padding:'12px 14px',
+                          background: sourceIdx === i ? '#EFF6FF' : C.white,
+                          border: '1px solid ' + (sourceIdx === i ? '#2563EB' : C.border),
+                          borderRadius:12, cursor:'pointer', fontFamily:'Roboto,sans-serif',
+                          boxShadow: sourceIdx === i ? '0 0 0 2px rgba(37,99,235,.12)' : 'none',
+                          transition:'all .15s',
+                          textAlign:'left',
+                        }}>
+                          {/* Radio dot */}
+                          <div style={{
+                            width:18, height:18, borderRadius:'50%', flexShrink:0,
+                            border: '2px solid ' + (sourceIdx === i ? '#2563EB' : '#D1D5DB'),
+                            background: sourceIdx === i ? '#2563EB' : 'transparent',
+                            display:'flex', alignItems:'center', justifyContent:'center',
+                          }}>
+                            {sourceIdx === i && (
+                              <div style={{width:6, height:6, borderRadius:'50%', background:'#fff'}}/>
+                            )}
+                          </div>
+                          <div style={{flex:1, minWidth:0}}>
+                            <div style={{fontSize:T.bodySmall, fontWeight:W.semibold, color:C.txtPrimary}}>
+                              {src.bank} ••••{src.last4}
+                            </div>
+                            <div style={{fontSize:T.caption, color:C.txtMuted, marginTop:1, fontFamily:'monospace', letterSpacing:'.03em'}}>
+                              {src.iban.slice(0,4)} {src.iban.slice(4,8)} ···
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Quick amount presets */}
+                  <div>
+                    <div style={{fontSize:T.caption, fontWeight:W.semibold, color:C.txtMuted,
+                                 textTransform:'uppercase', letterSpacing:'.07em', marginBottom:10}}>
+                      {t('topUpSelectAmount')}
+                    </div>
+                    <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8}}>
+                      {TOP_UP_PRESETS.map(v => (
+                        <button key={v} onClick={() => pickPreset(v)} style={{
+                          padding:'12px 4px',
+                          background: selectedPreset === v ? '#EFF6FF' : C.white,
+                          border: '2px solid ' + (selectedPreset === v ? '#2563EB' : C.border),
+                          borderRadius:12, cursor:'pointer', fontFamily:'Roboto,sans-serif',
+                          fontSize:T.h3, fontWeight:W.semibold,
+                          color: selectedPreset === v ? '#2563EB' : C.txtPrimary,
+                          transition:'all .12s',
+                          boxShadow: selectedPreset === v ? '0 0 0 2px rgba(37,99,235,.12)' : '0 1px 4px rgba(0,0,0,.06)',
+                        }}>
+                          €{v}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Custom amount input */}
+                  <div>
+                    <div style={{fontSize:T.caption, fontWeight:W.semibold, color:C.txtMuted,
+                                 textTransform:'uppercase', letterSpacing:'.07em', marginBottom:10}}>
+                      {t('topUpCustomLabel')}
+                    </div>
+                    <div style={{
+                      background: C.white,
+                      border: '2px solid ' + (amtErr ? '#EF4444' : selectedPreset === null && amt ? '#2563EB' : C.border),
+                      borderRadius:14, padding:'12px 16px',
+                      display:'flex', alignItems:'center', gap:8,
+                      boxShadow: selectedPreset === null && amt && !amtErr ? '0 0 0 3px rgba(37,99,235,.10)' : 'none',
+                      transition:'border-color .15s, box-shadow .15s',
+                    }}>
+                      <span style={{fontSize:T.display, fontWeight:W.light, color:'#D1D5DB'}}>€</span>
+                      <input
+                        ref={inputRef}
+                        type="number"
+                        min="1"
+                        max="10000"
+                        step="1"
+                        value={amt}
+                        onChange={handleInput}
+                        placeholder="0"
+                        style={{
+                          flex:1, fontSize:T.display, fontWeight:W.bold, color:C.txtPrimary,
+                          border:'none', outline:'none', background:'transparent',
+                          fontFamily:'Roboto,sans-serif', minWidth:0,
+                        }}
+                      />
+                    </div>
+                    {amtErr && (
+                      <div style={{fontSize:T.body, color:'#EF4444', marginTop:6}}>{amtErr}</div>
+                    )}
+                  </div>
+
+                  {/* Fee / speed info */}
+                  <div style={{
+                    display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+                    background:'#F0FDF4', border:'1px solid #BBF7D0',
+                    borderRadius:10, padding:'10px 14px',
+                  }}>
+                    <span style={{fontSize:T.body, color:'#15803D', fontWeight:W.medium}}>
+                      {t('topUpInstantFee')}
+                    </span>
+                  </div>
+
+                  {/* Action button */}
+                  <PrimaryBtn onClick={requestPin} loading={busy} disabled={!canGo}>
+                    {!busy && (canGo ? `${t('topUpBtn')} ${fmtEur(parsedAmt)}` : t('topUpBtn'))}
+                  </PrimaryBtn>
+
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* PIN confirmation — layered on top of the Top Up sheet */}
+          {showPin && (
+            <ConfirmPinSheet
+              visible={pinVisible}
+              onSuccess={onPinSuccess}
+              onClose={closePin}
+              titleKey="topUpPinTitle"
+              showSummary={false}
+              topUpSummary={{ card, amt: lockedAmt }}
+              overlayZIndex={60}
+              sheetZIndex={70}
+            />
+          )}
+        </>
+      );
+    }
+
     /* ════════════════════════════════════════
        SCREEN — CARD MANAGE (from Cards tab)
     ════════════════════════════════════════ */
@@ -1774,8 +2336,64 @@
       const txs   = Store.tx().filter(tx => tx.cid === card.id);
       const isFrozen = !!card.frozen;
       const [selectedTx, setSelectedTx] = useState(null);
+      const [showDetailsPin, setShowDetailsPin] = useState(false);
+      const [detailsPinVisible, setDetailsPinVisible] = useState(false);
+      const [showDetailsSheet, setShowDetailsSheet] = useState(false);
+      const [detailsSheetVisible, setDetailsSheetVisible] = useState(false);
+      const [showTopUp, setShowTopUp] = useState(false);
+      const [topUpVisible, setTopUpVisible] = useState(false);
 
       const toggleFreeze = () => setCards(Store.toggleCardFrozen(card.id));
+
+      const openTopUp = () => {
+        setShowTopUp(true);
+        requestAnimationFrame(() => setTopUpVisible(true));
+      };
+      const closeTopUp = () => {
+        setTopUpVisible(false);
+        setTimeout(() => setShowTopUp(false), 320);
+      };
+      const onTopUpSuccess = (amount, source) => {
+        const updated = Store.cards().map(c =>
+          c.id === card.id ? { ...c, bal: (c.bal || 0) + amount } : c
+        );
+        Store.setCards(updated);
+        const bankLabel = source ? `${source.bank} ••••${source.last4}` : 'Bank Top Up';
+        const bankIni   = source ? source.bank.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'BT';
+        Store.addTx({
+          id: 'tx-' + Date.now(),
+          cid: card.id,
+          who: bankLabel,
+          ini: bankIni,
+          amt: amount,
+          dir: 'in',
+          date: new Date().toISOString().split('T')[0],
+          st: 'Completed',
+          ref: genRef(),
+        });
+        setCards(Store.cards());
+      };
+
+      const openDetailsPin = () => {
+        setShowDetailsPin(true);
+        requestAnimationFrame(() => setDetailsPinVisible(true));
+      };
+      const closeDetailsPin = () => {
+        setDetailsPinVisible(false);
+        setTimeout(() => setShowDetailsPin(false), 300);
+      };
+      const onDetailsPinSuccess = () => {
+        setDetailsPinVisible(false);
+        setTimeout(() => {
+          setShowDetailsPin(false);
+          setShowDetailsSheet(true);
+          requestAnimationFrame(() => setDetailsSheetVisible(true));
+        }, 280);
+      };
+      const closeDetailsSheet = () => {
+        setDetailsSheetVisible(false);
+        setTimeout(() => setShowDetailsSheet(false), 300);
+      };
 
       return (
         <div className="fade-in" style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',background:C.pageBg,position:'relative'}}>
@@ -1858,15 +2476,19 @@
                 </span>
               </button>
 
-              {/* Top Up — visual only */}
-              <button style={{
-                background: C.white, border: '2px solid ' + C.border,
-                borderRadius: 16, padding: '16px 6px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                cursor: 'default', boxShadow: '0 2px 10px rgba(0,0,0,.08)',
-                fontFamily: 'Roboto,sans-serif', opacity: 0.65,
-                WebkitTapHighlightColor: 'transparent',
-              }}>
+              {/* Top Up — functional */}
+              <button
+                onClick={openTopUp}
+                style={{
+                  background: C.white, border: '2px solid ' + C.border,
+                  borderRadius: 16, padding: '16px 6px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+                  fontFamily: 'Roboto,sans-serif',
+                  WebkitTapHighlightColor: 'transparent',
+                  transition: 'border-color .15s',
+                }}
+              >
                 <div style={{
                   width: 46, height: 46, borderRadius: 12, background: '#DDE6F5',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1881,15 +2503,18 @@
                 </span>
               </button>
 
-              {/* Show Card Details — visual only */}
-              <button style={{
-                background: C.white, border: '2px solid ' + C.border,
-                borderRadius: 16, padding: '16px 6px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                cursor: 'default', boxShadow: '0 2px 10px rgba(0,0,0,.08)',
-                fontFamily: 'Roboto,sans-serif', opacity: 0.65,
-                WebkitTapHighlightColor: 'transparent',
-              }}>
+              {/* Show Card Details */}
+              <button
+                onClick={openDetailsPin}
+                style={{
+                  background: C.white, border: '2px solid ' + C.border,
+                  borderRadius: 16, padding: '16px 6px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+                  fontFamily: 'Roboto,sans-serif',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
                 <div style={{
                   width: 46, height: 46, borderRadius: 12, background: '#DDE6F5',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1928,6 +2553,33 @@
 
           {selectedTx && (
             <TxDetailSheet tx={selectedTx} card={card} onClose={() => setSelectedTx(null)}/>
+          )}
+
+          {showDetailsPin && (
+            <ConfirmPinSheet
+              visible={detailsPinVisible}
+              onSuccess={onDetailsPinSuccess}
+              onClose={closeDetailsPin}
+              titleKey="viewCardDetailsPin"
+              showSummary={false}
+            />
+          )}
+
+          {showDetailsSheet && (
+            <CardDetailsSheet
+              card={card}
+              visible={detailsSheetVisible}
+              onClose={closeDetailsSheet}
+            />
+          )}
+
+          {showTopUp && (
+            <TopUpSheet
+              card={card}
+              visible={topUpVisible}
+              onClose={closeTopUp}
+              onSuccess={onTopUpSuccess}
+            />
           )}
         </div>
       );
@@ -2316,12 +2968,20 @@
     }
 
     /* ── Confirm PIN bottom sheet ── */
-    function ConfirmPinSheet({ visible, onSuccess, onClose, draft }) {
+    function ConfirmPinSheet({ visible, onSuccess, onClose, draft, titleKey = 'confirmPaymentPin', showSummary = true, topUpSummary = null, overlayZIndex = 40, sheetZIndex = 50 }) {
       const t = useLang();
       const [digits, setDigits] = useState('');
       const [err,    setErr]    = useState('');
       const [shake,  setShake]  = useState(false);
       const letters = {'2':'ABC','3':'DEF','4':'GHI','5':'JKL','6':'MNO','7':'PQRS','8':'TUV','9':'WXYZ'};
+
+      useEffect(() => {
+        if (!visible) {
+          setDigits('');
+          setErr('');
+          setShake(false);
+        }
+      }, [visible]);
 
       const push = (k) => {
         if (digits.length >= 4) return;
@@ -2345,14 +3005,14 @@
         <>
           {/* Backdrop */}
           <div onClick={onClose} style={{
-            position:'absolute', inset:0, zIndex:40,
+            position:'absolute', inset:0, zIndex:overlayZIndex,
             background: visible ? 'rgba(0,0,0,.4)' : 'rgba(0,0,0,0)',
             transition:'background .3s ease',
           }}/>
 
           {/* Sheet */}
           <div style={{
-            position:'absolute', bottom:0, left:0, right:0, zIndex:50,
+            position:'absolute', bottom:0, left:0, right:0, zIndex:sheetZIndex,
             background: C.white,
             borderRadius:'24px 24px 0 0',
             boxShadow:'0 -4px 32px rgba(0,0,0,.15)',
@@ -2365,33 +3025,67 @@
               <div style={{width:40,height:4,borderRadius:2,background:'#E5E7EB'}}/>
             </div>
 
-            {/* Payment summary */}
-            <div style={{
-              margin:'4px 20px 20px',
-              background:C.pageBg, borderRadius:14,
-              padding:'12px 16px',
-              display:'flex', alignItems:'center', justifyContent:'space-between',
-            }}>
-              <div style={{display:'flex', alignItems:'center', gap:10}}>
-                <div style={{
-                  width:36,height:36,borderRadius:'50%',flexShrink:0,
-                  background:C.avatarBg, color:C.avatarTxt,
-                  display:'flex',alignItems:'center',justifyContent:'center',
-                  fontSize:T.h3, fontWeight:W.medium,
-                }}>
-                  {draft.recip.ini}
+            {/* Top-up summary (when called from TopUpSheet) */}
+            {topUpSummary && (
+              <div style={{
+                margin:'4px 20px 16px',
+                background:'#F0FDF4', border:'1px solid #BBF7D0',
+                borderRadius:14, padding:'12px 16px',
+                display:'flex', alignItems:'center', justifyContent:'space-between',
+              }}>
+                <div style={{display:'flex', alignItems:'center', gap:10}}>
+                  <div style={{
+                    width:36, height:36, borderRadius:10, flexShrink:0,
+                    background:'linear-gradient(135deg,#1e3a8a,#3b82f6)',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{width:18,height:18}} fill="none"
+                         viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
+                      <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style={{fontSize:T.caption, color:'#15803D'}}>Topping up</div>
+                    <div style={{fontSize:T.bodySmall, fontWeight:W.semibold, color:C.txtPrimary}}>
+                      {topUpSummary.card.name} •••• {topUpSummary.card.last4}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{fontSize:T.caption,color:C.txtMuted}}>{t('paying')}</div>
-                  <div style={{fontSize:T.bodySmall,fontWeight:W.medium,color:C.txtPrimary}}>{draft.recip.name}</div>
+                <div style={{fontSize:T.h2, fontWeight:W.bold, color:'#16A34A'}}>
+                  +{fmtEur(topUpSummary.amt)}
                 </div>
               </div>
-              <div style={{fontSize:T.h2,fontWeight:W.bold,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
-            </div>
+            )}
+
+            {/* Payment summary */}
+            {showSummary && draft && (
+              <div style={{
+                margin:'4px 20px 20px',
+                background:C.pageBg, borderRadius:14,
+                padding:'12px 16px',
+                display:'flex', alignItems:'center', justifyContent:'space-between',
+              }}>
+                <div style={{display:'flex', alignItems:'center', gap:10}}>
+                  <div style={{
+                    width:36,height:36,borderRadius:'50%',flexShrink:0,
+                    background:C.avatarBg, color:C.avatarTxt,
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    fontSize:T.h3, fontWeight:W.medium,
+                  }}>
+                    {draft.recip.ini}
+                  </div>
+                  <div>
+                    <div style={{fontSize:T.caption,color:C.txtMuted}}>{t('paying')}</div>
+                    <div style={{fontSize:T.bodySmall,fontWeight:W.medium,color:C.txtPrimary}}>{draft.recip.name}</div>
+                  </div>
+                </div>
+                <div style={{fontSize:T.h2,fontWeight:W.bold,color:C.txtPrimary}}>{fmtEur(draft.amt)}</div>
+              </div>
+            )}
 
             {/* Title */}
-            <div style={{textAlign:'center',fontSize:T.h2,fontWeight:W.bold,color:C.txtPrimary,marginBottom:20}}>
-              {t('confirmPaymentPin')}
+            <div style={{textAlign:'center',fontSize:T.h2,fontWeight:W.bold,color:C.txtPrimary,marginBottom:20,padding:'0 20px'}}>
+              {t(titleKey)}
             </div>
 
             {/* Dots */}
@@ -2560,8 +3254,11 @@
         setTimeout(()=>{
           Store.setCards([...Store.cards(),{
             id:'c-'+Date.now(), name:'BulPay VISA',
+            pan:f.num.replace(/\s/g,''),
             last4:f.num.replace(/\s/g,'').slice(-4),
-            holder:f.name, bal:0, grad:'g3', frozen:false
+            holder:f.name, exp:f.exp, cvv:f.cvv,
+            billing:'ul. Vitosha 12, Sofia 1000, Bulgaria',
+            bal:0, grad:'g3', frozen:false
           }]);
           nav('cards');
         },1000);
